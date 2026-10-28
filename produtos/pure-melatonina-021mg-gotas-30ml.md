@@ -1,6 +1,6 @@
 # Pure Melatonina Liquid 0,21mg – Gotas 30 mL com Laudo Beacon Labs
 
-![Pure Melatonina Liquid 0,21mg – Gotas 30 mL com Laudo Beacon Labs](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/28-pure-melatonina-0-21mg-gotas-30-ml--01-frente-fundo-branco.png?v=1792112466&width=600)
+![Pure Melatonina Liquid 0,21mg – Gotas 30 mL com Laudo Beacon Labs](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-01-frente.png?v=1793196691&width=600)
 
 - Página na loja: https://beaconlabs.com.br/products/pure-melatonina-021mg-gotas-30ml
 - Tipo: Sono
@@ -125,11 +125,11 @@ Fabricado e envasado por Lemoncaps Indústria e Comércio Ltda., CNPJ 55.836.075
 
 ## Imagens
 
-1. [Pure Melatonina Liquid 0,21mg – frente](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/28-pure-melatonina-0-21mg-gotas-30-ml--01-frente-fundo-branco.png?v=1792112466)
-2. [Pure Melatonina Liquid 0,21mg – tabela ingredientes](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/04-tabela-ingredientes_959f587b-b5e4-46b8-95f1-09ec6b3f4d99.png?v=1792112466)
-3. [Pure Melatonina Liquid 0,21mg – fatos dose](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/03-fatos-dose_631416b7-aa06-4cbc-b290-9d4dc4b7c3da.png?v=1792112467)
-4. [Pure Melatonina Liquid 0,21mg – beneficios lista](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/02-beneficios-lista_b7d0e829-cf74-4116-ac0d-21ec6f14d786.png?v=1792112466)
-5. [Pure Melatonina Liquid 0,21mg – cards d3](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/05-cards-d3_231c0c28-4d4d-4402-b654-1ff9b2ad736c.png?v=1792112466)
-6. [Pure Melatonina Liquid 0,21mg – cards vitc](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/10-cards-vitc_7964069d-5da1-40f1-8251-bd74dc2c2910.png?v=1792112466)
-7. [Pure Melatonina Liquid 0,21mg – anel melatonina](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/11-anel-melatonina_4a18546c-f8f2-421c-b23f-fe561bad04e2.png?v=1792112466)
-8. [Pure Melatonina Liquid 0,21mg – anel vitc](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/12-anel-vitc_b3d5f19b-4d02-483b-b6e5-29d7de555fd7.png?v=1792112466)
+1. [Pure Melatonina Liquid 0,21mg – frente](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-01-frente.png?v=1793196691)
+2. [Pure Melatonina Liquid 0,21mg – informação nutricional e princípio ativo](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-02-tabela-ingredientes.png?v=1793196691)
+3. [Pure Melatonina Liquid 0,21mg – porções, gotas e volume](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-03-fatos-dose.png?v=1793196692)
+4. [Pure Melatonina Liquid 0,21mg – hormônio da escuridão, relógio biológico e ciclo do sono](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-04-beneficios-lista.png?v=1793196691)
+5. [Pure Melatonina Liquid 0,21mg – sinal da noite, luz e ritmo do corpo](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-05-cards-noite-luz-ritmo.png?v=1793196691)
+6. [Pure Melatonina Liquid 0,21mg – a mesma substância do corpo e outros papéis em estudo](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-06-cards-substancia-estudos.png?v=1793196691)
+7. [Pure Melatonina Liquid 0,21mg – glândula pineal e luz à noite](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-07-anel-glandula.png?v=1793196691)
+8. [Pure Melatonina Liquid 0,21mg – relógio interno e telas à noite](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-08-anel-relogio.png?v=1793196691)

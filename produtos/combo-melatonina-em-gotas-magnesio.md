@@ -1,6 +1,6 @@
 # Combo Melatonina em gotas + Magnésio
 
-![Combo Melatonina em gotas + Magnésio](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/combo-melatonina-em-gotas-magnesio-1.jpg?v=1791952024&width=600)
+![Combo Melatonina em gotas + Magnésio](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-01-frente_c7abe01e-2338-4599-bdd1-7bd9575b2cce.png?v=1793196710&width=600)
 
 - Página na loja: https://beaconlabs.com.br/products/combo-melatonina-em-gotas-magnesio
 - Tipo: Kit
@@ -39,9 +39,9 @@ NÃO CONTÉM GLÚTEN.
 
 ## Imagens
 
-1. [Combo Melatonina em gotas + Magnésio – Pure Melatonina Liquid 0,21mg (frente)](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/combo-melatonina-em-gotas-magnesio-1.jpg?v=1791952024)
+1. [Combo Melatonina em gotas + Magnésio – Pure Melatonina Liquid 0,21mg (frente)](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-01-frente_c7abe01e-2338-4599-bdd1-7bd9575b2cce.png?v=1793196710)
 2. [Combo Melatonina em gotas + Magnésio – Pure Magnésio Bisglicinato 350mg (frente)](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/combo-melatonina-em-gotas-magnesio-1_b57c9b6c-c7ca-408a-9702-b12a3ab872fc.jpg?v=1791952024)
-3. [Pure Melatonina Liquid 0,21mg – tabela de ingredientes](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/04-tabela-ingredientes_16ca0d4e-60ce-4d69-8c3c-333feface84a.png?v=1793152896)
-4. [Pure Melatonina Liquid 0,21mg – dose e porções](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/03-fatos-dose_f00d1388-e76e-462f-8d76-50592922e209.png?v=1793152895)
+3. [Pure Melatonina Liquid 0,21mg – tabela de ingredientes](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-02-tabela-ingredientes_bd3f0838-fe80-40dc-966f-3fac66202e53.png?v=1793196709)
+4. [Pure Melatonina Liquid 0,21mg – dose e porções](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/pure-melatonina-liquid-0-21mg-gotas-30ml-03-fatos-dose_2030af2e-7e47-4bfa-b10a-577a8a2e7995.png?v=1793196709)
 5. [Pure Magnésio Bisglicinato 350mg – tabela de ingredientes](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/04-tabela-ingredientes_8be66d70-89cf-48d4-a78a-f2748f77cb03.png?v=1793152895)
 6. [Pure Magnésio Bisglicinato 350mg – dose e porções](https://cdn.shopify.com/s/files/1/1033/4034/3477/files/03-fatos-dose_89b88b92-68c1-40e9-8e9b-a79432aeaafa.png?v=1793152894)
