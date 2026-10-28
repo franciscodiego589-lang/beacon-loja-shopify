@@ -1,0 +1,647 @@
+/*
+  Beacon Labs · página de busca (section-main-search.css)
+  Estrutura em sections/main-search.liquid. Medidas tiradas da prancheta de categoria
+  (Categoria-Desktop): faixa de título em superfície 2 com raio 24, barra de ferramentas de
+  56 px com linha inferior, seletor de 44 px com raio 12,
+  grade com espaço de 24 px e paginação em círculos de 44 px.
+  Os cartões de produto usam component-product-card.css (fundação).
+
+  Liquid Glass (spec 7.3, 8.1, 8.5 e 8.6):
+  - rastro (v3, etapa 8b da tarefa 8): o da coleção, de snippets/colecao-breadcrumb e
+    assets/component-colecao-breadcrumb.css; aqui só o respiro de cima;
+  - topo (v3, etapa 8e, item 8): a trilha e a faixa de título ficam sobre um campo claro (#ECF3F9)
+    de ponta a ponta, sem cartão, como o topo da coleção (section-main-collection-banner.css): título
+    de 56 px (36 px até 760 px), linha 1,05, espaçamento -0,028em; o campo em cápsula de 52 px
+    (.lg-field-input, controle em vidro) e a lupa no primário ficam direto sobre o campo claro.
+    Antes a faixa era um cartão de vidro da v2 (.glass .glass--card, raio 32) com o campo dentro;
+  - ordenação em cápsula de 44 px com borda #6F8798 (3,36:1 na névoa);
+  - cartões de artigo, página e coleção (etapa 8e, leva C, 03/10/2026): blocos sólidos #ECF3F9, sem
+    borda e sem sombra, de raio --radius-card (22 px; 20 no celular), como o card de produto da grade; no
+    hover a foto da coleção sobe 3% (como a do card) e o título do cartão de página sublinha. Antes eram
+    vidro de conteúdo da v2 (.glass .glass--card .glass--interactive: alfa 0,66, borda, sombra e elevação
+    de −2 px). Contraste sobre o bloco: tinta 15,44:1 e apoio #566472 5,42:1;
+  - paginação como a da categoria: setas em vidro fino sem desfoque, atual em ink, hover com o
+    fino a 0,70, pressionado 0,97.
+*/
+
+/* Etapa 8e, item 19: sem recuo de baixo. O vão até o rodapé é o do .main-content::after (104 px; 68 px
+   até 760 px, section-footer.css); o recuo de 64 px (40 px no celular) que havia aqui somava a ele e dava
+   168 px (108 px) no fim da busca. */
+.main-search {
+  padding-bottom: 0;
+}
+
+/* ---------- Topo: campo claro de ponta a ponta ---------- */
+
+/* O campo (#ECF3F9, o tom do fundo das fotos) é pintado no invólucro do topo, como o da coleção
+   (section-main-collection-banner.css) e o do cabeçalho (section-header.css): sem emenda entre eles. */
+.main-search__top {
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+/* O rastro é o snippet colecao-breadcrumb (texto de apoio de 12 px, separador "/" pelo CSS, link de
+   44 px sem azul), com a classe .page-width para a coluna da página. Aqui só o respiro: 26 px em
+   cima (18 px no celular), como o topo da coleção. */
+.main-search__breadcrumb {
+  padding-top: 26px;
+}
+
+@media screen and (max-width: 760px) {
+  .main-search__breadcrumb {
+    padding-top: 18px;
+  }
+}
+
+.main-search__hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-block: 22px 32px;
+}
+
+/* Sem trilha, a faixa ganha um respiro no topo. */
+.main-search__top--sem-trilha .main-search__hero {
+  padding-top: 40px;
+}
+
+@media screen and (max-width: 760px) {
+  .main-search__hero {
+    padding-block: 12px 24px;
+  }
+
+  .main-search__top--sem-trilha .main-search__hero {
+    padding-top: 28px;
+  }
+}
+
+.main-search__hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.main-search__title {
+  margin: 0;
+  font-size: 56px;
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+@media screen and (max-width: 760px) {
+  .main-search__title {
+    font-size: 36px;
+  }
+}
+
+.main-search__term {
+  color: var(--lg-link-glass, var(--color-primary));
+}
+
+.main-search__intro {
+  max-width: 640px;
+  margin: 0;
+  font-size: 17px;
+  line-height: calc(25 / 17);
+  color: var(--color-text-muted);
+}
+
+.main-search__form {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.main-search__input {
+  width: 100%;
+  min-height: 52px;
+  height: 52px;
+  padding: 0 60px 0 22px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-size: 16px;
+}
+
+.main-search__input::-webkit-search-cancel-button,
+.main-search__input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.main-search__submit {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line, 0 0 #0000);
+  color: var(--color-on-dark);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+.main-search__submit:hover,
+.main-search__submit:active {
+  background: var(--color-ink);
+}
+
+.main-search__submit:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+@media screen and (min-width: 990px) {
+  .main-search__hero {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+  }
+
+  .main-search__hero-copy {
+    flex: 1 1 auto;
+    max-width: 720px;
+  }
+
+  .main-search__form {
+    flex: 0 0 400px;
+    width: 400px;
+  }
+}
+
+/* ---------- Barra de ferramentas ---------- */
+
+.main-search__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  min-height: 56px;
+  margin: 16px 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.main-search__count {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.main-search__sort {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.main-search__sort-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.main-search__sort-select {
+  width: auto;
+  min-width: 180px;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 44px 0 16px;
+  border-color: var(--color-input-border);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.main-search__sort-submit {
+  padding: 0 16px;
+}
+
+@media screen and (max-width: 749px) {
+  .main-search__sort {
+    width: 100%;
+  }
+
+  .main-search__sort-label {
+    width: 100%;
+  }
+
+  .main-search__sort-select {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .main-search__toolbar {
+    margin: 24px 0 24px;
+  }
+}
+
+/* ---------- Grade ---------- */
+
+.main-search__item {
+  display: flex;
+  min-width: 0;
+}
+
+.main-search__item > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Cartão de artigo ou página nos resultados: bloco sólido, no tom das fotos (#ECF3F9). */
+.main-search__content-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 16px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  box-shadow: none;
+}
+
+.main-search__content-media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius-media);
+  background: #FFFFFF;
+  color: var(--color-text-muted);
+}
+
+.main-search__content-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-search__content-type {
+  align-self: flex-start;
+}
+
+/* A ficha "Página" ou "Artigo" é branca dentro do bloco (a cor de ficha do tema se apagaria no #ECF3F9). */
+.main-search__content-card .main-search__content-type {
+  background: #FFFFFF;
+}
+
+.main-search__content-title {
+  margin: 0;
+  font-family: var(--font-body-family);
+  font-style: normal;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.main-search__content-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.main-search__content-link:hover {
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* O título é o link: a área de toque cobre o cartão inteiro. */
+.main-search__content-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.main-search__content-link:focus-visible {
+  outline: none;
+}
+
+.main-search__content-link:focus-visible::after {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+  box-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.main-search__content-excerpt {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+@media screen and (max-width: 749px) {
+  .main-search__content-card {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .main-search__content-title {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .main-search__content-excerpt {
+    font-size: 13px;
+  }
+}
+
+/* ---------- Paginação ---------- */
+
+.main-search-pagination {
+  display: flex;
+  justify-content: center;
+  padding-top: 32px;
+}
+
+.main-search-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-search-pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    box-shadow var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+/* Setas em vidro fino sem desfoque; nas páginas, o fino aparece no hover (spec 8.6). */
+.main-search-pagination__link--arrow,
+a.main-search-pagination__link:hover {
+  border-color: var(--lg-rim-light-color, var(--color-line));
+  background-color: var(--glass-thin-bg-fallback, var(--color-background));
+  background-image: var(--lg-sheen-functional, none);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .main-search-pagination__link--arrow {
+    background-color: var(--glass-thin-bg, var(--color-background));
+  }
+
+  a.main-search-pagination__link:hover {
+    background-color: var(--glass-thin-bg-hover, var(--color-background));
+    background-image: var(--lg-sheen-functional-hover, none);
+  }
+}
+
+a.main-search-pagination__link:active {
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+a.main-search-pagination__link:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.main-search-pagination__link--disabled {
+  opacity: 0.5;
+}
+
+.main-search-pagination__link--current {
+  border-color: transparent;
+  background: var(--color-ink);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  color: var(--color-on-dark);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+}
+
+.main-search-pagination__gap {
+  display: inline-flex;
+  justify-content: center;
+  width: 32px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Sugestões ---------- */
+
+.main-search__suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  margin-top: 28px;
+}
+
+@media screen and (min-width: 990px) {
+  .main-search__suggestions {
+    gap: 48px;
+    margin-top: 40px;
+  }
+}
+
+.main-search__suggest-title {
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+@media screen and (min-width: 990px) {
+  .main-search__suggest-title {
+    margin-bottom: 20px;
+    font-size: 26px;
+  }
+}
+
+.main-search__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-search__chip {
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.main-search__chip .icon {
+  color: var(--color-text-muted);
+}
+
+.main-search__collections {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .main-search__collections {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+.main-search__collection-item {
+  display: flex;
+  min-width: 0;
+}
+
+.main-search__collection {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 72px;
+  padding: 8px 12px 8px 8px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  box-shadow: none;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.main-search__collection:hover {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+/* Foto concêntrica: raio do bloco menos o recuo de 8 (22 − 8 = 14, 12 de raio; no celular 20 − 8 = 12, 8 de raio). */
+.main-search__collection-media {
+  display: block;
+  width: 56px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--lg-radius-small, 12px);
+  background: var(--color-photo-bg);
+}
+
+.main-search__collection-image {
+  transition: transform 350ms ease;
+}
+
+@media (hover: hover) {
+  .main-search__collection:hover .main-search__collection-image {
+    transform: scale(1.03);
+  }
+}
+
+.main-search__collection-image,
+.main-search__collection-placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-search__collection-placeholder {
+  fill: var(--color-text-muted);
+}
+
+.main-search__collection-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.main-search__collection-icon {
+  color: var(--color-primary);
+}
+
+@media screen and (max-width: 749px) {
+  .main-search__collection {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 10px;
+    min-height: 60px;
+    padding: 8px;
+  }
+
+  .main-search__collection-media {
+    width: 44px;
+    border-radius: var(--lg-radius-min, 8px);
+  }
+
+  .main-search__collection-icon {
+    display: none;
+  }
+
+  .main-search__collection-title {
+    font-size: 13px;
+  }
+}
+
+/* Transparência reduzida (spec 9.2): preenchimentos translúcidos ficam sólidos. */
+@media (prefers-reduced-transparency: reduce) {
+  .main-search-pagination__link--arrow,
+  a.main-search-pagination__link:hover {
+    background-color: #FFFFFF;
+    background-image: none;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): os blocos ganham o anel de tinta (como .pb-bloco em paginas-blog.css, que
+   esta seção não carrega); setas brancas com borda ink, sem sombra nem luz. */
+@media (prefers-contrast: more) {
+  .main-search__content-card,
+  .main-search__collection {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .main-search-pagination__link--arrow,
+  a.main-search-pagination__link:hover {
+    border-color: var(--color-ink);
+    background-color: #FFFFFF;
+    background-image: none;
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+}
+
+@media (forced-colors: active) {
+  .main-search__content-card,
+  .main-search__collection {
+    border: 1px solid CanvasText;
+  }
+
+  .main-search-pagination__link--arrow {
+    border-color: CanvasText;
+  }
+}

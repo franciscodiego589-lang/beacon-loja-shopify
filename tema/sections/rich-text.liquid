@@ -1,0 +1,324 @@
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-rich-text.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Texto com botão: selo, título, texto e até dois botões, em coluna de leitura.
+  Aceita blocos de app (por exemplo, o quiz da página Monte seu kit), exibidos abaixo do texto.
+  Imagem de fundo opcional (snippets/section-background.liquid): com imagem, a seção usa o
+  esquema "ink" e um véu azul-marinho sobre a foto; vazia, nada muda.
+  Sem selo, título, texto, botão e bloco, a seção não renderiza nada.
+
+  Etapa 8e, leva C (03/10/2026): o ajuste "Em bloco claro" põe o conteúdo num bloco sólido #ECF3F9 (.pb-bloco,
+  paginas-blog.css), sem borda e sem sombra, dentro da coluna. Ele substitui o painel de vidro da v2 que os fundos
+  "Cinza-azulado claro" e "Azul claro" ligavam (snippets/paginas-blog-surface.liquid; os dois fundos agora valem
+  como "Branco"). A linha pequena acima do título é a v3 (.v3-eyebrow, #8A0503); sobre o campo noite, com ou
+  sem foto, segue a ficha amarela.
+{%- endcomment -%}
+
+{%- liquid
+  assign rt_scheme = section.settings.color_scheme
+  assign rt_bg = section.settings.background_image
+  if rt_bg != blank
+    assign rt_scheme = 'ink'
+  endif
+
+  assign rt_tag = 'h2'
+  if section.settings.heading_tag == 'h1'
+    assign rt_tag = 'h1'
+  endif
+
+  assign rt_boxed = false
+  if section.settings.boxed and rt_scheme != 'ink'
+    assign rt_boxed = true
+  endif
+
+  assign rt_has_button = false
+  if section.settings.button_label != blank and section.settings.button_link != blank
+    assign rt_has_button = true
+  endif
+  assign rt_has_button2 = false
+  if section.settings.button2_label != blank and section.settings.button2_link != blank
+    assign rt_has_button2 = true
+  endif
+
+  assign rt_has_content = false
+  if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.text != blank or rt_has_button or rt_has_button2 or section.blocks.size > 0
+    assign rt_has_content = true
+  endif
+-%}
+
+{%- if rt_has_content -%}
+  <div class="rich-text rich-text--{{ section.settings.alignment }} rich-text--{{ section.settings.width }} pb-scheme--{{ rt_scheme }}{% render 'paginas-blog-surface', scheme: rt_scheme %} pb-pad--{{ section.settings.padding }}{% if rt_bg != blank %} has-section-bg{% endif %}{% if rt_boxed %} rich-text--boxed{% endif %}">
+    {%- render 'section-background', image: rt_bg, veil: section.settings.background_overlay, index: section.index -%}
+    <div class="page-width">
+      <div class="rich-text__bloco{% if rt_boxed %} pb-bloco{% endif %}">
+        <div class="rich-text__inner">
+          {%- if section.settings.eyebrow != blank -%}
+            {%- if rt_scheme == 'ink' -%}
+              <span class="chip rich-text__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- else -%}
+              <span class="v3-eyebrow rich-text__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- endif -%}
+          {%- endif -%}
+
+          {%- if section.settings.heading != blank -%}
+            <{{ rt_tag }} class="rich-text__heading rich-text__heading--{{ section.settings.heading_size }}">{{ section.settings.heading | escape }}</{{ rt_tag }}>
+          {%- endif -%}
+
+          {%- if section.settings.text != blank -%}
+            <div class="rich-text__text rte">{{ section.settings.text }}</div>
+          {%- endif -%}
+
+          {%- if rt_has_button or rt_has_button2 -%}
+            <div class="pb-actions rich-text__actions">
+              {%- if rt_has_button -%}
+                <a href="{{ section.settings.button_link }}" class="button button--large button--{{ section.settings.button_style }}">
+                  {{- section.settings.button_label | escape -}}
+                </a>
+              {%- endif -%}
+              {%- if rt_has_button2 -%}
+                <a href="{{ section.settings.button2_link }}" class="button button--large button--secondary">
+                  {{- section.settings.button2_label | escape -}}
+                </a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          {%- if section.blocks.size > 0 -%}
+            <div class="rich-text__apps">
+              {%- for block in section.blocks -%}
+                {%- case block.type -%}
+                  {%- when '@app' -%}
+                    <div class="rich-text__app" {{ block.shopify_attributes }}>
+                      {% render block %}
+                    </div>
+                {%- endcase -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Texto com botão",
+  "tag": "section",
+  "class": "section-rich-text",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Nível do título",
+      "info": "Use h1 só quando esta for a primeira seção da página e nenhuma outra mostrar o título.",
+      "options": [
+        {
+          "value": "h2",
+          "label": "h2"
+        },
+        {
+          "value": "h1",
+          "label": "h1"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "select",
+      "id": "heading_size",
+      "label": "Tamanho do título",
+      "options": [
+        {
+          "value": "medium",
+          "label": "Médio"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "header",
+      "content": "Botões"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto do botão principal"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Link do botão principal"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Estilo do botão principal",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Azul"
+        },
+        {
+          "value": "accent",
+          "label": "Amarelo-limão"
+        },
+        {
+          "value": "dark",
+          "label": "Azul-marinho"
+        },
+        {
+          "value": "secondary",
+          "label": "Contorno"
+        }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "text",
+      "id": "button2_label",
+      "label": "Texto do botão secundário"
+    },
+    {
+      "type": "url",
+      "id": "button2_link",
+      "label": "Link do botão secundário"
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alinhamento",
+      "options": [
+        {
+          "value": "left",
+          "label": "Esquerda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Largura do texto",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "Estreita"
+        },
+        {
+          "value": "wide",
+          "label": "Larga"
+        }
+      ],
+      "default": "narrow"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "info": "Cinza-azulado claro e Azul claro valem como Branco (o painel de vidro saiu). Para um recipiente claro, use Em bloco claro.",
+      "options": [
+        {
+          "value": "default",
+          "label": "Branco"
+        },
+        {
+          "value": "surface",
+          "label": "Cinza-azulado claro"
+        },
+        {
+          "value": "surface-2",
+          "label": "Azul claro"
+        },
+        {
+          "value": "ink",
+          "label": "Azul-marinho"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "checkbox",
+      "id": "boxed",
+      "label": "Em bloco claro",
+      "info": "Põe o conteúdo num bloco sólido azul claro dentro da coluna. Não vale com imagem de fundo nem com o fundo azul-marinho.",
+      "default": false
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Imagem de fundo (opcional)",
+      "info": "Com imagem, a seção usa texto claro e um véu azul-marinho sobre a foto, e o ajuste Fundo deixa de valer. Vazio, nada muda."
+    },
+    {
+      "type": "range",
+      "id": "background_overlay",
+      "label": "Véu sobre a imagem de fundo",
+      "info": "Abaixo de 75%, o texto de apoio pode ficar com pouco contraste sobre fotos claras.",
+      "min": 60,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 75
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        }
+      ],
+      "default": "normal"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Texto com botão"
+    }
+  ]
+}
+{% endschema %}

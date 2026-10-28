@@ -1,0 +1,250 @@
+/*
+  Beacon Labs · gaveta de menu (component-menu-drawer.css)
+  Estrutura em snippets/menu-drawer.liquid. Submenus em <details>.
+
+  Liquid Glass (spec 8.8; redesenho v3): a gaveta é vidro espesso a 0,90 COM desfoque
+  (.glass--thick .glass--blur no <dialog>), porque há conteúdo da página por trás; a forma e
+  o lugar estão em component-drawer.css. Bloco de conta e submenus em preenchimento ink a 4%
+  (o aninhado a 2%); item destacado em preenchimento acento com texto tinta. Texto de link,
+  submenu aberto, "Ver tudo" e página atual na tinta (--lg-link-glass lê --color-ink): 13,79:1
+  no pior caso do espesso a 0,90 (conta em docs/superpowers/redesign-v3/sdd/pior-caso-vidro.py).
+  Hover: preenchimento ink a 6% na linha inteira, porque a tinta e a primária são a mesma cor e
+  só a cor não marcaria o hover. Fios ink a 0,10.
+*/
+
+.menu-drawer__dialog {
+  --drawer-width: 420px;
+}
+
+.menu-drawer__inner {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Cabeçalho fixo dentro da gaveta: preenchimento branco a 0,90 (os links rolam por baixo). */
+.menu-drawer__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--lg-fill-white-90, var(--color-background));
+}
+
+.menu-drawer__account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+  background: var(--lg-fill-ink-04, var(--color-surface-1));
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.menu-drawer__account:hover {
+  background: var(--lg-fill-ink-08, rgba(var(--color-ink-rgb, 8, 28, 45), 0.08));
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: none;
+}
+
+.menu-drawer__nav {
+  flex-shrink: 0;
+}
+
+.menu-drawer__list,
+.menu-drawer__sublist {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.menu-drawer__item {
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+}
+
+.menu-drawer__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 20px;
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.menu-drawer__link:hover,
+.menu-drawer__sublink:hover {
+  background: var(--lg-fill-ink-06, rgba(var(--color-ink-rgb, 8, 28, 45), 0.06));
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: none;
+}
+
+.menu-drawer__link[aria-current="page"],
+.menu-drawer__sublink[aria-current="page"] {
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.menu-drawer__link:focus-visible,
+.menu-drawer__sublink:focus-visible,
+.menu-drawer__account:focus-visible,
+.menu-drawer__utility:focus-visible {
+  outline-offset: -3px;
+}
+
+.menu-drawer__summary {
+  cursor: pointer;
+}
+
+.menu-drawer__chevron {
+  flex-shrink: 0;
+  transition: transform var(--duration-fast, 150ms) ease;
+}
+
+.menu-drawer__details[open] > .menu-drawer__summary .menu-drawer__chevron {
+  transform: rotate(180deg);
+}
+
+.menu-drawer__details[open] > .menu-drawer__summary {
+  color: var(--lg-link-glass, var(--color-primary));
+}
+
+.menu-drawer__sublist {
+  padding: 4px 0 8px;
+  background: var(--lg-fill-ink-04, var(--color-surface-2));
+}
+
+.menu-drawer__subitem + .menu-drawer__subitem {
+  border-top: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+}
+
+.menu-drawer__sublink {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  padding: 0 20px 0 32px;
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-decoration: none;
+}
+
+.menu-drawer__sublink--all {
+  color: var(--lg-link-glass, var(--color-primary));
+  font-weight: 700;
+}
+
+.menu-drawer__details--nested > .menu-drawer__summary {
+  font-weight: 600;
+}
+
+.menu-drawer__sublist--nested {
+  padding: 0;
+  background: var(--lg-fill-ink-02, var(--color-surface-1));
+}
+
+.menu-drawer__sublist--nested .menu-drawer__sublink {
+  padding-left: 44px;
+  font-size: 14px;
+}
+
+.menu-drawer__item--highlight {
+  padding: 12px 20px;
+}
+
+.menu-drawer__link--highlight {
+  display: inline-flex;
+  justify-content: flex-start;
+  gap: 8px;
+  width: auto;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-ink);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 15px;
+  transition: transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.menu-drawer__link--highlight:hover {
+  background: var(--color-accent);
+  color: var(--color-ink);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), inset 0 0 0 1px var(--color-ink);
+}
+
+.menu-drawer__link--highlight:active {
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.menu-drawer__link--highlight:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+
+  outline-offset: 2px;
+}
+
+.menu-drawer__utility {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 20px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.menu-drawer__utility:hover {
+  background: var(--lg-fill-ink-06, rgba(var(--color-ink-rgb, 8, 28, 45), 0.06));
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: none;
+}
+
+.menu-drawer__social {
+  padding: 16px 12px 24px;
+  color: var(--color-ink);
+}
+
+.menu-drawer__social-list {
+  gap: 4px;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .menu-drawer__header {
+    background: #FFFFFF;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .menu-drawer__header {
+    background: #FFFFFF;
+  }
+
+  .menu-drawer__item,
+  .menu-drawer__account,
+  .menu-drawer__utility {
+    border-color: var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .menu-drawer__link--highlight {
+    border: 1px solid ButtonText;
+  }
+}

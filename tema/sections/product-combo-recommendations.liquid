@@ -1,0 +1,22 @@
+{%- comment -%}
+  Seção técnica da oferta combo (bloco "combo_oferta" de sections/main-product.liquid).
+  Só é usada via /recommendations/products?product_id=...&intent=complementary&section_id=product-combo-recommendations
+  (combo-offer.js, quando o produto não tem beacon.combo preenchido). Fora dessa rota,
+  recommendations não traz produtos e nada é renderizado: nenhum item é inventado.
+  Reaproveita snippets/produto-combo-item.liquid, para o HTML injetado ficar idêntico ao
+  renderizado no primeiro carregamento da página.
+{%- endcomment -%}
+{%- if recommendations.performed? and recommendations.products_count > 0 -%}
+  <ul data-combo-recommendations-loaded>
+    {%- for product in recommendations.products -%}
+      {% render 'produto-combo-item', product: product, is_current: false, id_prefix: 'ComboRec' %}
+    {%- endfor -%}
+  </ul>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Recomendações do combo",
+  "settings": []
+}
+{% endschema %}

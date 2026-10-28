@@ -1,0 +1,1867 @@
+/*
+  Beacon Labs · Produto principal (section-main-product.css)
+  Área produto. sections/main-product.liquid.
+
+  Cobre o layout dos dois blocos (galeria à esquerda, informações à direita), a galeria
+  (<media-gallery>), o seletor de kit (<kit-selector>, cartões de snippets/kit-card.liquid,
+  já estilizados por assets/component-kit-card.css da fundação), os textos e ações da coluna
+  de informações, os carrosséis de depoimento e atributos (<carousel-slider> da fundação) e a
+  oferta combo (<combo-offer>).
+
+  Pontos de quebra do tema: 750 px (celular -> tablet) e 990 px (tablet -> computador).
+  <kit-selector>, <media-gallery>, <combo-offer> e <carousel-slider> não estão na lista de
+  custom elements com display:block do base.css (fundação): as regras abaixo cobrem isso
+  só para esta seção.
+
+  Liquid Glass (docs/superpowers/specs/2026-09-27-liquid-glass-sistema.md, seção 8.7):
+  - A página fica na névoa (fundo do body, liquid-glass.css); texto corrido sem vidro atrás.
+  - Vidro de conteúdo .glass .glass--card (branco a 0,66, sem desfoque, linha de luz em cima,
+    fio ink suave, sombra de cartão), posto no Liquid: depoimento (raio 20), prazo de entrega e
+    cashback (raio 16) e avise-me. O "Compre junto" deixou de ser vidro na tarefa 6b: é bloco claro. Fundo, borda e sombra dessas peças vêm
+    de liquid-glass.css: aqui só medidas, raio e cores de texto (esta folha é carregada depois
+    e não pode redefinir background, border nem box-shadow delas).
+  - Por cima de vidro, só preenchimento (P3): "?" dos selos no celular como preenchimento, selects e botões secundários já viram
+    preenchimento pelas regras de base.css.
+  - Controles sobre a foto da galeria: .glass--thin sem desfoque (zoom, cápsulas, contador),
+    texto e ícones ink (6,206:1 no pior caso livre). Sobreposições de vídeo e 3D: .glass--dark.
+  - Selo de desconto da galeria: preenchimento sólido (#0058B8, branco 6,800:1), raio 12,
+    concêntrico com o palco (32 − 20 no computador; 24 − 12 no celular).
+  - Links sobre a névoa e sobre vidro em --lg-link-glass (#0058B8): a primária cai para
+    3,847:1 no campo maré. Ícones de destaque em #0058B8; o ícone do cashback segue #0068D0.
+  - Modos de reserva: as peças com .glass herdam os de liquid-glass.css; as que imitam o cartão
+    sem a classe (blocos dos selos e dos atributos no celular) têm os modos no fim desta folha.
+  Contrastes calculados em 28/09/2026 (método da spec 6.4) estão no relatório da frente produto.
+*/
+
+/* Recuo de cima (etapa 8e, item 17): 18 px (26 px a partir de 990 px), o mesmo da trilha do topo da coleção
+   (section-main-collection-banner.css) e do alvo (.trilha, alvo.css linha 263 e 449). Antes eram 24 px
+   (32 px), com a trilha de 13 px e o espaço de 16 px até o título; a trilha passou a ter 12 px (altura de
+   17,6 px) e o espaço de baixo, 23,5 px (.main-product__breadcrumbs), de modo que o título fica no mesmo
+   y de antes (197 px a 1440 e 163 px a 390). */
+.main-product {
+  display: block;
+  padding-block: 18px var(--section-spacing);
+}
+
+@media screen and (min-width: 990px) {
+  .main-product {
+    padding-block: 26px var(--section-spacing-desktop);
+  }
+}
+
+/* ---------- Trilha ---------- */
+
+/* A trilha é o snippet único do tema (snippets/colecao-breadcrumb, estilo em
+   assets/component-colecao-breadcrumb.css): texto de apoio de 12 px em peso 400, separador "/", link de 44 px
+   de alvo de toque. Antes era uma marcação própria (13 px em peso 600, links e página atual em tinta). Aqui só
+   o espaço até o título. */
+.main-product__breadcrumbs {
+  margin-bottom: 23.5px;
+}
+
+/* ---------- Grade principal ---------- */
+
+.main-product__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+}
+
+.main-product__grid--no-media {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Galeria menor (pedido do dono, 30/09/2026): a foto não passa de 520 px em coluna única nem de
+   560 px no computador, centralizada na sua coluna. */
+.main-product__media {
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+
+@media screen and (min-width: 990px) {
+  .main-product__grid {
+    grid-template-columns: 44% minmax(0, 1fr);
+    align-items: start;
+    gap: 64px;
+  }
+
+  .main-product__media {
+    max-width: 560px;
+  }
+
+  .main-product__grid--no-media {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 640px;
+  }
+
+  .main-product__media {
+    position: sticky;
+    top: calc(var(--section-spacing-desktop) / 2);
+  }
+}
+
+.main-product__info {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.main-product__block {
+  min-width: 0;
+}
+
+.main-product__editor-note {
+  margin: 0;
+}
+
+/* ---------- Galeria ---------- */
+
+kit-selector,
+media-gallery,
+combo-offer,
+carousel-slider {
+  display: block;
+}
+
+/* Palco com raio 32 (24 no celular), spec 8.7; fundo de foto do ajuste "Fundo das fotos". */
+.media-gallery__stage {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--lg-radius-sheet, var(--radius-media));
+  background: var(--color-photo-bg);
+}
+
+.media-gallery__list {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.media-gallery__item {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-base) var(--ease-out);
+}
+
+.media-gallery__item.is-active {
+  position: relative;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* O palco corta o que passa da borda (overflow: hidden): o contorno de foco da mídia em
+   destaque (que recebe foco depois de escolher uma miniatura) e do botão de reproduzir vídeo
+   é desenhado para dentro, senão some. */
+.media-gallery__item:focus-visible,
+.media-gallery__poster:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: -6px;
+  border-radius: var(--lg-radius-sheet, var(--radius-media));
+}
+
+/* Anel em duas cores também aqui (spec 5.10): halo branco por dentro, encostado na borda, e o
+   contorno ink logo depois. O halo fica num ::after por cima da foto (uma sombra interna no
+   próprio elemento ficaria por baixo da imagem). Em cores forçadas a sombra some e fica o
+   contorno. */
+.media-gallery__item:focus-visible::after,
+.media-gallery__poster:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 3px var(--lg-focus-halo, #FFFFFF);
+  pointer-events: none;
+}
+
+.media-gallery__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-gallery__deferred {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.media-gallery__deferred model-viewer,
+.media-gallery__deferred video,
+.media-gallery__deferred iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.media-gallery__poster {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+/* Reproduzir vídeo / ver em 3D: vidro funcional escuro sem desfoque (.glass .glass--dark no
+   Liquid; ink a 0,72, 0,90 sem suporte a desfoque), ícone branco. Não interativo sozinho: o
+   botão é a capa inteira. */
+.media-gallery__poster-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  transform: translate(-50%, -50%);
+  border-radius: var(--radius-pill);
+  color: var(--color-on-dark);
+}
+
+.media-gallery__poster-icon--text {
+  width: auto;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.media-gallery__badges {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Selo de desconto da galeria (spec 8.4): preenchimento de destaque (#E9AD05, texto ink 8,60:1), 68 x 60 com raio 12 no celular (24 − 12 de recuo) e 92 x 80 com raio
+   12 no computador (32 − 20), linha de luz em cima e sombra fina. */
+.media-gallery__discount {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 68px;
+  height: 60px;
+  border-radius: var(--lg-radius-small, 12px);
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  line-height: 1;
+}
+
+.media-gallery__discount-value {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 22px;
+  letter-spacing: -0.02em;
+}
+
+.media-gallery__discount-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Zoom, cápsulas e contador sobre a foto (spec 8.3): vidro funcional fino sem desfoque (.glass
+   .glass--thin no Liquid; o zoom também .glass--interactive), círculo de 44 px e cápsulas com
+   texto ink 12 px 700 a 800 (6,206:1 no pior caso livre; o #0058B8 do chip reprova no fino).
+   Fundo, borda de luz e sombra vêm de liquid-glass.css. */
+.media-gallery__zoom {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.media-gallery__chip {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.media-gallery__counter {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@media screen and (min-width: 990px) {
+  /* Selo concêntrico com o palco de raio 32: recuo de 20 px (32 − 20 = 12). */
+  .media-gallery__badges {
+    top: 20px;
+    left: 20px;
+  }
+
+  .media-gallery__discount {
+    gap: 4px;
+    width: 92px;
+    height: 80px;
+  }
+
+  .media-gallery__discount-value {
+    font-size: 28px;
+  }
+
+  .media-gallery__discount-label {
+    font-size: 13px;
+  }
+
+  .media-gallery__zoom {
+    top: 16px;
+    right: 16px;
+  }
+
+  .media-gallery__chip {
+    left: 20px;
+    bottom: 20px;
+    height: auto;
+    padding: 6px 12px;
+  }
+
+  .media-gallery__counter {
+    right: 20px;
+    bottom: 20px;
+    height: auto;
+    padding: 6px 12px;
+  }
+}
+
+.media-gallery__xr {
+  margin-top: 12px;
+}
+
+/* Grade de 2 colunas com as demais mídias em todas as larguras (maquetes Produto-Mobile:
+   358 + 12 + grade 2 × 2 de 173 px; Produto-Desktop: grade de 2 colunas sob a foto). No
+   celular é também o caminho de teclado e leitor de tela para trocar de mídia. */
+.media-gallery__thumbs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 990px) {
+  .media-gallery__thumbs {
+    margin-top: 16px;
+  }
+}
+
+.media-gallery__thumb-item {
+  min-width: 0;
+}
+
+/* Miniaturas (spec 8.7): raio 20 (16 no celular), fio ink a 0,08; hover com fio ink a 0,30;
+   pressionada, escala 0,98 (1 com movimento reduzido). A mídia em destaque não aparece na
+   grade (o item dela fica hidden), por isso não há anel de "miniatura atual" aqui. */
+.media-gallery__thumb {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding: 0;
+  border: 1px solid rgba(var(--color-ink-rgb), 0.08);
+  border-radius: var(--lg-radius-tile, var(--radius-media));
+  overflow: hidden;
+  background: var(--color-photo-bg);
+  cursor: pointer;
+  position: relative;
+  transition:
+    border-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+@media (hover: hover) {
+  .media-gallery__thumb:hover {
+    border-color: rgba(var(--color-ink-rgb), 0.3);
+  }
+}
+
+.media-gallery__thumb:active {
+  transform: scale(0.98);
+}
+
+.media-gallery__thumb-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Marca de vídeo e 3D na miniatura: vidro funcional escuro sem desfoque (.glass .glass--dark),
+   ícone e texto brancos (7,187:1 no pior caso livre a 0,72; 13,506:1 na reserva a 0,90). */
+.media-gallery__thumb-badge {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--color-on-dark);
+}
+
+/* Texto sobre vidro: mínimo de 12 px (spec 5.8, regra 3). */
+.media-gallery__thumb-badge--text {
+  width: auto;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media-gallery__thumb:active {
+    transform: none;
+  }
+}
+
+/* Zoom (spec 8.7): <dialog> com painel branco sólido (visualizador de imagem, não é vidro),
+   raio 32, sobre o escurecimento de 0,55 sem desfoque; fechar é o .icon-button (vidro fino
+   sem desfoque). Fotos com raio 16, concêntricas com o painel (32 − 16 de recuo). */
+.media-gallery__dialog {
+  width: min(920px, calc(100vw - 32px));
+  max-width: none;
+  max-height: min(85vh, 920px);
+  padding: 0;
+  border: 0;
+  border-radius: 32px;
+  background: var(--color-background);
+  overscroll-behavior: contain;
+}
+
+.media-gallery__dialog::backdrop {
+  background: var(--overlay);
+}
+
+.media-gallery__dialog-inner {
+  position: relative;
+  padding: 48px 16px 16px;
+  max-height: min(85vh, 920px);
+  overflow-y: auto;
+}
+
+.media-gallery__dialog-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1;
+}
+
+.media-gallery__zoom-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.media-gallery__zoom-image {
+  width: 100%;
+  border-radius: 16px;
+}
+
+/* ---------- Título ---------- */
+
+.main-product__heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.main-product__title {
+  font-size: 24px;
+}
+
+.main-product__heading--upper .main-product__title {
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+.main-product__subtitle {
+  color: var(--color-text-muted);
+  font-size: 15px;
+}
+
+@media screen and (min-width: 990px) {
+  .main-product__title {
+    font-size: 30px;
+  }
+}
+
+/* ---------- Depoimento ---------- */
+
+/* Depoimento em destaque (spec 8.7): vidro de conteúdo cartão (.glass .glass--card no Liquid)
+   sobre a névoa, raio 20 (16 no celular). Avatar em preenchimento de foto (ink a 4%);
+   "Compra verificada" em #117A3D (--lg-status-ok, só em vidro de conteúdo: 4,850:1 no pior
+   campo); seta transparente de 44 px com preenchimento ink a 6% no hover. */
+.testimonial {
+  position: relative;
+  padding: 20px;
+  border-radius: var(--lg-radius-tile, var(--radius-card));
+}
+
+.testimonial__viewport {
+  overflow: hidden;
+}
+
+.testimonial__track {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.testimonial__slide {
+  display: flex;
+  gap: 12px;
+}
+
+.testimonial__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--lg-fill-ink-04, var(--color-surface-2));
+  color: var(--color-text-muted);
+}
+
+.testimonial__body {
+  margin: 0;
+  min-width: 0;
+}
+
+.testimonial__verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+  color: var(--lg-status-ok, #117A3D);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.testimonial__quote p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.testimonial__author {
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.testimonial__next {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+@media (hover: hover) {
+  .testimonial__next:hover {
+    background: var(--lg-fill-ink-06, var(--color-surface-2));
+  }
+}
+
+.testimonial__next:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+  transform: translateY(-50%) scale(var(--lg-press-scale, 0.97));
+}
+
+/* ---------- O que é / atalhos ---------- */
+
+/* Sem caixa, como na prancheta (spec 8.7): pergunta ink 14 px 700 e links #0058B8 14 px 700,
+   sublinhados no hover. Cada link tem 44 px de altura de toque. */
+.what-is {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 16px;
+}
+
+.what-is__question {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.what-is__links {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+}
+
+.what-is__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--lg-link-glass, var(--color-chip-text));
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.what-is__link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Entrega ---------- */
+
+/* Previsão de entrega (spec 8.7): vidro de conteúdo cartão (.glass .glass--card no Liquid),
+   raio 16, 56 px de altura, ícone de caminhão #0058B8, texto ink 14 px 600 (13 no celular) com
+   as datas em 800. Sai a borda azul (P13). */
+.delivery {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 56px;
+  margin: 0;
+  padding: 10px 16px;
+  border-radius: var(--lg-radius-inner, var(--radius-input));
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.delivery__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--lg-link-glass, var(--color-chip-text));
+}
+
+.delivery strong {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+}
+
+@media screen and (min-width: 750px) {
+  .delivery {
+    font-size: 14px;
+  }
+}
+
+/* ---------- Chips ---------- */
+
+.main-product__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- Seletor de kit ---------- */
+
+.kit-selector__legend {
+  display: block;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.kit-selector__fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.kit-selector__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.kit-selector__summary {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-chip-text);
+}
+
+/* ---------- Compra ---------- */
+
+.main-product__buy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* O texto pode quebrar em 2 linhas em tela estreita (320 px com "Adicionar 3 potes: R$ 239,70");
+   o preço vem com espaço sem quebra, então a quebra cai antes de "R$". */
+.main-product__add,
+.combo-offer__submit {
+  white-space: normal;
+}
+
+/* Botão de compra (spec 8.7 e 8.3): o botão proeminente da tela, primário sólido (#0068D0,
+   branco 5,397:1) de 56 px (48 no celular), texto 16 px 800. Sobre a névoa ele mantém a sombra
+   da primária (base.css). */
+.main-product__add {
+  min-height: 56px;
+  font-family: var(--font-heading-family);
+  font-size: 16px;
+  font-weight: var(--font-heading-weight);
+}
+
+@media screen and (min-width: 750px) {
+  .main-product__add {
+    min-height: 56px;
+  }
+}
+
+.main-product__dynamic-checkout {
+  min-height: 44px;
+}
+
+/* Avise-me (produto esgotado): vidro de conteúdo cartão (.glass .glass--card no Liquid), raio
+   20 (16). Dentro dele o campo ganha a borda #4A6072 e o botão secundário vira preenchimento
+   (regras de base.css para o que fica por cima de vidro). */
+.notify {
+  padding: 16px;
+  border-radius: var(--lg-radius-tile, var(--radius-card));
+}
+
+.notify__title {
+  font-size: 16px;
+  margin-bottom: 6px;
+}
+
+.notify__text {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.notify__row {
+  display: flex;
+  gap: 8px;
+}
+
+.notify__row input {
+  flex: 1;
+}
+
+/* A mensagem de envio recebe o foco ao carregar (autofocus): contorno visível mesmo com o foco
+   vindo do carregamento, que o :focus:not(:focus-visible) de base.css esconderia (igual a
+   .pb-status em paginas-blog.css). */
+.notify .form-message:focus {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---------- Parcelamento e Pix ---------- */
+
+/* Linha de pagamento sobre a névoa (spec 8.7): apoio 14 px (13 no celular), 5,861:1; valor do
+   Pix #0058B8 700 (6,088:1). */
+.main-product__payment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.main-product__pix {
+  font-weight: 700;
+  color: var(--color-chip-text);
+}
+
+/* Uma parte da linha por variante (snippets/produto-payment-line.liquid): a parte não gera
+   caixa, então parcelamento e Pix continuam itens da mesma linha flexível. A parte das outras
+   variantes fica escondida pelo atributo hidden ([hidden] em base.css). */
+.main-product__payment-slot {
+  display: contents;
+}
+
+@media screen and (min-width: 750px) {
+  .main-product__payment {
+    font-size: 14px;
+  }
+}
+
+/* ---------- Selos de confiança ---------- */
+
+/* Selos de confiança (spec 8.7).
+   - Computador (a partir de 750 px): uma linha sem caixa, sobre a névoa; ícones #0058B8 20 px e
+     texto ink 13 px 700. Botão "?" em círculo de 28 px de vidro fino sem desfoque
+     (.glass .glass--thin .glass--interactive no Liquid) com área de toque de 44 x 44 (.lg-hit).
+   - Celular: 3 blocos de vidro de conteúdo cartão de 64 px, raio 16, texto 12 px 700
+     centralizado; o "?" dentro do bloco vira preenchimento (branco a 0,72; 0,86 no hover), nunca
+     vidro sobre vidro (D36). Os blocos imitam o .glass--card sem a classe, porque no computador
+     não há caixa; os modos de reserva deles estão no fim desta folha.
+   - Explicação: tooltip de vidro escuro sem desfoque (.glass--dark .glass--tooltip, ink a 0,94,
+     branco 15,222:1 no pior caso livre), raio 12, sombra escura; entra por materialização a
+     partir do "?" (.lg-materialize; sem animação com movimento reduzido). */
+.trust {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trust__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px 4px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 10px 6px;
+  border: 1px solid transparent;
+  border-radius: var(--lg-radius-inner, var(--radius-card-sm));
+  background-color: var(--glass-card-bg, var(--color-background));
+  box-shadow: var(--lg-hairline-soft, 0 0 0 1px var(--color-line)), var(--lg-rim-content-inset, 0 0 #0000), var(--lg-shadow-card, 0 0 #0000);
+  text-align: center;
+}
+
+/* No celular o ícone e o "?" ficam na primeira linha e o texto na segunda. */
+.trust__main {
+  display: contents;
+}
+
+.trust__icon {
+  display: inline-flex;
+  order: 0;
+  color: var(--lg-link-glass, var(--color-chip-text));
+}
+
+.trust__info-wrap {
+  order: 1;
+}
+
+.trust__label {
+  order: 2;
+  flex-basis: 100%;
+  color: var(--color-ink);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+/* O "?" (summary) é um círculo de 28 px; a área de toque de 44 x 44 vem do ::after da .lg-hit. */
+.trust__info-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+/* No celular o "?" fica dentro do bloco de vidro: vira preenchimento. Só as variáveis do
+   material trocam, e os modos de reserva de liquid-glass.css continuam valendo. */
+@media screen and (max-width: 749px) {
+  .trust__info-toggle.glass {
+    --glass-bg: var(--glass-fill-bg);
+    --glass-bg-hover: var(--glass-fill-bg-hover);
+    --glass-bg-fallback: var(--glass-fill-bg);
+    --glass-bg-fallback-hover: var(--glass-fill-bg-hover);
+    --glass-bg-press: var(--glass-fill-bg-hover);
+    --glass-rim-color: transparent;
+    --glass-rim-inset: var(--lg-shadow-none);
+    --glass-outline: var(--lg-hairline-soft);
+    --glass-sheen: none;
+    --glass-sheen-hover: none;
+    --glass-shadow: var(--lg-shadow-none);
+    --glass-press: var(--lg-shadow-none);
+  }
+}
+
+/* Explicação: no celular, ocupa a largura da lista, logo abaixo dela (nunca sai da tela). */
+.trust__info-text {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: var(--z-dropdown);
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: var(--lg-radius-small, var(--radius-input));
+  color: var(--color-on-dark);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  --lg-materialize-origin: top center;
+  animation-duration: 200ms;
+}
+
+@media screen and (min-width: 750px) {
+  .trust {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+  }
+
+  .trust__item {
+    position: relative;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    text-align: left;
+  }
+
+  .trust__main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .trust__info-wrap {
+    order: 0;
+  }
+
+  .trust__label {
+    flex-basis: auto;
+    font-size: 13px;
+  }
+
+  /* A explicação sai do selo que a abriu; a do último selo abre para a esquerda. */
+  .trust__info-text {
+    right: auto;
+    top: calc(100% + 6px);
+    width: 260px;
+    --lg-materialize-origin: top left;
+  }
+
+  .trust__item:last-child .trust__info-text {
+    left: auto;
+    right: 0;
+    --lg-materialize-origin: top right;
+  }
+}
+
+/* ---------- Cashback ---------- */
+
+/* Cashback (spec 8.7): vidro de conteúdo cartão (.glass .glass--card no Liquid), raio 16,
+   48 px de altura; texto ink, ícone #0068D0 (não é texto, 4,831:1 no pior campo) e valor
+   #0058B8 800. Sai o fundo de chip. */
+.cashback {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  margin: 0;
+  padding: 8px 14px;
+  border-radius: var(--lg-radius-inner, var(--radius-input));
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cashback__icon {
+  display: inline-flex;
+  color: var(--color-primary);
+}
+
+.cashback__amount {
+  color: var(--lg-link-glass, var(--color-chip-text));
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Atributos (carrossel) ---------- */
+
+.attributes__viewport {
+  overflow: hidden;
+}
+
+.attributes__track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(96px, 1fr);
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.attributes__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* A faixa rolável recebe foco pelo teclado (o navegador torna áreas roláveis focáveis) e fica
+   dentro de .attributes__viewport (overflow: hidden): contorno para dentro, para não sumir. */
+.attributes__track:focus-visible {
+  outline-offset: -3px;
+  border-radius: var(--radius-media);
+}
+
+/* Atributos (spec 8.7). Computador: itens sem caixa sobre a névoa, ícone #0058B8 40 px, texto
+   ink 13 px 700. Celular: blocos de vidro de conteúdo cartão de 173 x 104 (dois por vez na tela
+   de 390 px), raio 18; imitam o .glass--card sem a classe, porque no computador não há caixa
+   (modos de reserva no fim desta folha). Setas: .icon-button (vidro fino sem desfoque, base.css).
+   Pontos: ativo ink (cápsula de 24 x 8) e inativos #6F8798 (3,36:1 na névoa). */
+.attributes__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 104px;
+  padding: 12px 8px;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background-color: var(--glass-card-bg, var(--color-background));
+  box-shadow: var(--lg-hairline-soft, 0 0 0 1px var(--color-line)), var(--lg-rim-content-inset, 0 0 #0000);
+  text-align: center;
+  scroll-snap-align: start;
+}
+
+.attributes__icon {
+  display: inline-flex;
+  color: var(--lg-link-glass, var(--color-chip-text));
+}
+
+.attributes__text {
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.attributes__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.attributes__dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 22px;
+}
+
+.attributes__dots .carousel-slider__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-input-border);
+  /* Só a cor anima; a largura (8 para a cápsula ativa de 24) muda direto, sem refazer o layout
+     a cada quadro. */
+  transition: background-color var(--lg-dur-state, 240ms) var(--lg-ease-glass, ease);
+}
+
+.attributes__dots .carousel-slider__dot.is-active {
+  width: 24px;
+  background: var(--color-ink);
+}
+
+/* Celular: dois blocos por vez (173 px a 390 px de largura: (358 − 12) ÷ 2). */
+@media screen and (max-width: 749px) {
+  .attributes__track {
+    grid-auto-columns: calc((100% - 12px) / 2);
+    gap: 12px;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .attributes__track {
+    grid-auto-columns: minmax(0, calc((100% - 3 * 16px) / 4));
+  }
+
+  .attributes__item {
+    min-height: 0;
+    padding: 12px 4px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+}
+
+/* ---------- Compre junto (redesenho v3, tarefa 6, parte B; alvo.css linhas 321 a 333 e 476 a 481) ----------
+   Bloco claro (#ECF3F9, .lg-field--claro no Liquid) sobre a página branca, fora do campo do topo
+   e fora da grade (sections/main-product.liquid). Sem vidro: texto ink e apoio #566472 sobre o
+   campo (15,44:1 e 5,42:1). Lista em linhas com filete #CBD7E1 (decorativo), caixa de marcação
+   nativa de 22 px com área de toque de 44 x 44 e accent-color tinta (a caixa marcada tem mais de
+   3:1 contra o campo; o amarelo de destaque dava 1,80:1), foto de 72 px (56 no celular), nome com
+   a dose, opção e preço. O selo "% OFF" é amarelo #E9AD05 com texto tinta (8,60:1).
+   O comportamento (combo-offer.js) não muda: os ganchos data-* e as classes de estado ficam. */
+/* Vão entre blocos da página do produto (etapa 8e, item 13): o vão do campo claro do topo até este bloco é
+   --section-gap (104 px; 68 px até 760 px), margem de cima do próprio bloco, como o .sec do alvo. Antes era o
+   recuo de 64 px (40 px no celular) e o alvo mede 104 (68). */
+.main-product-combo {
+  margin-top: var(--section-gap);
+}
+
+.combo-offer {
+  padding: 28px 20px;
+  border-radius: var(--lg-radius-card, 28px);
+  color: var(--color-ink);
+}
+
+/* Celular: o bloco sangra até o recuo único (--bleed-gutter, só até 760 px; emendas 11 e 20). */
+@media screen and (max-width: 760px) {
+  .combo-offer {
+    margin-inline: calc(var(--page-gutter, 16px) * -1 + var(--bleed-gutter, 0px));
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .combo-offer {
+    padding: 36px 32px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .combo-offer {
+    padding: 44px 48px;
+  }
+}
+
+/* Faixa de destaque (opcional, vazia por padrão): pílula amarela com texto tinta. */
+.combo-offer__banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0 0 14px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  font-family: var(--font-heading-family);
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.combo-offer__title {
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+@media screen and (min-width: 750px) {
+  .combo-offer__title {
+    font-size: 32px;
+  }
+}
+
+.combo-offer__shipping {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.combo-offer__shipping-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.combo-offer__list {
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid #CBD7E1;
+}
+
+.combo-offer__item {
+  border-bottom: 1px solid #CBD7E1;
+}
+
+/* Linha do item: no computador, caixa, foto, nome, opção e preço; no celular, a opção desce para
+   baixo do nome. O rodapé do item não é uma caixa: seus filhos (opção e preço) entram direto na
+   grade do cartão (display: contents). */
+.combo-offer__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 44px 56px minmax(0, 1fr) auto;
+  grid-template-areas:
+    "check media info prices"
+    ". . opcao opcao";
+  align-items: center;
+  column-gap: 12px;
+  padding: 10px 0;
+}
+
+.combo-offer__footer {
+  display: contents;
+}
+
+@media screen and (min-width: 750px) {
+  .combo-offer__card {
+    grid-template-columns: 44px 72px minmax(0, 1fr) auto auto;
+    grid-template-areas: "check media info opcao prices";
+    column-gap: 18px;
+  }
+}
+
+/* Caixa de marcação nativa de 22 px dentro do rótulo, que cobre os 44 x 44 da coluna: a área de
+   toque inteira marca e desmarca (critério 2.5.8). O texto do rótulo é só para leitor de tela. */
+.combo-offer__check {
+  grid-area: check;
+  width: 44px;
+  height: 44px;
+  margin-left: -10px;
+}
+
+.combo-offer__check-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.combo-offer__checkbox {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--color-ink);
+  cursor: pointer;
+}
+
+/* Anel em duas cores (spec 5.10): o contorno ink vem do foco global; o halo branco, daqui. */
+.combo-offer__checkbox:focus-visible {
+  box-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.combo-offer__check-label:has(:disabled),
+.combo-offer__checkbox:disabled {
+  cursor: not-allowed;
+}
+
+/* Foto inteira, sem fundo próprio: o pote solto (máscara de .lg-pote-solto) funde no bloco claro;
+   foto fora do padrão fica em quadro arredondado, sem máscara (.v3-foto-quadro). */
+.combo-offer__media {
+  grid-area: media;
+  display: block;
+  width: 56px;
+  height: 56px;
+}
+
+@media screen and (min-width: 750px) {
+  .combo-offer__media {
+    width: 72px;
+    height: 72px;
+  }
+}
+
+.combo-offer__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.combo-offer__image.v3-foto-quadro {
+  border-radius: var(--lg-radius-small, 12px);
+}
+
+.combo-offer__info {
+  grid-area: info;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+/* Área de toque do nome (link) de 44 px de altura: o respiro vertical é compensado pela margem
+   negativa, e a linha não muda de lugar. */
+.combo-offer__name {
+  padding-block: 12px;
+  margin-block: -12px;
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 600;
+  color: var(--color-ink);
+  text-wrap: balance;
+}
+
+.combo-offer__discount {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: var(--radius-pill);
+  background: var(--lg-tint-savings, var(--color-badge-bg));
+  color: var(--color-ink);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  font-family: var(--font-heading-family);
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  white-space: nowrap;
+}
+
+.combo-offer__current {
+  grid-area: opcao;
+  justify-self: start;
+  margin-top: 4px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* Opção do item (select nativo): no celular, embaixo do nome; no computador, entre o nome e o preço. */
+.combo-offer__select {
+  grid-area: opcao;
+  display: block;
+  justify-self: start;
+  min-width: 140px;
+  margin-top: 6px;
+}
+
+.combo-offer__variant {
+  width: 100%;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+@media screen and (min-width: 750px) {
+  .combo-offer__current,
+  .combo-offer__select {
+    justify-self: end;
+    margin-top: 0;
+  }
+
+  .combo-offer__select {
+    min-width: 132px;
+  }
+
+  .combo-offer__variant {
+    min-height: 40px;
+  }
+}
+
+.combo-offer__prices {
+  grid-area: prices;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.combo-offer__compare s {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.combo-offer__item[data-available="false"] .combo-offer__card {
+  opacity: 0.5;
+}
+
+/* Botão de adicionar: grande (56 px) e primário em tinta; largura total no celular, à direita no
+   computador. O texto vem de combo-offer.js ("Adicionar N itens: total"), que já traz o total. */
+.combo-offer__submit {
+  display: flex;
+  width: 100%;
+  margin-top: 22px;
+}
+
+@media screen and (min-width: 750px) {
+  .combo-offer__submit {
+    width: fit-content;
+    min-width: 320px;
+    margin-left: auto;
+  }
+}
+
+/* ---------- Modos de reserva (spec 9) ----------
+   As peças com .glass/.glass-fill herdam os modos de liquid-glass.css. Aqui ficam só os
+   blocos que imitam o cartão sem a classe (selos e atributos no celular), os pontos dos
+   atributos e as sombras e bordas dos preenchimentos sólidos desta seção. */
+
+/* Transparência reduzida (Chrome e Edge 118+): o cartão volta ao branco sólido. */
+@media (prefers-reduced-transparency: reduce) and (max-width: 749px) {
+  .trust__item,
+  .attributes__item {
+    background-color: #FFFFFF;
+  }
+}
+
+/* Contraste aumentado: branco sólido com borda ink, sem sombra (spec 9.3). */
+@media (prefers-contrast: more) {
+  .media-gallery__discount,
+  .combo-offer__banner,
+  .combo-offer__discount {
+    box-shadow: none;
+  }
+
+  .media-gallery__thumb {
+    border-color: var(--color-ink);
+  }
+}
+
+@media (prefers-contrast: more) and (max-width: 749px) {
+  .trust__item,
+  .attributes__item {
+    border-color: var(--color-ink);
+    background-color: #FFFFFF;
+    box-shadow: none;
+  }
+}
+
+/* Cores forçadas (spec 9.4): o navegador anula sombras e mantém o alfa do fundo; os blocos
+   ganham fundo Canvas e borda real, os selos sólidos ganham borda, e os pontos seguem a regra
+   do .lg-dot (inativos CanvasText, ativo Highlight). */
+@media (forced-colors: active) {
+  .media-gallery__discount,
+  .combo-offer__discount {
+    border: 1px solid CanvasText;
+  }
+
+  .attributes__dots .carousel-slider__dot {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .attributes__dots .carousel-slider__dot.is-active {
+    background: Highlight;
+  }
+}
+
+@media (forced-colors: active) and (max-width: 749px) {
+  .trust__item,
+  .attributes__item {
+    border-color: CanvasText;
+    background-color: Canvas;
+  }
+}
+
+/* Movimento reduzido: sem escala ao pressionar (a troca de cor continua). */
+@media (prefers-reduced-motion: reduce) {
+  .testimonial__next:active {
+    transform: translateY(-50%);
+  }
+}
+
+/* ==========================================================================
+   Redesenho v3, tarefa 6, parte A: topo do produto (alvo.css, seção "Produto")
+   Título acima das duas colunas, galeria solta no campo, painel de compra em vidro de conteúdo,
+   linhas de kit, botão grande, linha de segurança, quatro fatos e três atalhos.
+   O painel é o único vidro: tudo que está dentro dele é preenchimento ou texto (D36).
+   ========================================================================== */
+
+/* ---------- Título acima da grade ---------- */
+
+.main-product__heading {
+  gap: 10px;
+  padding-block: 12px 24px;
+}
+
+.main-product__title {
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.main-product__subtitle {
+  max-width: 40em;
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+@media screen and (min-width: 990px) {
+  .main-product__heading {
+    padding-block: 22px 28px;
+  }
+
+  .main-product__title {
+    font-size: 48px;
+    line-height: 1.08;
+  }
+
+  .main-product__subtitle {
+    font-size: 21px;
+    line-height: 1.3;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .main-product__grid {
+    grid-template-columns: minmax(0, 560px) minmax(0, 1fr);
+    gap: 72px;
+  }
+}
+
+/* ---------- Galeria ---------- */
+
+/* O palco fica sem fundo: o pote solto (máscara de borda) funde no campo claro da seção. */
+.media-gallery__stage {
+  background: transparent;
+}
+
+/* Fotos inteiras, sem recorte: as que não são o pote sobre #ECF3F9 ficam em quadro arredondado. */
+.media-gallery__image.v3-foto-quadro {
+  object-fit: contain;
+  border-radius: var(--lg-radius-sheet, 32px);
+  overflow: hidden;
+}
+
+/* Contador "1 / N": vidro fino no canto de cima, ao lado do zoom. Sem luz de aresta e sem
+   sombra, para não parecer botão (emenda 13); sem desfoque (emenda 16). */
+.media-gallery__counter.glass {
+  top: 15px;
+  right: 60px;
+  bottom: auto;
+  height: 30px;
+  padding: 0 12px;
+  box-shadow: none;
+}
+
+@media screen and (min-width: 990px) {
+  .media-gallery__counter.glass {
+    top: 23px;
+    right: 68px;
+    height: 30px;
+    padding: 0 12px;
+  }
+}
+
+/* Tira de miniaturas em vidro fino (sem desfoque): 64 px cada, todas visíveis; a da mídia em
+   destaque (a que o JS marca com hidden) volta a aparecer, com o anel ink. Fica a 12 px da base
+   da foto (emenda 9: nada de margem negativa). */
+.media-gallery__thumbs {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  margin: 12px auto 0;
+  padding: 8px;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-radius: 26px;
+}
+
+.media-gallery__thumbs::-webkit-scrollbar {
+  display: none;
+}
+
+.media-gallery__thumb-item {
+  flex: 0 0 auto;
+}
+
+.media-gallery__thumb-item[hidden] {
+  /* Revisado na etapa 8c (emenda 19 d): o !important é necessário e fica. O base.css esconde todo
+     [hidden] com display: none !important, e o media-gallery.js (render) e o snippet produto-gallery.liquid
+     usam o atributo hidden como marcador da miniatura ativa; só outra declaração !important, de
+     especificidade maior (0,2,0 contra 0,1,0), vence essa. A saída limpa é trocar o marcador por
+     data-active ou aria-current no JS e no Liquid (arquivos de fora desta etapa) e apagar este bloco. */
+  display: block !important;
+}
+
+.media-gallery__thumb {
+  width: 64px;
+  height: 64px;
+  aspect-ratio: auto;
+  border: 0;
+  border-radius: 18px;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 1px rgba(var(--color-ink-rgb), 0.08);
+}
+
+.media-gallery__thumb-item[hidden] .media-gallery__thumb {
+  box-shadow: 0 0 0 2px var(--color-ink);
+}
+
+/* ---------- Painel de compra ---------- */
+
+.main-product__info {
+  gap: 18px;
+  padding: 22px 20px;
+  border-radius: var(--lg-radius-card, 28px);
+}
+
+@media screen and (min-width: 990px) {
+  .main-product__info {
+    padding: 28px;
+    border-radius: 30px;
+  }
+}
+
+/* Celular: o painel sangra até o recuo único dos blocos (--bleed-gutter, só até 760 px). */
+@media screen and (max-width: 760px) {
+  .main-product__info {
+    margin-inline: calc(var(--page-gutter, 16px) * -1 + var(--bleed-gutter, 0px));
+  }
+}
+
+/* "Quantidade." (.passo do alvo) e as linhas de kit, uma por linha. */
+.kit-selector__legend {
+  float: none;
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 0;
+  font-family: var(--font-heading-family);
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.kit-selector__grid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.main-product__info .kit-selector__summary {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+/* Botão de compra esgotado: mesma cara do card (emenda 25): opacidade 1, texto de apoio e
+   contorno fino, em vez dos 0,55 de .button:disabled. Nunca some. */
+.main-product__add:disabled,
+.main-product__add[aria-disabled="true"] {
+  --button-bg: transparent;
+  --button-text: var(--color-text-muted);
+  --button-shadow: inset 0 0 0 1px rgba(var(--color-ink-rgb), 0.16);
+
+  opacity: 1;
+  box-shadow: var(--button-shadow);
+}
+
+/* Linha de segurança: ícone e texto centralizados, sem caixa (.pp__seg do alvo), em todas as
+   larguras. */
+.main-product__info .trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px 22px;
+}
+
+.main-product__info .trust__item {
+  position: relative;
+  flex-wrap: nowrap;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.main-product__info .trust__main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.main-product__info .trust__info-wrap {
+  order: 0;
+}
+
+.main-product__info .trust__label {
+  flex-basis: auto;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.main-product__info .trust__info-text {
+  right: auto;
+  top: calc(100% + 6px);
+  width: 260px;
+  --lg-materialize-origin: top left;
+}
+
+.main-product__info .trust__item:last-child .trust__info-text {
+  left: auto;
+  right: 0;
+  --lg-materialize-origin: top right;
+}
+
+/* Quatro fatos em quatro colunas com fios (.fatos do alvo), sem carrossel. */
+.main-product__info .attributes__viewport {
+  overflow: visible;
+}
+
+.main-product__info .attributes__track {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-columns: auto;
+  gap: 0;
+  overflow: visible;
+  border-block: 1px solid rgba(var(--color-ink-rgb), 0.1);
+}
+
+.main-product__info .attributes__item {
+  min-height: 0;
+  gap: 8px;
+  padding: 16px 6px;
+  border: 0;
+  border-left: 1px solid rgba(var(--color-ink-rgb), 0.1);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.main-product__info .attributes__item:nth-child(4n + 1) {
+  border-left: 0;
+}
+
+.main-product__info .attributes__icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.main-product__info .attributes__text {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+/* Avise-me e cashback dentro do painel: preenchimento claro, não vidro sobre vidro. */
+.main-product__info .notify.glass,
+.main-product__info .cashback.glass {
+  background-color: rgba(255, 255, 255, 0.78);
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   Redesenho v3, tarefa 6, parte C: nome longo (passo 7)
+   Nome visível com 29 caracteres ou mais (classe posta por sections/main-product.liquid, medida
+   por snippets/v3-nome-visivel, modo tamanho): título de 30 px abaixo de 990 px, para quebrar em
+   até duas linhas no celular sem empurrar o preço e o botão. Acima de 990 px o título de 48 px
+   cabe em uma linha.
+   ========================================================================== */
+
+@media screen and (max-width: 989px) {
+  .main-product__title--longo {
+    font-size: 30px;
+  }
+}
+
+/* 16/10/2026 (checagem de celular da loja): na página de produto o balão de informação das etiquetas de confiança tinha 260 px a partir da
+   esquerda do selo e, nos selos mais à direita, saía da tela (mesmo invisível, com opacity 0) e criava rolagem horizontal (ex.: vitamina B9,
+   495 px de rolagem em 390 px). No celular o balão passa a ocupar a largura da linha, logo abaixo dela, como diz o comentário original
+   («nunca sai da tela»). */
+@media screen and (max-width: 749px) {
+  .main-product__info .trust { position: relative; }
+  .main-product__info .trust__item { position: static; }
+  .main-product__info .trust__info-text,
+  .main-product__info .trust__item:last-child .trust__info-text {
+    left: 0;
+    right: 0;
+    width: auto;
+    top: calc(100% + 6px);
+  }
+}

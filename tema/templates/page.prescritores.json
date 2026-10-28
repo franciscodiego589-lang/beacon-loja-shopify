@@ -1,0 +1,61 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "layout": "split",
+        "heading_tag": "h1",
+        "image_position": "right"
+      }
+    },
+    "formulario": {
+      "type": "contact-form",
+      "blocks": {
+        "registro": {
+          "type": "field",
+          "settings": {
+            "label": "Registro profissional",
+            "field_key": "Registro profissional",
+            "type": "text",
+            "required": true,
+            "numeric_keyboard": true,
+            "hint": "CRM, CRN, CRF ou outro registro, com o número e o estado.",
+            "width": "half"
+          }
+        },
+        "especialidade": {
+          "type": "field",
+          "settings": {
+            "label": "Especialidade",
+            "field_key": "Especialidade",
+            "type": "text",
+            "required": false,
+            "width": "half"
+          }
+        }
+      },
+      "block_order": [
+        "registro",
+        "especialidade"
+      ],
+      "settings": {
+        "heading": "Cadastro de prescritores",
+        "origin": "Prescritores",
+        "layout": "split"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "formulario"
+  ]
+}

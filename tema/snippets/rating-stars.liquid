@@ -1,0 +1,50 @@
+{%- comment -%}
+  Estrelas de avaliação. Só renderiza quando existe nota (value).
+  Nunca invente nota: passe o valor vindo de metafield (ex.: product.metafields.reviews.rating.value.rating).
+  Parâmetros:
+  - value: nota (número ou texto numérico, ex.: 4.6)
+  - count: número de avaliações (opcional)
+  - scale_max: nota máxima da escala (padrão 5)
+  - size: tamanho de cada estrela em px (padrão 14)
+  - show_count: mostra "(N avaliações)" ao lado (padrão true)
+  - aria_label: texto acessível alternativo (opcional)
+  - class: classe extra (opcional)
+{%- endcomment -%}
+{%- if value != blank -%}
+  {%- liquid
+    assign rating_max = scale_max | default: 5 | times: 1.0
+    assign rating_value = value | times: 1.0 | round: 1
+    if rating_value > rating_max
+      assign rating_value = rating_max
+    endif
+    if rating_value < 0
+      assign rating_value = 0
+    endif
+    assign rating_percent = rating_value | times: 100 | divided_by: rating_max | round: 1
+    assign rating_display = rating_value | append: '' | replace: '.', ','
+    assign rating_max_display = rating_max | round | append: ''
+    assign star_size = size | default: 14
+    assign rating_count = count | plus: 0
+
+    if aria_label != blank
+      assign rating_label = aria_label | escape_once
+    elsif rating_count > 0
+      assign rating_label = 'fundacao.rating.label_with_count' | t: count: rating_count, rating: rating_display, max: rating_max_display
+    else
+      assign rating_label = 'fundacao.rating.label' | t: rating: rating_display, max: rating_max_display
+    endif
+  -%}
+  <div class="rating-stars{% if class != blank %} {{ class }}{% endif %}" role="img" aria-label="{{ rating_label }}">
+    <span class="rating-stars__icons" aria-hidden="true">
+      <span class="rating-stars__base">
+        {%- for i in (1..5) -%}{% render 'icon', name: 'star', size: star_size %}{%- endfor -%}
+      </span>
+      <span class="rating-stars__fill" style="width: {{ rating_percent }}%;">
+        {%- for i in (1..5) -%}{% render 'icon', name: 'star', size: star_size %}{%- endfor -%}
+      </span>
+    </span>
+    {%- if show_count != false and rating_count > 0 -%}
+      <span class="rating-stars__count" aria-hidden="true">{{ 'fundacao.rating.count' | t: count: rating_count }}</span>
+    {%- endif -%}
+  </div>
+{%- endif -%}

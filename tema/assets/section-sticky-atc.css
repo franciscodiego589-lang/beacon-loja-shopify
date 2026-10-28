@@ -1,0 +1,230 @@
+/*
+  Beacon Labs · Compra fixa (section-sticky-atc.css)
+  Área produto. sections/sticky-atc.liquid.
+
+  <sticky-atc> não está na lista de custom elements com display:block do base.css
+  (fundação): a primeira regra cobre isso só para esta seção.
+  Folga no fim da página: com a barra visível, sticky-atc.js define --sticky-atc-space em
+  :root (altura real da barra) e o <body> ganha esse padding embaixo, depois do rodapé; com a
+  barra flutuante, a folga soma também o recuo da barra até a base da janela.
+
+  Redesenho v3, tarefa 6, parte B (alvo.css linhas 345 a 357, emendas V2, U4, V10 e 21):
+  - O <sticky-atc> leva .glass-layer .glass--regular .glass--blur .lg-sticky-atc: vidro funcional
+    regular com desfoque (branco a 0,74; desfoque só no ::before), flutuante a 16 px da base
+    (8 no celular), raio 32 (28) e a camada z-index 30, abaixo do chat (35). Posição vertical,
+    raio e camada vêm de liquid-glass.css; aqui só a largura: centrada, com no máximo 760 px, e
+    no celular com o mesmo recuo único dos blocos do produto (--bleed-gutter, só até 760 px, com
+    reserva de 8 px: o recuo da base do vidro).
+  - Texto da barra em tinta (#081C2D): no pior caso do vidro regular (sdd/pior-caso-vidro.py) a
+    tinta fica a 9,18:1 e o vermelho a 5,30:1, mas o apoio #566472 cai a 3,22:1, então nenhum
+    texto da barra usa o apoio. O preço antigo, riscado, fica em tinta e menor.
+  - Foto de 52 px (44 no celular) com raio 14 (12), concêntrica com a barra (32 − 18 de recuo no
+    computador; 28 − 16 no celular); título 15 px em peso 600; preço 16 px tabular; selo "% OFF" em
+    --lg-tint-savings (amarelo #E9AD05) com texto tinta (8,60:1); botão primário de 48 px (44 no
+    celular) sem a sombra colorida (base.css, botão sobre vidro).
+  - Aparece quando o botão principal sai da tela e some enquanto o "Compre junto" está à vista
+    (sticky-atc.js). Escondida, tem o atributo hidden (display: none): fora da tabulação.
+  - A barra não troca para o estado escuro: não há campo noite sob ela.
+  - Entrada: .lg-materialize anima só transform no host; com movimento reduzido, aparece sem
+    transição (liquid-glass.css).
+*/
+
+sticky-atc {
+  display: block;
+}
+
+.sticky-atc {
+  position: fixed;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Largura: centrada, até 760 px. O seletor é mais forte que o de liquid-glass.css (.lg-sticky-atc),
+   que fixa left e right nas laterais da janela. */
+.sticky-atc.lg-sticky-atc {
+  left: 0;
+  right: 0;
+  width: min(760px, calc(100% - 2 * var(--lg-sticky-inset, 16px)));
+  margin-inline: auto;
+}
+
+/* Celular: o mesmo recuo único dos blocos do produto (--bleed-gutter só existe até 760 px). */
+@media screen and (max-width: 760px) {
+  .sticky-atc.lg-sticky-atc {
+    width: calc(100% - 2 * var(--bleed-gutter, var(--lg-sticky-inset, 8px)));
+  }
+}
+
+.sticky-atc__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 12px;
+}
+
+.sticky-atc__error {
+  margin: 0;
+  padding: 0 16px 10px;
+}
+
+.sticky-atc__media {
+  display: block;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--lg-field-claro, var(--color-photo-bg));
+}
+
+.sticky-atc__image,
+.sticky-atc__placeholder {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sticky-atc__info {
+  display: none;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sticky-atc__title {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* O botão pode encolher e quebrar o texto em 2 linhas em telas estreitas (360 px, 320 px):
+   "Adicionar 3 potes: R$ 1.239,70" não cabe numa linha ao lado da foto. */
+.sticky-atc__add {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 44px;
+  margin-left: auto;
+  white-space: normal;
+}
+
+/* Esgotado (emenda 25): o botão fica no lugar, desabilitado, com o texto "Esgotado", no mesmo
+   desenho do card e do botão principal: sem opacidade e com contorno fino. O texto é tinta (não o
+   apoio #566472, que cai a 3,22:1 sobre o vidro). A barra segue o estado do botão principal. */
+.sticky-atc__add:disabled,
+.sticky-atc__add[aria-disabled="true"] {
+  --button-bg: transparent;
+  --button-bg-hover: transparent;
+  --button-text: var(--color-ink);
+  --button-text-hover: var(--color-ink);
+  --button-shadow: inset 0 0 0 1px rgba(var(--color-ink-rgb), 0.32);
+
+  opacity: 1;
+  box-shadow: var(--button-shadow);
+}
+
+/* % OFF da barra fixa: preenchimento de destaque (--lg-tint-savings, #E9AD05) com texto tinta
+   (8,60:1), o mesmo do selo do kit-card. */
+.sticky-atc__price .price__badge {
+  background: var(--lg-tint-savings, #E9AD05);
+  color: var(--color-ink);
+}
+
+/* Preço e preço antigo em tinta: o apoio #566472 cai a 3,22:1 no pior caso do vidro regular. */
+.sticky-atc__price .price__current,
+.sticky-atc__price .price__compare,
+.sticky-atc__price .price__installments {
+  color: var(--color-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.sticky-atc__price .price__current {
+  font-weight: 600;
+}
+
+/* No celular a barra reserva espaço para o balão de chat de app (canto inferior direito).
+   Margem no botão, não padding na barra: assim o recuo lateral continua valendo em todas as
+   larguras. O botão de atendimento do próprio tema sobe para cima da barra (--chat-offset,
+   section-footer.css). */
+.sticky-atc[data-reserve-chat-space] .sticky-atc__add {
+  margin-right: 48px;
+}
+
+.sticky-atc__price-slot {
+  min-width: 0;
+}
+
+@media screen and (min-width: 560px) {
+  .sticky-atc__info {
+    display: flex;
+  }
+
+  /* Preço em linha (de, por, % OFF e parcelas); quebra se faltar espaço. */
+  .sticky-atc__price.price {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 2px 10px;
+  }
+
+  .sticky-atc__price .price__current {
+    font-size: 16px;
+  }
+
+  .sticky-atc__price .price__compare {
+    font-size: 13px;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .sticky-atc__bar {
+    gap: 14px;
+  }
+
+  .sticky-atc__media {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+  }
+
+  .sticky-atc__add {
+    min-height: 48px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .sticky-atc[data-reserve-chat-space] .sticky-atc__add {
+    margin-right: 0;
+  }
+
+  .sticky-atc__add {
+    flex-shrink: 0;
+    min-width: 220px;
+    white-space: nowrap;
+  }
+}
+
+/* Folga no fim da página: altura real da barra (JS) mais o recuo até a base da janela. A classe
+   html.lg-has-sticky-atc vem do sticky-atc.js; o :has() é a mesma regra para quando ele não
+   rodar (navegador sem :has() ignora só esta regra). Sem a barra, nenhuma folga. */
+body {
+  padding-bottom: var(--sticky-atc-space, 0px);
+}
+
+html.lg-has-sticky-atc body {
+  padding-bottom: calc(var(--sticky-atc-space, 0px) + var(--lg-sticky-inset, 0px));
+}
+
+body:has(sticky-atc.lg-sticky-atc:not([hidden])) {
+  padding-bottom: calc(var(--sticky-atc-space, 0px) + var(--lg-sticky-inset, 0px));
+}
+
+/* Foco escondido (critério 2.4.11, spec 5.10): o scroll-padding-bottom usa a altura real da
+   barra medida pelo JS, em vez do valor da prancheta. */
+html.lg-has-sticky-atc {
+  scroll-padding-bottom: calc(var(--sticky-atc-space, var(--lg-sticky-atc-height, 96px)) + var(--lg-sticky-inset, 16px) + 8px);
+}

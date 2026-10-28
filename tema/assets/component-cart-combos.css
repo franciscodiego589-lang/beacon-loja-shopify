@@ -1,0 +1,190 @@
+/* Cards de combo no carrinho e na gaveta (snippets/cart-combos.liquid, 03/10/2026).
+   Conteúdo sólido; selo amarelo com texto tinta (paleta); botão é controle. */
+.cart-combos {
+  margin: 20px 0 8px;
+}
+
+.cart-combos__titulo {
+  margin: 0 0 12px;
+  color: var(--color-ink, #081C2D);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.cart-combos__lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-combo {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 2px solid var(--color-ink, #081C2D);
+  border-radius: var(--radius-card);
+  background-color: #FFFFFF;
+}
+
+.cart-combo__selo {
+  justify-self: start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background-color: #E9AD05;
+  color: var(--color-ink, #081C2D);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.cart-combo__fotos {
+  display: flex;
+  gap: 6px;
+}
+
+.cart-combo__foto {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: var(--radius-tile);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.cart-combo__foto--tem {
+  opacity: 0.45;
+}
+
+.cart-combo__nome {
+  margin: 0;
+  color: var(--color-ink, #081C2D);
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.cart-combo__itens {
+  margin: 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.cart-combo__preco {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  color: var(--color-ink, #081C2D);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.cart-combo__preco strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.cart-combo__botao {
+  min-height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background-color: #15803D; /* verde de compra, texto branco 5,02:1 (03/10/2026) */
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-combo__botao:hover {
+  background-color: #166534;
+}
+
+.cart-combo__botao:focus-visible {
+  outline: 2px solid var(--color-ink, #081C2D);
+  outline-offset: 2px;
+}
+
+.cart-combo__botao[aria-busy='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.cart-combo__erro {
+  margin: 0;
+  color: var(--color-error, #8A0503);
+  font-size: 13px;
+}
+
+@media screen and (min-width: 990px) {
+  .main-cart-upsell .cart-combos__lista {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Na gaveta: o mesmo recuo das sugestões (.cart-drawer__recommendations, 20 px dos lados). */
+.cart-drawer__combos {
+  flex-shrink: 0;
+  padding: 4px 20px 0;
+}
+
+.cart-drawer__combos .cart-combos {
+  margin-top: 12px;
+}
+
+/* Sugestões "Aproveite e leve também" com até 10 produtos (03/10/2026). Na gaveta: faixa que rola para
+   o lado, com cards em pé (foto em cima, nome, preço e botão). Na página: duas colunas a partir de 750 px. */
+.cart-drawer .cart-upsell .cart-recommendations__list {
+  flex-direction: row;
+  gap: 10px;
+  margin: 0 -20px;
+  padding: 2px 20px 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 20px;
+  scrollbar-width: thin;
+}
+
+.cart-drawer .cart-upsell .cart-recommendations__item {
+  display: flex;
+  flex: 0 0 150px;
+  flex-direction: column;
+  align-items: stretch;
+  scroll-snap-align: start;
+}
+
+.cart-drawer .cart-upsell .cart-recommendations__info {
+  flex: 1 1 auto;
+}
+
+.cart-drawer .cart-upsell .cart-recommendations__media {
+  width: 100%;
+}
+
+.cart-drawer .cart-upsell .cart-recommendations__form,
+.cart-drawer .cart-upsell .cart-recommendations__add {
+  width: 100%;
+}
+
+@media screen and (min-width: 750px) {
+  .main-cart-upsell .cart-recommendations__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Linha de garantia embaixo do botão de finalizar, na gaveta (03/10/2026). */
+.cart-drawer__garantia {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin: 8px 0 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 13px;
+}

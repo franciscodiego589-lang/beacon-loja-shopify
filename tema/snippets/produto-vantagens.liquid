@@ -1,0 +1,183 @@
+{%- comment -%}
+  Área produto. Marketing no fim da coluna da direita (pedido do dono, 05/10/2026: "o espaço em
+  branco ao lado da galeria está muito vazio"). Três peças, só com fato conferido; peça sem dado
+  some, e sem nenhuma o snippet não imprime nada:
+  1. Cartão "Vantagens desta compra" (vidro de conteúdo, .glass .glass--card):
+     - combo (produto com beacon.combo_itens): "Você economiza R$ X em relação aos potes avulsos".
+       A conta é a de sections/combo-itens.liquid: soma do preço de 1 pote de cada item avulso
+       menos o preço do combo, em centavos, tudo da API (nada fixo no texto);
+     - frete: "Frete grátis a partir de R$ 179,00" (settings.free_shipping_threshold, em centavos,
+       a mesma meta da barra e de snippets/cart-frete-linha) e, por variante, quanto falta com o
+       preço do produto (peça [data-variant-slot], que assets/kit-selector.js mostra ou esconde;
+       a conta é feita aqui, o JS só alterna);
+     - cupom: o código do ajuste da seção (BEMVINDO10) com o botão "Aplicar", o mesmo link da
+       janela do cupom (/discount/CODIGO?redirect=), voltando para a própria página. Fato (rodapé,
+       janela do cupom e FAQ): 10% OFF no pedido, uma vez por cliente, sem somar a outros descontos;
+     - potes avulsos (produto que não é combo e não tem a tag formato:gotas): "Leve 2 potes ou mais:
+       5% OFF" e "Acima de R$ 250: 10% OFF", descontos automáticos da loja (conferidos pela API em
+       03/10/2026, só nas variações de 1 pote, sem somar entre si). Ajuste da seção liga e desliga.
+  2. Cartão "Por que escolher": até 5 linhas de benefício (snippets/produto-vantagens-beneficios);
+     no combo, até 2 linhas de cada item (beacon.combo_itens), com o nome do item.
+  3. Faixa de garantias em 3 itens curtos. Não escreve "laudo técnico", avaliação, nota, contagem
+     de clientes, estoque baixo nem contagem regressiva.
+
+  Parâmetros:
+  - product: o produto da página
+  - current_variant: variante que a página mostra ao abrir (a parte de frete visível)
+  - settings_secao: section.settings da seção principal (coupon_code, show_vantagens,
+    show_desconto_potes)
+  Liquid Glass: vidro só no cartão de destaque; os outros dois são conteúdo sólido. Estilo em
+  assets/component-produto-vantagens.css.
+{%- endcomment -%}
+{%- liquid
+  assign pv_itens_combo = product.metafields.beacon.combo_itens.value
+  assign pv_eh_combo = false
+  if pv_itens_combo != blank and pv_itens_combo.size > 0
+    assign pv_eh_combo = true
+  endif
+  assign pv_eh_gota = false
+  if product.tags contains 'formato:gotas'
+    assign pv_eh_gota = true
+  endif
+
+  # Economia do combo (mesma conta de sections/combo-itens.liquid).
+  assign pv_economia = 0
+  if pv_eh_combo
+    assign pv_soma = 0
+    for pv_item in pv_itens_combo
+      if pv_item != blank
+        assign pv_soma = pv_soma | plus: pv_item.variants.first.price
+      endif
+    endfor
+    assign pv_economia = pv_soma | minus: product.variants.first.price
+  endif
+
+  assign pv_limite_frete = settings.free_shipping_threshold | plus: 0
+  assign pv_limite_texto = pv_limite_frete | money | replace: ' ', ' '
+  assign pv_economia_texto = pv_economia | money | replace: ' ', ' '
+  assign pv_cupom = settings_secao.coupon_code | strip | upcase
+  assign pv_mostra_potes = false
+  if pv_eh_combo == false and pv_eh_gota == false and settings_secao.show_desconto_potes
+    assign pv_mostra_potes = true
+  endif
+
+  assign pv_tem_vantagens = false
+  if pv_economia > 0 or pv_limite_frete > 0 or pv_cupom != blank or pv_mostra_potes
+    assign pv_tem_vantagens = true
+  endif
+
+  # Benefícios: até 5 linhas; no combo, até 2 de cada item.
+  capture pv_beneficios
+    if pv_eh_combo
+      assign pv_restantes = 5
+      for pv_item in pv_itens_combo
+        if pv_item != blank and pv_restantes > 0
+          capture pv_do_item
+            render 'produto-vantagens-beneficios', produto: pv_item, limite: 2
+          endcapture
+          assign pv_do_item = pv_do_item | strip
+          if pv_do_item != blank
+            assign pv_n_item = pv_do_item | split: '<li' | size | minus: 1
+            if pv_n_item > pv_restantes
+              capture pv_do_item
+                render 'produto-vantagens-beneficios', produto: pv_item, limite: pv_restantes
+              endcapture
+              assign pv_n_item = pv_restantes
+            endif
+            assign pv_restantes = pv_restantes | minus: pv_n_item
+            capture pv_nome_item
+              render 'v3-nome-visivel', produto: pv_item, modo: 'texto'
+            endcapture
+            echo '<li class="pv-benef__grupo"><span class="pv-benef__nome">' | append: pv_nome_item | append: '</span><ul class="pv-benef__lista" role="list">' | append: pv_do_item | append: '</ul></li>'
+          endif
+        endif
+      endfor
+    else
+      render 'produto-vantagens-beneficios', produto: product, limite: 5
+    endif
+  endcapture
+  assign pv_beneficios = pv_beneficios | strip
+-%}
+{%- if settings_secao.show_vantagens -%}
+  {{ 'component-produto-vantagens.css' | asset_url | stylesheet_tag }}
+
+  {%- if pv_tem_vantagens -%}
+    <section class="pv-card pv-vantagens glass glass--card" aria-labelledby="PvVantagens-{{ section_id }}">
+      <h2 class="pv-card__titulo" id="PvVantagens-{{ section_id }}">{{ 'produto.vantagens.titulo' | t }}</h2>
+      <ul class="pv-vantagens__lista" role="list">
+        {%- if pv_economia > 0 -%}
+          <li class="pv-vantagem">
+            <span class="pv-vantagem__icone">{% render 'icon', name: 'coin', size: 22, stroke: 1.6 %}</span>
+            <span class="pv-vantagem__texto">
+              <strong>{{ 'produto.vantagens.economia' | t: valor: pv_economia_texto }}</strong>
+            </span>
+          </li>
+        {%- endif -%}
+
+        {%- if pv_limite_frete > 0 -%}
+          <li class="pv-vantagem">
+            <span class="pv-vantagem__icone">{% render 'icon', name: 'truck', size: 22, stroke: 1.6 %}</span>
+            <span class="pv-vantagem__texto">
+              <strong>{{ 'produto.vantagens.frete' | t: valor: pv_limite_texto }}</strong>
+              {%- for pv_variante in product.variants -%}
+                {%- liquid
+                  assign pv_falta = pv_limite_frete | minus: pv_variante.price
+                  assign pv_falta_texto = pv_falta | money | replace: ' ', ' '
+                -%}
+                <small data-variant-slot="{{ pv_variante.id }}"{% unless pv_variante.id == current_variant.id %} hidden{% endunless %}>
+                  {%- if pv_falta > 0 -%}
+                    {{- 'produto.vantagens.frete_falta' | t: valor: pv_falta_texto -}}
+                  {%- else -%}
+                    {{- 'produto.vantagens.frete_ganho' | t -}}
+                  {%- endif -%}
+                </small>
+              {%- endfor -%}
+            </span>
+          </li>
+        {%- endif -%}
+
+        {%- if pv_cupom != blank -%}
+          <li class="pv-vantagem pv-vantagem--cupom">
+            <span class="pv-vantagem__icone">{% render 'icon', name: 'tag', size: 22, stroke: 1.6 %}</span>
+            <span class="pv-vantagem__texto">
+              <strong>{{ 'produto.vantagens.cupom' | t: codigo: pv_cupom }}</strong>
+              <small>{{ 'produto.vantagens.cupom_nota' | t }}</small>
+            </span>
+            <a class="pv-vantagem__botao" href="/discount/{{ pv_cupom | url_encode }}?redirect={{ product.url | url_encode }}" aria-label="{{ 'produto.vantagens.cupom_aplicar_rotulo' | t: codigo: pv_cupom }}">{{ 'produto.vantagens.cupom_aplicar' | t }}</a>
+          </li>
+        {%- endif -%}
+
+        {%- if pv_mostra_potes -%}
+          <li class="pv-vantagem">
+            <span class="pv-vantagem__icone">{% render 'icon', name: 'jar', size: 22, stroke: 1.6 %}</span>
+            <span class="pv-vantagem__texto">
+              <strong>{{ 'produto.vantagens.potes_dois' | t }}</strong>
+              <small>{{ 'produto.vantagens.potes_nota' | t }}</small>
+            </span>
+          </li>
+          <li class="pv-vantagem">
+            <span class="pv-vantagem__icone">{% render 'icon', name: 'coin', size: 22, stroke: 1.6 %}</span>
+            <span class="pv-vantagem__texto">
+              <strong>{{ 'produto.vantagens.potes_acima' | t }}</strong>
+            </span>
+          </li>
+        {%- endif -%}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  {%- if pv_beneficios != blank -%}
+    <section class="pv-card pv-benef" aria-labelledby="PvBenef-{{ section_id }}">
+      <h2 class="pv-card__titulo" id="PvBenef-{{ section_id }}">{{ 'produto.vantagens.porque_titulo' | t }}</h2>
+      <ul class="pv-benef__lista{% if pv_eh_combo %} pv-benef__lista--grupos{% endif %}" role="list">
+        {{- pv_beneficios -}}
+      </ul>
+    </section>
+  {%- endif -%}
+
+  <ul class="pv-garantias lg-field--claro" role="list" aria-label="{{ 'produto.vantagens.garantias_rotulo' | t }}">
+    <li class="pv-garantia">{% render 'icon', name: 'refresh', size: 20, stroke: 1.6 %}<span>{{ 'produto.vantagens.garantia_devolucao' | t }}</span></li>
+    <li class="pv-garantia">{% render 'icon', name: 'lock', size: 20, stroke: 1.6 %}<span>{{ 'produto.vantagens.garantia_pagamento' | t }}</span></li>
+    <li class="pv-garantia">{% render 'icon', name: 'map-pin', size: 20, stroke: 1.6 %}<span>{{ 'produto.vantagens.garantia_brasil' | t }}</span></li>
+  </ul>
+{%- endif -%}

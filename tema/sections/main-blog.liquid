@@ -1,0 +1,312 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-blog.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Lista de artigos do blog.
+  - Abertura: selo, título (nome do blog, em h1), texto e imagem (ajustes da seção).
+  - Filtro por tag (categorias): links para /blogs/<blog>/tagged/<tag>.
+  - Cartões: imagem 3:2, tag, data, tempo de leitura (calculado: palavras ÷ 200 por minuto,
+    arredondado para cima), título e resumo.
+  - Paginação acessível (snippet paginas-blog-pagination).
+  Datas no formato da chave paginas_blog.general.date_format (padrão dd/mm/aaaa).
+
+  Etapa 8e, leva C (03/10/2026): com a abertura ligada, o blog começa pelo topo da coleção, da busca e da ajuda:
+  campo claro de ponta a ponta (.pb-topo, paginas-blog.css) com a trilha única, a linha pequena (.v3-eyebrow), o
+  título de 56 px (36 px até 760 px), o texto e a imagem inteira (sem corte) num bloco de raio --radius-tile.
+  Fichas de tag, cartões de artigo e paginação ficam embaixo, na página branca. O estado vazio é um bloco
+  sólido #ECF3F9 (.pb-bloco), sem borda e sem sombra; antes era um cartão de vidro da v2 (.glass .glass--card).
+{%- endcomment -%}
+
+{%- liquid
+  assign mb_date_format = 'paginas_blog.general.date_format' | t
+  assign mb_hero_image = section.settings.hero_image
+
+  assign mb_hero_loading = 'lazy'
+  assign mb_hero_priority = 'auto'
+  unless section.index > 2
+    assign mb_hero_loading = 'eager'
+  endunless
+  if section.index == 1
+    assign mb_hero_priority = 'high'
+  endif
+
+  assign mb_columns = section.settings.columns_desktop | plus: 0
+  case mb_columns
+    when 2
+      assign mb_sizes = '(min-width: 1440px) 630px, (min-width: 750px) calc((100vw - 104px) / 2), calc(100vw - 32px)'
+    when 3
+      assign mb_sizes = '(min-width: 1440px) 410px, (min-width: 990px) calc((100vw - 208px) / 3), (min-width: 750px) calc((100vw - 104px) / 2), calc(100vw - 32px)'
+    else
+      assign mb_sizes = '(min-width: 1440px) 300px, (min-width: 990px) calc((100vw - 232px) / 4), (min-width: 750px) calc((100vw - 104px) / 2), calc(100vw - 32px)'
+  endcase
+
+  assign mb_has_tags = false
+  if section.settings.show_tag_filter and blog.all_tags.size > 0
+    assign mb_has_tags = true
+  endif
+-%}
+
+<div class="main-blog{% if section.settings.show_hero %} main-blog--topo{% else %} pb-pad--small{% endif %}">
+  {%- if section.settings.show_hero -%}
+    <div class="main-blog__topo pb-topo">
+      <div class="page-width">
+        {%- if section.settings.show_breadcrumbs -%}
+          {% render 'paginas-blog-breadcrumbs', class: 'pb-topo__trilha' %}
+        {%- endif -%}
+
+        <header class="main-blog__hero{% if mb_hero_image == blank %} main-blog__hero--no-image{% endif %}">
+          <div class="main-blog__hero-content">
+            {%- if section.settings.eyebrow != blank -%}
+              <span class="v3-eyebrow main-blog__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- endif -%}
+            <h1 class="main-blog__title pb-topo__titulo">{{ blog.title | escape }}</h1>
+            {%- if section.settings.hero_text != blank -%}
+              <div class="main-blog__hero-text pb-topo__texto rte">{{ section.settings.hero_text }}</div>
+            {%- endif -%}
+          </div>
+          {%- if mb_hero_image != blank -%}
+            {%- assign mb_hero_alt = mb_hero_image.alt | default: blog.title -%}
+            <div class="main-blog__hero-media">
+              {{ mb_hero_image | image_url: width: 1400 | image_tag: widths: '375, 550, 750, 1000, 1200, 1400', sizes: '(min-width: 1248px) 576px, (min-width: 990px) calc((100vw - 96px) / 2), (min-width: 761px) calc(100vw - 48px), calc(100vw - 40px)', loading: mb_hero_loading, fetchpriority: mb_hero_priority, alt: mb_hero_alt, class: 'main-blog__hero-image' }}
+            </div>
+          {%- endif -%}
+        </header>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="page-width main-blog__corpo">
+    {%- unless section.settings.show_hero -%}
+      {%- if section.settings.show_breadcrumbs -%}
+        {% render 'paginas-blog-breadcrumbs' %}
+      {%- endif -%}
+      <h1 class="visually-hidden">{{ blog.title | escape }}</h1>
+    {%- endunless -%}
+
+    {%- if mb_has_tags -%}
+      <nav class="main-blog__tags" aria-label="{{ 'paginas_blog.blog.tags_label' | t }}">
+        <ul class="main-blog__tags-list" role="list">
+          <li>
+            <a href="{{ blog.url }}" class="chip chip--outline main-blog__tag{% if current_tags.size == 0 or current_tags == blank %} main-blog__tag--active{% endif %}"{% if current_tags.size == 0 or current_tags == blank %} aria-current="page"{% endif %}>
+              {{- 'paginas_blog.blog.all_tags' | t -}}
+            </a>
+          </li>
+          {%- for tag in blog.all_tags -%}
+            {%- assign mb_tag_active = false -%}
+            {%- if current_tags contains tag -%}
+              {%- assign mb_tag_active = true -%}
+            {%- endif -%}
+            <li>
+              <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="chip chip--outline main-blog__tag{% if mb_tag_active %} main-blog__tag--active{% endif %}"{% if mb_tag_active %} aria-current="page"{% endif %}>
+                {{- tag | escape -}}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    {%- paginate blog.articles by section.settings.articles_per_page -%}
+      {%- if blog.articles.size > 0 -%}
+        <ul class="grid main-blog__grid main-blog__grid--{{ mb_columns }}" role="list">
+          {%- for article in blog.articles -%}
+            {%- liquid
+              assign card_loading = 'lazy'
+              if forloop.index <= mb_columns and mb_hero_image == blank
+                assign card_loading = mb_hero_loading
+              endif
+              assign card_words = article.content | strip_html | split: ' ' | size
+              assign card_minutes = card_words | plus: 199 | divided_by: 200
+              if card_minutes < 1
+                assign card_minutes = 1
+              endif
+              assign card_tag = article.tags.first
+            -%}
+            <li class="main-blog__item">
+              <article class="blog-card" aria-labelledby="BlogCard-{{ section.id }}-{{ article.id }}">
+                {%- if section.settings.show_image -%}
+                  <a href="{{ article.url }}" class="blog-card__media pb-media pb-media--landscape" tabindex="-1" aria-hidden="true">
+                    {%- if article.image -%}
+                      {%- assign card_alt = article.image.alt | default: article.title -%}
+                      {{ article.image | image_url: width: 900 | image_tag: widths: '320, 450, 600, 750, 900', sizes: mb_sizes, loading: card_loading, alt: card_alt, class: 'blog-card__image' }}
+                    {%- else -%}
+                      {{ 'image' | placeholder_svg_tag: 'placeholder-svg blog-card__placeholder' }}
+                    {%- endif -%}
+                  </a>
+                {%- endif -%}
+
+                <div class="blog-card__meta">
+                  {%- if section.settings.show_tag and card_tag != blank -%}
+                    <a href="{{ blog.url }}/tagged/{{ card_tag | handle }}" class="chip blog-card__tag lg-hit"><span class="blog-card__tag-text">{{ card_tag | escape }}</span></a>
+                  {%- endif -%}
+                  {%- if section.settings.show_date -%}
+                    <time class="blog-card__date" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article.published_at | date: mb_date_format }}</time>
+                  {%- endif -%}
+                  {%- if section.settings.show_reading_time -%}
+                    <span class="blog-card__reading">{{ 'paginas_blog.blog.reading_time' | t: count: card_minutes }}</span>
+                  {%- endif -%}
+                </div>
+
+                <h2 class="blog-card__title" id="BlogCard-{{ section.id }}-{{ article.id }}">
+                  <a href="{{ article.url }}" class="blog-card__link">{{ article.title | escape }}</a>
+                </h2>
+
+                {%- if section.settings.show_author and article.author != blank -%}
+                  <p class="blog-card__author">{{ 'paginas_blog.blog.by_author' | t: author: article.author }}</p>
+                {%- endif -%}
+
+                {%- if section.settings.show_excerpt -%}
+                  {%- assign card_excerpt = article.excerpt_or_content | strip_html | truncatewords: 24 -%}
+                  {%- if card_excerpt != blank -%}
+                    <p class="blog-card__excerpt">{{ card_excerpt }}</p>
+                  {%- endif -%}
+                {%- endif -%}
+              </article>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        {% render 'paginas-blog-pagination', paginate: paginate %}
+      {%- else -%}
+        <div class="main-blog__empty pb-bloco">
+          <span class="main-blog__empty-icone">
+            {%- render 'icon', name: 'message', size: 28 -%}
+          </span>
+          <p class="main-blog__empty-title">{{ 'paginas_blog.blog.empty_title' | t }}</p>
+          {%- if current_tags.size > 0 -%}
+            <a href="{{ blog.url }}" class="button button--secondary">{{ 'paginas_blog.blog.all_tags' | t }}</a>
+          {%- else -%}
+            <a href="{{ routes.all_products_collection_url }}" class="button button--secondary">{{ 'paginas_blog.general.shop_all' | t }}</a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Lista de artigos",
+  "tag": "section",
+  "class": "section-main-blog",
+  "enabled_on": {
+    "templates": ["blog"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Mostrar trilha de navegação",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Abertura"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_hero",
+      "label": "Mostrar abertura com título do blog",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título"
+    },
+    {
+      "type": "richtext",
+      "id": "hero_text",
+      "label": "Texto de apresentação"
+    },
+    {
+      "type": "image_picker",
+      "id": "hero_image",
+      "label": "Imagem da abertura"
+    },
+    {
+      "type": "header",
+      "content": "Artigos"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tag_filter",
+      "label": "Mostrar filtro por tag",
+      "info": "As tags dos artigos viram as categorias do blog.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "articles_per_page",
+      "label": "Artigos por página",
+      "min": 4,
+      "max": 24,
+      "step": 4,
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Colunas no computador",
+      "options": [
+        {
+          "value": "2",
+          "label": "2"
+        },
+        {
+          "value": "3",
+          "label": "3"
+        },
+        {
+          "value": "4",
+          "label": "4"
+        }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Mostrar imagem",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tag",
+      "label": "Mostrar tag (categoria)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Mostrar data",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reading_time",
+      "label": "Mostrar tempo de leitura",
+      "info": "Calculado pelo número de palavras do artigo, a 200 palavras por minuto.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Mostrar autor",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Mostrar resumo",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Lista de artigos"
+    }
+  ]
+}
+{% endschema %}

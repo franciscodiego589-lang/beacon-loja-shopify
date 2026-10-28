@@ -1,0 +1,52 @@
+/*
+  Beacon Labs · pote que chega para frente com o mouse.
+  Pedido do dono em 03/10/2026: "quero que todos os potes também mexam quando eu passar o mouse";
+  depois, no mesmo dia: "só quero que ele chegue um pouco para frente e, depois que tirar o mouse,
+  volte ao normal" (sem inclinar). O pote cresce 8 % com o mouse em cima e volta ao tirar; na
+  galeria do produto, para não passar do quadro, ele fica em 93 % parado e vai a 100 % com o mouse.
+  Vale para a foto do pote no card de produto (.product-card: home, coleções, carrosséis,
+  relacionados; o link do card cobre a foto, então o gatilho é o card inteiro, com a classe repetida
+  para ganhar do zoom de 3 % de component-product-card.css), na galeria da página do produto
+  (.media-gallery__item) e no topo do dossiê e dos benefícios (.dp-hero__img).
+  Só em aparelho com mouse e sem "reduzir movimento"; no celular a foto fica parada.
+*/
+.product-card__image,
+.media-gallery__item img,
+.dp-hero__img {
+  transform-origin: 50% 60%;
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .product-card.product-card:hover .product-card__image,
+  .dp-hero__img:hover {
+    transform: scale(1.08);
+  }
+
+  /* Galeria do produto (pedido do dono em 03/10/2026: "está saindo do tamanho do quadrado"): o pote
+     crescendo passava da borda do quadro (.media-gallery__stage, que corta o excesso) e a tampa saía.
+     Aqui o pote parado fica em 93 % e, com o mouse, avança até o tamanho cheio do quadro, sem passar
+     dele. O quadro tem o mesmo fundo claro das fotos (--color-photo-bg), então a margem não aparece. */
+  .media-gallery__item img {
+    transform: scale(0.93);
+  }
+
+  .media-gallery__item:hover img {
+    transform: scale(1);
+  }
+}
+
+/* Cards de informação do dossiê e dos benefícios (Segmento, Linha, Tipo regulatório, Apresentação, Uso
+   diário: .dp-fact), pedido do dono em 03/10/2026: "coloque os cards para interagir também quando passar
+   o mouse". Com o mouse em cima, o card sobe 4 px, ganha sombra suave e contorno azul; volta ao tirar.
+   Só em aparelho com mouse e sem "reduzir movimento". */
+.dp .dp-fact {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .dp .dp-fact:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 0 1.5px rgba(30, 99, 184, 0.45), 0 14px 30px -14px rgba(8, 28, 45, 0.3);
+  }
+}

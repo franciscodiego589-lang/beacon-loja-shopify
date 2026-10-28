@@ -1,0 +1,1049 @@
+/*
+  Beacon Labs · seções das páginas de ajuda (ajuda-secoes.css)
+
+  Carregado por: sections/ajuda-topo.liquid, ajuda-passos.liquid, ajuda-tabela.liquid,
+  ajuda-cartoes.liquid e ajuda-contato.liquid. Estrutura das páginas Perguntas frequentes,
+  Entregas e Trocas e devoluções da maquete de 29/09/2026.
+
+  Material, borda de luz e sombra do vidro vêm de liquid-glass.css (.glass-fill nos controles); aqui só
+  forma, espaço e tipografia. Cores pelas variáveis da fundação (css-variables.liquid, base.css e
+  liquid-glass.css): texto --color-text, apoio --color-text-muted, divisória --lg-divider, chip
+  --color-chip-bg e --color-chip-text. Sem JavaScript.
+
+  Etapa 8e, item 9 (03/10/2026): as páginas de ajuda saíram da linguagem da v2 (cartões brancos de vidro
+  com sombra e topo em cartão com a busca e as fichas dentro). Agora: o topo é um campo claro (#ECF3F9) de
+  ponta a ponta, como o topo da coleção; os cartões, os passos em cartão, a tabela, o contato e as notas
+  soltas são blocos sólidos #ECF3F9 sem borda e sem sombra (.pb-bloco, paginas-blog.css), raio
+  --radius-card (--radius-tile no contato); o círculo de ícone, a ficha de destaque e o número da lista,
+  que eram do tom #ECF3F9, passam a branco para não sumirem dentro do bloco; a nota dentro de um cartão é
+  uma linha com fio em cima, sem caixa; e o vão entre as seções é o --section-gap (104 px; 68 px no
+  celular), como margem (bloco "Ritmo das páginas de ajuda", no fim do arquivo).
+*/
+
+/* ---------- Peças comuns ---------- */
+
+.ajuda-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 20px;
+}
+
+.ajuda-cabecalho__textos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 760px;
+}
+
+.ajuda-cabecalho__titulo {
+  font-size: 22px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.ajuda-cabecalho__texto {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ajuda-cabecalho__link,
+.ajuda-cartoes__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.ajuda-icone-circulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  color: var(--color-chip-text);
+}
+
+.ajuda-icone-circulo--pequeno {
+  width: 40px;
+  height: 40px;
+}
+
+/* Nota de destaque: ícone à esquerda, texto e fonte em letra menor. Solta (fora de cartão, como a que fecha
+   os passos), é um bloco sólido #ECF3F9. Dentro de um cartão (.ajuda-cartoes__nota), é só uma linha com fio
+   em cima, para não fazer caixa dentro de caixa (regra abaixo). */
+.ajuda-nota {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.ajuda-nota__icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--color-chip-text);
+}
+
+.ajuda-nota__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ajuda-nota__titulo {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ajuda-nota__texto {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ajuda-nota__fonte {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Aviso só do editor de tema (request.design_mode), quando a seção está sem conteúdo. */
+.ajuda-aviso-editor {
+  padding-block: 16px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.ajuda-aviso-editor p {
+  padding: 12px 16px;
+  border: 1px dashed var(--lg-divider, var(--color-line));
+  border-radius: var(--radius-input);
+}
+
+/* ---------- Topo (ajuda-topo) ---------- */
+
+/* Campo claro de ponta a ponta (etapa 8e, item 9): pintado no invólucro da seção, como o topo da coleção
+   (section-main-collection-banner.css), o cabeçalho (section-header.css) e o topo da busca. Antes o topo era
+   um cartão de vidro da v2 (raio 32, 40 px de recuo) com a busca, as fichas e o cartão do lado dentro. */
+.section-ajuda-topo {
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+/* O espaço de cima vem da trilha (26 px; 18 px no celular, como a coleção) e o de baixo, do conteúdo; o
+   ajuste "Espaçamento vertical" só acrescenta folga embaixo ("Normal").
+   Especificidade: as regras de paginas-blog.css (.pb-pad--*, .pb-trilha) têm o mesmo peso de um seletor de
+   uma classe só, e uma folha carregada de novo por outra seção da página (cada seção põe a sua <link>) volta a
+   valer depois desta; por isso estes seletores levam a classe do invólucro, para não dependerem da ordem. */
+.section-ajuda-topo .ajuda-topo {
+  padding-block: 0;
+}
+
+.section-ajuda-topo .ajuda-topo.pb-pad--normal {
+  padding-bottom: 24px;
+}
+
+.ajuda-topo .ajuda-topo__trilha {
+  margin-bottom: 0;
+  padding-top: 26px;
+}
+
+.ajuda-topo__cartao {
+  display: grid;
+  gap: 20px;
+  padding-block: 12px 28px;
+}
+
+/* Sem trilha, o conteúdo ganha um respiro no topo. */
+.ajuda-topo__cartao:first-child {
+  padding-top: 28px;
+}
+
+.ajuda-topo__icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  color: var(--color-chip-text);
+}
+
+.ajuda-topo__conteudo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+/* O selo é a linha pequena acima do título (.v3-eyebrow de base.css: #8A0503, 14 px, caixa alta). */
+
+.ajuda-topo__titulo {
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+
+.ajuda-topo__texto {
+  max-width: 560px;
+  color: var(--color-text-muted);
+  font-size: 17px;
+  line-height: calc(25 / 17);
+}
+
+.ajuda-topo__destaques {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Etapa 8e, leva E, item 5: a ficha informativa é só informação (não clica), então sai a pele de vidro dos
+   controles (.glass-fill: fio e sombra, que a faziam parecer botão) e fica o branco chapado sobre o campo claro
+   do topo, sem fio nem sombra. */
+.ajuda-topo__destaque {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background-color: #FFFFFF;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ajuda-topo__destaque .icon {
+  color: var(--color-chip-text);
+}
+
+.ajuda-topo__atualizado {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ajuda-topo__lado {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* O lado "cartão" é só título, texto e botões, direto sobre o campo (sem caixa). */
+.ajuda-topo__lado--cartao {
+  padding: 0;
+}
+
+.ajuda-topo__lado-titulo {
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.ajuda-topo__lado-texto {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ajuda-topo__botoes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ajuda-topo__botao {
+  width: 100%;
+}
+
+.ajuda-topo__nota {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* Busca: campo em cápsula de 56 px com o botão de enviar (lupa) à direita, a mesma peça da busca da loja e da 404
+   (etapa 8e, leva E, item 1: a lupa que ficava à esquerda saiu e o botão deixou de ser uma seta). */
+.ajuda-topo__busca {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ajuda-topo__busca-rotulo {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ajuda-topo__campo {
+  position: relative;
+}
+
+.ajuda-topo__input {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 60px 0 22px;
+  border: 1px solid var(--color-input-border, var(--color-text-muted));
+  border-radius: var(--radius-pill);
+  background-color: var(--glass-fill-bg, #FFFFFF);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px;
+}
+
+.ajuda-topo__input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.ajuda-topo__enviar {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-on-dark);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+/* Hover em --color-primary-hover: com a primária igual à tinta (redesenho v3), o hover em tinta
+   ficava igual ao repouso (emenda C6). */
+.ajuda-topo__enviar:hover {
+  background: var(--color-primary-hover);
+}
+
+.ajuda-topo__atalhos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.ajuda-topo__atalhos-titulo {
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.08em;
+}
+
+/* Etapa 8e, leva E, item 10: as fichas de acesso rápido ficam em grade de duas colunas, cada ficha na largura da
+   sua célula. Em fila que quebra sozinha (flex-wrap), a coluna de 480 px do computador deixava três fichas na
+   primeira linha e "Dose diária" sozinha embaixo; a 390 px dava 2 + 2 só por sorte de largura. */
+.ajuda-topo__chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ajuda-topo__chips .ajuda-topo__chip {
+  display: flex;
+  align-self: auto;
+  justify-content: center;
+  width: 100%;
+  padding-block: 6px;
+  line-height: 1.25;
+  text-align: center;
+  white-space: normal;
+}
+
+@media screen and (min-width: 761px) {
+  .ajuda-topo__titulo {
+    font-size: 56px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .ajuda-topo .ajuda-topo__trilha {
+    padding-top: 18px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .ajuda-topo__cartao {
+    align-items: center;
+    padding-block: 22px 48px;
+  }
+
+  .ajuda-topo__cartao:first-child {
+    padding-top: 40px;
+  }
+
+  .ajuda-topo__cartao--com-lado {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
+    gap: 48px;
+  }
+
+  .ajuda-topo__cartao--com-icone {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .ajuda-topo__cartao--com-icone.ajuda-topo__cartao--com-lado {
+    grid-template-columns: auto minmax(0, 1fr) minmax(0, 360px);
+    gap: 32px;
+  }
+}
+
+/* ---------- Passos numerados (ajuda-passos) ---------- */
+
+.ajuda-passos__lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ajuda-passos__item {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.ajuda-passos--cartoes .ajuda-passos__item {
+  padding: 20px;
+  border-radius: var(--radius-card);
+}
+
+.ajuda-passos__numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+  font-family: var(--font-heading-family);
+  font-size: 16px;
+  font-weight: var(--font-heading-weight);
+}
+
+.ajuda-passos__corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ajuda-passos__titulo {
+  font-size: 16px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.ajuda-passos__texto {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Linha: fio vertical entre os números no celular. */
+.ajuda-passos--linha .ajuda-passos__item {
+  padding-bottom: 12px;
+}
+
+.ajuda-passos--linha .ajuda-passos__item:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 44px;
+  bottom: -8px;
+  left: 19px;
+  width: 2px;
+  background: var(--lg-divider, var(--color-line));
+}
+
+.ajuda-passos__nota {
+  margin-top: 20px;
+}
+
+@media screen and (min-width: 750px) {
+  .ajuda-passos--cartoes .ajuda-passos__lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .ajuda-cabecalho__titulo {
+    font-size: 30px;
+  }
+
+  .ajuda-passos__lista {
+    grid-template-columns: repeat(var(--ajuda-passos-total, 4), minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .ajuda-passos--cartoes .ajuda-passos__lista {
+    grid-template-columns: repeat(var(--ajuda-passos-total, 4), minmax(0, 1fr));
+  }
+
+  .ajuda-passos--cartoes .ajuda-passos__item {
+    flex-direction: column;
+    padding: 24px;
+  }
+
+  /* Linha: fio horizontal entre os números no computador. */
+  .ajuda-passos--linha .ajuda-passos__item {
+    flex-direction: column;
+    padding-bottom: 0;
+  }
+
+  .ajuda-passos--linha .ajuda-passos__item:not(:last-child)::before {
+    top: 19px;
+    right: -24px;
+    bottom: auto;
+    left: 52px;
+    width: auto;
+    height: 2px;
+  }
+}
+
+/* ---------- Prazos por região (ajuda-tabela) ---------- */
+
+.ajuda-tabela__grade {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.ajuda-tabela__caixa {
+  padding: 8px 16px;
+  border-radius: var(--radius-card);
+}
+
+.ajuda-tabela__tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ajuda-tabela__tabela th,
+.ajuda-tabela__tabela td {
+  padding: 14px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.ajuda-tabela__tabela thead th {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ajuda-tabela__tabela tbody tr {
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.ajuda-tabela__tabela td {
+  font-weight: 700;
+}
+
+.ajuda-tabela__regiao {
+  display: block;
+  font-weight: var(--font-heading-weight);
+}
+
+.ajuda-tabela__ufs {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ajuda-tabela__lado {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ajuda-tabela__info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  border-radius: var(--radius-card);
+}
+
+.ajuda-tabela__info-topo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ajuda-tabela__info-titulo {
+  font-size: 16px;
+  line-height: 1.35;
+  letter-spacing: 0;
+}
+
+.ajuda-tabela__info-texto {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ajuda-tabela__inicio {
+  margin: 0;
+}
+
+.ajuda-tabela__inicio-linha {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.ajuda-tabela__inicio dt {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ajuda-tabela__inicio dd {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+
+.ajuda-tabela__nota {
+  margin-top: 12px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+/* Celular: cada linha da tabela vira um cartão, com o rótulo antes de cada valor. */
+@media screen and (max-width: 749px) {
+  /* .pb-bloco junto: mesma especificidade de duas classes da regra de paginas-blog.css, sem depender da ordem
+     das folhas. */
+  .ajuda-tabela__caixa.pb-bloco {
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .ajuda-tabela__tabela thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .ajuda-tabela__tabela,
+  .ajuda-tabela__tabela tbody,
+  .ajuda-tabela__tabela tr,
+  .ajuda-tabela__tabela th,
+  .ajuda-tabela__tabela td {
+    display: block;
+  }
+
+  .ajuda-tabela__tabela tbody tr {
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border: 0;
+    border-radius: var(--radius-card);
+    background-color: var(--lg-field-claro, #ECF3F9);
+    box-shadow: none;
+  }
+
+  .ajuda-tabela__tabela th,
+  .ajuda-tabela__tabela td {
+    padding: 0;
+  }
+
+  .ajuda-tabela__tabela th {
+    padding-bottom: 8px;
+  }
+
+  .ajuda-tabela__tabela td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 36px;
+    border-top: 1px solid var(--lg-divider, var(--color-line));
+    font-size: 15px;
+  }
+
+  .ajuda-tabela__tabela td::before {
+    content: attr(data-rotulo);
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .ajuda-tabela__grade--com-lado {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+    gap: 24px;
+  }
+
+  .ajuda-tabela__caixa {
+    padding: 8px 24px;
+  }
+
+  .ajuda-tabela__tabela {
+    font-size: 15px;
+  }
+}
+
+/* ---------- Cartões (ajuda-cartoes) ---------- */
+
+.ajuda-cartoes__grade {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.ajuda-cartoes__cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 20px;
+  border-radius: var(--radius-card);
+}
+
+.ajuda-cartoes__topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ajuda-cartoes__chip {
+  align-self: center;
+  background-color: #FFFFFF;
+}
+
+.ajuda-cartoes__titulo {
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.ajuda-cartoes__texto {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ajuda-cartoes__resumo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ajuda-cartoes__valor {
+  font-family: var(--font-heading-family);
+  font-size: 28px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.ajuda-cartoes__titulo--resumo {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.ajuda-cartoes--resumo .ajuda-cartoes__texto {
+  font-size: 13px;
+}
+
+.ajuda-cartoes__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ajuda-cartoes__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.ajuda-cartoes__item-icone {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--color-chip-text);
+}
+
+.ajuda-cartoes__numero {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  color: var(--color-chip-text);
+  font-size: 13px;
+  font-weight: var(--font-heading-weight);
+}
+
+.ajuda-cartoes__item-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ajuda-cartoes__lista--ol .ajuda-cartoes__item-corpo {
+  display: block;
+}
+
+.ajuda-cartoes__lista--ol .ajuda-cartoes__item-titulo::after {
+  content: " ";
+}
+
+.ajuda-cartoes__item-titulo {
+  font-weight: 700;
+}
+
+.ajuda-cartoes__item-texto {
+  color: var(--color-text-muted);
+}
+
+/* Nota dentro de um cartão: sem caixa, só um fio em cima (caixa dentro de caixa não). */
+.ajuda-cartoes__nota {
+  padding: 16px 0 0;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+  border-radius: 0;
+  background: none;
+}
+
+.ajuda-cartoes__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+@media screen and (min-width: 750px) {
+  .ajuda-cartoes__grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .ajuda-cartoes__grade {
+    grid-template-columns: repeat(var(--ajuda-colunas, 2), minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .ajuda-cartoes__grade > .ajuda-cartoes__cartao {
+    align-self: stretch;
+  }
+
+  .ajuda-cartoes__cartao {
+    padding: 28px;
+  }
+
+  .ajuda-cartoes__titulo {
+    font-size: 20px;
+  }
+
+  .ajuda-cartoes__valor {
+    font-size: 32px;
+  }
+}
+
+/* ---------- Contato (ajuda-contato) ---------- */
+
+.ajuda-contato__cartao {
+  display: grid;
+  gap: 20px;
+  padding: 24px 20px;
+  border-radius: var(--radius-tile);
+}
+
+.ajuda-contato__textos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.ajuda-contato__titulo {
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.ajuda-contato__texto {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.ajuda-contato__botao {
+  margin-top: 4px;
+}
+
+.ajuda-contato__canais {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ajuda-contato__canal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  padding: 16px;
+  border-radius: var(--lg-radius-inner, var(--radius-card-sm));
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+a.ajuda-contato__canal:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.ajuda-contato__rotulo {
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.08em;
+}
+
+.ajuda-contato__valor {
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.ajuda-contato__nota {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+@media screen and (min-width: 750px) {
+  .ajuda-contato__canais {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .ajuda-contato__cartao {
+    align-items: center;
+    padding: 40px 40px 40px 48px;
+  }
+
+  .ajuda-contato__cartao--com-canais {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 640px);
+    gap: 48px;
+  }
+
+  .ajuda-contato__titulo {
+    font-size: 30px;
+  }
+
+  .ajuda-contato__texto {
+    font-size: 16px;
+  }
+}
+
+/* ---------- Ritmo das páginas de ajuda (etapa 8e, itens 9 e 19) ---------- */
+
+/* O vão entre as seções das páginas de ajuda (perguntas frequentes, entregas e trocas) é o --section-gap
+   (104 px; 68 px no celular), como margem do próprio bloco de cada seção; as margens de seções vizinhas se
+   fundem num vão só, como em section-faq-list.css (.faq-list.pb-pad--none). O recuo próprio (pb-pad--small,
+   --normal) sai: antes cada seção somava 32 a 64 px em cima e embaixo (de 64 a 128 px entre elas, e 136 a
+   168 px até o rodapé). A primeira seção (o topo, em campo claro) fica de fora. Na última seção a margem de
+   baixo se funde com a do .main-content::after e o vão até o rodapé fica em 104 px (68 px). */
+:is(.template-suffix-faq, .template-suffix-entregas, .template-suffix-trocas) .main-content > .shopify-section:not(:first-child) > [class*="pb-pad--"] {
+  padding-block: 0;
+  margin-block: var(--section-gap);
+}
+
+/* Contraste aumentado (spec 9.3): divisórias e fios em ink, anel de tinta na nota solta e nos blocos da
+   tabela no celular. */
+@media (prefers-contrast: more) {
+  .ajuda-passos__nota,
+  .ajuda-tabela__tabela tbody tr {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .ajuda-tabela__tabela tbody tr,
+  .ajuda-tabela__inicio-linha,
+  .ajuda-tabela__tabela td {
+    border-top-color: var(--color-ink);
+  }
+
+  .ajuda-passos--linha .ajuda-passos__item::before {
+    background: var(--color-ink);
+  }
+
+  .ajuda-topo__input {
+    border-color: var(--color-ink);
+  }
+}
+
+/* Cores forçadas: o botão de enviar da busca mantém a borda visível. */
+@media (forced-colors: active) {
+  .ajuda-topo__enviar {
+    border: 1px solid ButtonText;
+  }
+}

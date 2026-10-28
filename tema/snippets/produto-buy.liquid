@@ -1,0 +1,79 @@
+{%- comment -%}
+  Área produto. Bloco "botoes_compra" da seção main-product: <product-form> com o botão de
+  compra, a mensagem de erro, o checkout dinâmico opcional e, com o produto todo esgotado, o
+  formulário "Avise-me". Extraído de sections/main-product.liquid (auditoria de arquitetura,
+  28/09/2026).
+  Parâmetros (todos vindos da seção principal):
+  - product: o produto
+  - block: o bloco "botoes_compra" (show_dynamic_checkout, show_notify)
+  - section_id: section.id da seção principal (liga o <product-form> ao <kit-selector>)
+  - form_id: id do formulário de produto
+  - current_variant: variante que a página mostra ao abrir
+  - buy_label: texto inicial do botão (kit e preço, ou "Esgotado")
+{%- endcomment -%}
+{{ 'component-botoes-vivos.css' | asset_url | stylesheet_tag }}
+<div class="main-product__block main-product__buy" {{ block.shopify_attributes }}>
+  <product-form class="main-product__form" data-section-id="{{ section_id }}">
+    {%- form 'product', product, id: form_id, class: 'main-product__product-form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+      <input type="hidden" name="id" value="{{ current_variant.id }}">
+      <input type="hidden" name="quantity" value="1">
+      <button
+        type="submit"
+        name="add"
+        class="button button--primary button--large button--full main-product__add"
+        data-product-form-submit
+        data-main-product-submit
+        {% unless current_variant.available %}disabled{% endunless %}
+      >
+        {%- render 'icon', name: 'bag', size: 22 -%}
+        <span class="button__label" data-buy-label>{{ buy_label }}</span>
+      </button>
+      <p class="form-message form-message--error main-product__error" role="alert" hidden data-product-form-error></p>
+      {%- if block.settings.show_dynamic_checkout -%}
+        <div class="main-product__dynamic-checkout">
+          {{ form | payment_button }}
+        </div>
+      {%- endif -%}
+    {%- endform -%}
+  </product-form>
+
+  {%- if block.settings.show_notify and product.available == false -%}
+    {%- assign notify_form_id = 'ProductNotify-' | append: section_id -%}
+    <div class="notify glass glass--card" id="avise-me">
+      <h2 class="notify__title">{{ 'produto.buy.notify_title' | t }}</h2>
+      {%- comment -%}
+        A confirmação e o erro já vêm prontos na página que volta do envio, e uma região viva
+        presente no carregamento nem sempre é anunciada. Por isso a mensagem recebe o foco ao
+        carregar (tabindex="-1" + autofocus, sem JavaScript), no mesmo padrão de
+        sections/contact-form.liquid e snippets/conta-form-errors.liquid.
+      {%- endcomment -%}
+      {%- form 'contact', id: notify_form_id, class: 'notify__form' -%}
+        {%- if form.posted_successfully? -%}
+          <p class="form-message form-message--success" role="status" tabindex="-1" autofocus>{{ 'produto.buy.notify_success' | t }}</p>
+        {%- else -%}
+          <p class="notify__text">{{ 'produto.buy.notify_text' | t }}</p>
+          <input type="hidden" name="contact[body]" value="{{ 'produto.buy.notify_body' | t: title: product.title }}">
+          <input type="hidden" name="contact[produto]" value="{{ product.title | escape }}">
+          <div class="notify__row">
+            <label class="visually-hidden" for="ProductNotifyEmail-{{ section_id }}">{{ 'produto.buy.notify_email' | t }}</label>
+            <input
+              type="email"
+              id="ProductNotifyEmail-{{ section_id }}"
+              name="contact[email]"
+              autocomplete="email"
+              spellcheck="false"
+              autocapitalize="off"
+              required
+              placeholder="{{ 'produto.buy.notify_email' | t }}"
+              {% if form.errors contains 'email' %}aria-invalid="true" aria-describedby="ProductNotifyError-{{ section_id }}"{% endif %}
+            >
+            <button type="submit" class="button button--secondary notify__submit">{{ 'produto.buy.notify_submit' | t }}</button>
+          </div>
+          {%- if form.errors -%}
+            <p class="form-message form-message--error" id="ProductNotifyError-{{ section_id }}" role="alert" tabindex="-1" autofocus>{{ 'produto.buy.notify_error' | t }}</p>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endform -%}
+    </div>
+  {%- endif -%}
+</div>

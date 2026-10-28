@@ -1,0 +1,112 @@
+/*
+  Beacon Labs · seção Conteúdo da página (sections/main-page.liquid)
+  Título e texto rico cadastrados no admin. Coluna de leitura de 760 px (estreita) ou 1080 px.
+
+  Etapa 8e, leva C (03/10/2026): com o título ligado, a página começa pelo topo em campo claro (.pb-topo, em
+  paginas-blog.css: trilha única, título de 56 px, 36 px até 760 px) e o texto cadastrado vem embaixo, na página
+  branca, alinhado à esquerda da coluna, como o título (antes ficava centralizado na coluna e o título era um
+  h1 de 40 px no meio do texto). O recuo de cima e de baixo da seção sai: o espaço é o do topo, o de 48 px
+  (32 px até 760 px) entre o topo e o texto e o de 104 px (68 px) até o rodapé, que é o do `.main-content::after`.
+  A citação é um bloco sólido #ECF3F9 com a barra da primária (antes cartão de vidro de conteúdo da v2).
+*/
+
+.main-page__inner {
+  margin-inline: auto;
+}
+
+.main-page__inner--narrow {
+  max-width: 760px;
+}
+
+.main-page__inner--normal {
+  max-width: 1080px;
+}
+
+/* Com o topo: sem recuo próprio da seção (o espaço é o do topo) e o texto na esquerda da coluna. Os
+   seletores levam duas classes para não perderem para .pb-pad--* (cada seção põe a sua <link>). */
+.main-page.main-page--topo {
+  padding-block: 0;
+}
+
+.main-page--topo .main-page__inner {
+  margin-inline: 0;
+  padding-top: 32px;
+}
+
+@media screen and (min-width: 761px) {
+  .main-page--topo .main-page__inner {
+    padding-top: 48px;
+  }
+}
+
+.main-page__content {
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--color-text);
+}
+
+.main-page__content h2 {
+  margin-top: 1.6em;
+  font-size: 22px;
+}
+
+.main-page__content h3 {
+  margin-top: 1.4em;
+}
+
+.main-page__content img {
+  height: auto;
+  border-radius: var(--radius-media);
+}
+
+.main-page__content table {
+  width: 100%;
+  font-size: 14px;
+}
+
+.main-page__content th,
+.main-page__content td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--lg-divider, var(--color-line));
+  text-align: left;
+}
+
+.main-page__content blockquote {
+  padding: 16px 20px;
+  border-left: 4px solid var(--color-primary);
+  border-radius: 0 var(--lg-radius-small, var(--radius-input)) var(--lg-radius-small, var(--radius-input)) 0;
+  background: var(--lg-field-claro, #ECF3F9);
+  box-shadow: none;
+}
+
+.pb-scheme--ink .main-page__content blockquote {
+  background: var(--glass-dark-card-bg, var(--color-footer-surface));
+  box-shadow: var(--lg-rim-dark-inset, 0 0 #0000);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .pb-scheme--ink .main-page__content blockquote {
+    background: var(--color-footer-surface);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .main-page__content blockquote {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .pb-scheme--ink .main-page__content blockquote {
+    background: var(--color-ink);
+    box-shadow: inset 0 0 0 1px #FFFFFF;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .main-page__content {
+    font-size: 17px;
+  }
+
+  .main-page__content h2 {
+    font-size: 26px;
+  }
+}

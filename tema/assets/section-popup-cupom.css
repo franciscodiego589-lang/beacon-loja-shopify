@@ -1,0 +1,294 @@
+/*
+  Beacon Labs · janela do cupom (section-popup-cupom.css)
+  Estrutura em sections/popup-cupom.liquid; comportamento em assets/popup-cupom.js.
+
+  Liquid Glass: o <dialog> leva .glass .glass--thick .glass--blur (vidro espesso com desfoque, como
+  a gaveta e a busca; fundo, borda de luz e sombra vêm de assets/liquid-glass.css). Tudo o que fica
+  dentro é conteúdo sólido: texto na tinta, campo em cápsula e o código num bloco sólido no tom das
+  fotos (--color-photo-bg), sem borda.
+
+  Forma: no celular (até 749 px) é uma folha que sobe de baixo, com recuo --lg-float-inset das
+  bordas e raio de folha; no computador é uma caixa central de 460 px. Escurecimento do fundo
+  igual ao das gavetas (rgba(ink, 0,55), sem desfoque). As animações usam os quadros backdrop-in e
+  backdrop-out de component-drawer.css; com movimento reduzido, nada anima (closeModal fecha na hora).
+*/
+
+/* Reserva sem liquid-glass.css (especificidade zero: o material vence). */
+:where(.popup-cupom__dialog) {
+  border: 0;
+  background: var(--color-background);
+  box-shadow: var(--shadow-panel);
+}
+
+.popup-cupom__dialog {
+  --popup-inset: var(--lg-float-inset, 8px);
+
+  position: fixed;
+  inset: auto var(--popup-inset) var(--popup-inset);
+  width: auto;
+  max-width: none;
+  max-height: calc(100dvh - 2 * var(--popup-inset));
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--lg-radius-sheet, 24px);
+  color: var(--color-text);
+  font-family: var(--font-body-family);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.popup-cupom__dialog:not([open]) {
+  display: none;
+}
+
+.popup-cupom__dialog::backdrop {
+  background: rgba(var(--color-ink-rgb, 8, 28, 45), 0.55);
+}
+
+@media screen and (min-width: 750px) {
+  .popup-cupom__dialog {
+    inset: 0;
+    width: min(460px, calc(100% - 48px));
+    height: fit-content;
+    max-height: calc(100dvh - 48px);
+    margin: auto;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .popup-cupom__dialog[open] {
+    animation: popup-cupom-in-sheet var(--lg-dur-sheet, 340ms) var(--lg-ease-glass, var(--ease-out, ease-out));
+  }
+
+  .popup-cupom__dialog[data-closing] {
+    animation: popup-cupom-out-sheet 220ms ease-in forwards;
+  }
+
+  .popup-cupom__dialog[open]::backdrop {
+    animation: backdrop-in var(--lg-dur-sheet, 340ms) ease-out;
+  }
+
+  .popup-cupom__dialog[data-closing]::backdrop {
+    animation: backdrop-out 220ms ease-in forwards;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (min-width: 750px) {
+  .popup-cupom__dialog[open] {
+    animation-name: popup-cupom-in-center;
+    animation-duration: var(--lg-dur-materialize, 280ms);
+    animation-timing-function: var(--lg-ease-spring, var(--ease-out, ease-out));
+  }
+
+  .popup-cupom__dialog[data-closing] {
+    animation-name: popup-cupom-out-center;
+    animation-duration: 180ms;
+  }
+}
+
+@keyframes popup-cupom-in-sheet {
+  from {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+}
+
+@keyframes popup-cupom-out-sheet {
+  to {
+    opacity: 0;
+    transform: translateY(40%);
+  }
+}
+
+@keyframes popup-cupom-in-center {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@keyframes popup-cupom-out-center {
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+.popup-cupom__inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 28px 24px 24px;
+}
+
+@media screen and (min-width: 750px) {
+  .popup-cupom__inner {
+    padding: 36px 36px 32px;
+  }
+}
+
+/* Fechar: 44 x 44, no canto, sem fundo (o hover é o preenchimento de tinta a 6%). */
+.popup-cupom__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.popup-cupom__close:hover {
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+}
+
+.popup-cupom__close:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.popup-cupom__eyebrow {
+  margin: 0 52px 8px 0;
+}
+
+.popup-cupom__title {
+  margin: 0;
+  padding-right: 40px;
+  color: var(--color-ink);
+  font-family: var(--font-heading-family);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.popup-cupom__text {
+  margin: 12px 0 0;
+  color: var(--color-text-muted);
+  font-size: 16px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.popup-cupom__form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.popup-cupom__label {
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.popup-cupom__input {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 980px;
+  background: rgba(255, 255, 255, 0.90);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.popup-cupom__input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.popup-cupom__input[aria-invalid="true"] {
+  border-width: 2px;
+  border-color: var(--color-offer);
+}
+
+.popup-cupom__consent {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.popup-cupom__consent a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.popup-cupom__consent a:hover {
+  color: var(--color-ink);
+}
+
+.popup-cupom__message {
+  margin-top: 4px;
+}
+
+.popup-cupom__submit,
+.popup-cupom__copy,
+.popup-cupom__apply {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* Estado de sucesso: código num bloco sólido no tom das fotos. */
+.popup-cupom__code-label {
+  margin: 20px 0 8px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.popup-cupom__code {
+  width: 100%;
+  margin: 0;
+  padding: 16px 12px;
+  border-radius: var(--lg-radius-inner, 16px);
+  background: var(--color-photo-bg, var(--color-surface-1));
+  color: var(--color-ink);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  text-align: center;
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+
+.popup-cupom__notice {
+  margin: 14px 0 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.popup-cupom__status {
+  min-height: 20px;
+  margin: 6px 0 0;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.popup-cupom__status:empty {
+  display: none;
+}

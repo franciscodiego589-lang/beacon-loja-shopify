@@ -1,0 +1,74 @@
+/* Oferta de troca para o kit maior na linha do carrinho (snippets/cart-troca-kit.liquid, 03/10/2026).
+   Conteúdo sólido no campo claro; o botão é controle (pílula), texto tinta. */
+.cart-troca-kit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-tile);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.cart-troca-kit__texto {
+  flex: 1 1 180px;
+  margin: 0;
+  color: var(--color-ink, #081C2D);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.cart-troca-kit__texto strong {
+  display: block;
+  font-weight: 600;
+}
+
+.cart-troca-kit__sub {
+  color: var(--color-text-muted, #566472);
+  font-size: 13px;
+}
+
+.cart-troca-kit__botao {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background-color: #15803D; /* verde de compra, texto branco 5,02:1 (03/10/2026) */
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cart-troca-kit__botao:hover {
+  background-color: #166534;
+  /* a:hover do base.css (especificidade maior) pintava o texto de tinta escura sobre o verde (2,4:1). */
+  color: #FFFFFF;
+}
+
+.cart-troca-kit__botao:focus-visible {
+  outline: 2px solid var(--color-ink, #081C2D);
+  outline-offset: 2px;
+}
+
+.cart-troca-kit__botao[aria-busy='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.cart-troca-kit__erro {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-error, #8A0503);
+  font-size: 13px;
+}
+
+.cart-troca-kit__frete {
+  color: var(--color-ink, #081C2D);
+  font-weight: 600;
+}

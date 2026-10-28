@@ -1,0 +1,30 @@
+{%- comment -%}
+  Área produto. Um item do array "variants" de #ProductData-<section.id> (sections/main-product.liquid),
+  extraído para cá para simplificar a lógica condicional da seção principal (o Theme Check
+  aponta complexidade demais quando este laço fica embutido).
+  Parâmetros:
+  - variant: variante (obrigatório)
+  - kit_index: posição (0-based) da opção "Kit" no produto, ou -1 se não existir
+  Saída: um objeto JSON (sem vírgula final; quem chama decide o separador entre itens).
+{%- endcomment -%}
+{%- liquid
+  assign json_kit = ''
+  assign json_units = 0
+  if kit_index >= 0
+    assign json_kit = variant.options[kit_index]
+    capture json_units
+      render 'produto-kit-units', kit: json_kit
+    endcapture
+    assign json_units = json_units | strip | plus: 0
+  endif
+-%}
+{
+  "id": {{ variant.id | json }},
+  "title": {{ variant.title | json }},
+  "kit": {{ json_kit | json }},
+  "units": {{ json_units | json }},
+  "price": {{ variant.price | json }},
+  "compareAtPrice": {{ variant.compare_at_price | default: 0 | json }},
+  "available": {{ variant.available | json }},
+  "featuredMediaId": {{ variant.featured_media.id | default: 0 | json }}
+}

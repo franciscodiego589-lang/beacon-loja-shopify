@@ -1,0 +1,109 @@
+{%- comment -%}
+  Área conta: campos do formulário de endereço (criar e editar).
+  Usar DENTRO de {% form 'customer_address', ... %}.
+  Parâmetros:
+  - form: o objeto form em volta (obrigatório; traz os valores atuais e os erros)
+  - id_prefix: prefixo único dos ids (ex.: 'AddressNew', 'Address-123')
+  - is_default: true se o endereço já é o principal (marca a caixa)
+  - default_country: país sugerido quando o formulário ainda não tem país
+  - errors_id: id do bloco de erros, para o aria-describedby (opcional)
+
+  Um campo só recebe aria-invalid quando form.errors traz a chave daquele campo.
+
+  Nomes dos campos conforme a documentação da Shopify (template customers/addresses):
+  address[first_name], address[last_name], address[company], address[address1],
+  address[address2], address[city], address[country], address[province], address[zip],
+  address[phone]. A caixa "principal" usa address[default] com valor 1.
+
+  País e estado: <conta-country-province> preenche o estado a partir do atributo
+  data-provinces de cada opção de país (all_country_option_tags). Sem JavaScript, o país
+  salvo já vem marcado pelo Liquid e o estado salvo fica como única opção.
+{%- endcomment -%}
+{%- liquid
+  assign field_prefix = id_prefix | default: 'Address'
+  assign country_value = form.country | default: default_country
+  assign country_attr = country_value | escape
+  assign country_search = 'value="' | append: country_attr | append: '"'
+  assign country_replace = country_search | append: ' selected'
+  assign province_value = form.province | escape
+
+  assign invalid_attr = 'aria-invalid="true"'
+  if errors_id != blank
+    assign invalid_attr = invalid_attr | append: ' aria-describedby="' | append: errors_id | append: '"'
+  endif
+-%}
+<div class="conta-address-fields">
+  <div class="field conta-address-fields__half">
+    <label class="field__label" for="{{ field_prefix }}-first-name">{{ 'conta.addresses.first_name' | t }}</label>
+    <input type="text" id="{{ field_prefix }}-first-name" name="address[first_name]" value="{{ form.first_name | escape }}" autocomplete="given-name"{% if form.errors contains 'first_name' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <div class="field conta-address-fields__half">
+    <label class="field__label" for="{{ field_prefix }}-last-name">{{ 'conta.addresses.last_name' | t }}</label>
+    <input type="text" id="{{ field_prefix }}-last-name" name="address[last_name]" value="{{ form.last_name | escape }}" autocomplete="family-name"{% if form.errors contains 'last_name' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <div class="field conta-address-fields__full">
+    <label class="field__label" for="{{ field_prefix }}-company">{{ 'conta.addresses.company' | t }}</label>
+    <input type="text" id="{{ field_prefix }}-company" name="address[company]" value="{{ form.company | escape }}" autocomplete="organization"{% if form.errors contains 'company' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <div class="field conta-address-fields__full">
+    <label class="field__label" for="{{ field_prefix }}-address1">
+      {{- 'conta.addresses.address1' | t }} <span class="conta-required" aria-hidden="true">*</span>
+    </label>
+    <input type="text" id="{{ field_prefix }}-address1" name="address[address1]" value="{{ form.address1 | escape }}" autocomplete="address-line1" required{% if form.errors contains 'address1' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <div class="field conta-address-fields__full">
+    <label class="field__label" for="{{ field_prefix }}-address2">{{ 'conta.addresses.address2' | t }}</label>
+    <input type="text" id="{{ field_prefix }}-address2" name="address[address2]" value="{{ form.address2 | escape }}" autocomplete="address-line2"{% if form.errors contains 'address2' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <div class="field conta-address-fields__half">
+    <label class="field__label" for="{{ field_prefix }}-city">
+      {{- 'conta.addresses.city' | t }} <span class="conta-required" aria-hidden="true">*</span>
+    </label>
+    <input type="text" id="{{ field_prefix }}-city" name="address[city]" value="{{ form.city | escape }}" autocomplete="address-level2" required{% if form.errors contains 'city' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <div class="field conta-address-fields__half">
+    <label class="field__label" for="{{ field_prefix }}-zip">{{ 'conta.addresses.zip' | t }}</label>
+    <input type="text" id="{{ field_prefix }}-zip" name="address[zip]" value="{{ form.zip | escape }}" autocomplete="postal-code" autocapitalize="characters"{% if form.errors contains 'zip' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <conta-country-province class="conta-address-fields__region" data-province-placeholder="{{ 'conta.general.select_placeholder' | t }}">
+    <div class="field conta-address-fields__half">
+      <label class="field__label" for="{{ field_prefix }}-country">
+        {{- 'conta.addresses.country' | t }} <span class="conta-required" aria-hidden="true">*</span>
+      </label>
+      <select id="{{ field_prefix }}-country" name="address[country]" autocomplete="country-name" required data-country-select data-default="{{ country_attr }}"{% if form.errors contains 'country' %} {{ invalid_attr }}{% endif %}>
+        {{- all_country_option_tags | replace: country_search, country_replace -}}
+      </select>
+    </div>
+
+    <div class="field conta-address-fields__half" data-province-field>
+      <label class="field__label" for="{{ field_prefix }}-province">
+        {{- 'conta.addresses.province' | t }} <span class="conta-required" aria-hidden="true" data-province-required hidden>*</span>
+      </label>
+      <select id="{{ field_prefix }}-province" name="address[province]" autocomplete="address-level1" data-province-select data-default="{{ province_value }}"{% if form.errors contains 'province' %} {{ invalid_attr }}{% endif %}>
+        {%- if province_value != blank -%}
+          <option value="{{ province_value }}" selected>{{ province_value }}</option>
+        {%- endif -%}
+      </select>
+      <noscript><p class="field__hint">{{ 'conta.addresses.province_nojs' | t }}</p></noscript>
+    </div>
+  </conta-country-province>
+
+  <div class="field conta-address-fields__half">
+    <label class="field__label" for="{{ field_prefix }}-phone">{{ 'conta.addresses.phone' | t }}</label>
+    <input type="tel" id="{{ field_prefix }}-phone" name="address[phone]" value="{{ form.phone | escape }}" autocomplete="tel"{% if form.errors contains 'phone' %} {{ invalid_attr }}{% endif %}>
+  </div>
+
+  <div class="conta-address-fields__full">
+    <label class="checkbox conta-address-fields__default" for="{{ field_prefix }}-default">
+      <input type="checkbox" id="{{ field_prefix }}-default" name="address[default]" value="1"{% if is_default %} checked{% endif %}>
+      <span>{{ 'conta.addresses.set_default' | t }}</span>
+    </label>
+  </div>
+</div>

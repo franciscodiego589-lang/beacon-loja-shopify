@@ -1,0 +1,199 @@
+/*
+  Beacon Labs · Conteúdo do produto (section-product-rich-content.css)
+  Área produto. sections/product-rich-content.liquid.
+  Maquete de 29/09/2026: quatro blocos ("O que é", "Como tomar", "Quem pode usar" e "Por que
+  escolher"), cada um um item com texto e imagem (canto arredondado), a imagem à direita no 1º
+  e no 3º item visível (--reverse) e à esquerda no 2º e no 4º; item sem imagem fica só com o
+  texto (--text). No "Como tomar", as caixas "Composição" e "Informação nutricional" (estilo
+  de component-produto-nutrition.css) ficam embaixo do texto, na mesma coluna.
+
+  Liquid Glass (spec 8.7, blocos de conteúdo longo): texto direto sobre a névoa, sem vidro atrás;
+  títulos ink 44 px 800 com altura 1,1 (22 px e 28 px de altura no celular); corpo em apoio
+  (#4A6072, 5,861:1 na névoa). Imagens com um canto grande da prancheta (160 px no computador,
+  120 no celular) e os demais retos (spec 5.6, regra 3: arte de direção), sobre o fundo de foto.
+  No computador o canto grande fica do lado de fora (longe do texto), em baixo no 1º par de
+  itens e em cima no 2º; no celular segue a ordem da prancheta Produto-Mobile.
+*/
+
+/* Vão entre blocos da página do produto (etapa 8e, item 13): --section-gap (104 px; 68 px até 760 px) em
+   cima e embaixo, como margem da própria seção, no lugar do recuo de 64 px (40 px no celular). */
+.product-rich-content.section {
+  margin-block: var(--section-gap);
+  padding-block: 0;
+}
+
+.rich-content__items {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.rich-content__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  align-items: center;
+}
+
+.rich-content__item + .rich-content__item {
+  padding-top: 40px;
+  border-top: 1px solid var(--color-line);
+}
+
+.rich-content__media {
+  border-radius: 0 0 120px 0;
+  overflow: hidden;
+  background: var(--color-photo-bg);
+  aspect-ratio: 4 / 3;
+}
+
+/* Celular (prancheta Produto-Mobile): canto grande em baixo à direita, em baixo à esquerda, em
+   cima à direita e em cima à esquerda, nessa ordem, repetindo a cada 4 itens. */
+.rich-content__item:nth-child(4n + 2) .rich-content__media {
+  border-radius: 0 0 0 120px;
+}
+
+.rich-content__item:nth-child(4n + 3) .rich-content__media {
+  border-radius: 0 120px 0 0;
+}
+
+.rich-content__item:nth-child(4n) .rich-content__media {
+  border-radius: 120px 0 0 0;
+}
+
+.rich-content__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Foto do produto (frasco das gotas sem foto de insumo, 05/10/2026, pedido do dono "diminuir"): inteira, com folga. */
+.rich-content__image--inteira {
+  object-fit: contain;
+  padding: 6%;
+}
+
+/* Etapa 8e, leva E, item 4: os títulos do conteúdo rico seguem a escala de título de seção do tema (.v3-title,
+   base.css): 26 px até 760 px e 32 px acima. Antes eram 22 px no celular e 44 px a partir de 990 px, fora da
+   escala dos outros títulos de seção do produto ("Compre junto.", "Benefícios", "Dossiê técnico"). */
+.rich-content__title,
+.rich-content__how-to-title {
+  color: var(--color-ink);
+  font-size: 26px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+@media screen and (min-width: 761px) {
+  .rich-content__title,
+  .rich-content__how-to-title {
+    font-size: 32px;
+  }
+}
+
+.rich-content__title {
+  margin-bottom: 10px;
+}
+
+.rich-content__body p {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+@media screen and (min-width: 990px) {
+  .rich-content__item {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 56px;
+  }
+
+  .rich-content__item--reverse .rich-content__media {
+    order: 2;
+  }
+
+  /* Computador: canto grande do lado de fora da imagem (itens ímpares têm a imagem à direita). */
+  .rich-content__item:nth-child(4n + 1) .rich-content__media {
+    border-radius: 0 0 0 160px;
+  }
+
+  .rich-content__item:nth-child(4n + 2) .rich-content__media {
+    border-radius: 0 0 160px 0;
+  }
+
+  .rich-content__item:nth-child(4n + 3) .rich-content__media {
+    border-radius: 160px 0 0 0;
+  }
+
+  .rich-content__item:nth-child(4n) .rich-content__media {
+    border-radius: 0 160px 0 0;
+  }
+
+  /* Item sem imagem: só o texto, numa coluna de leitura confortável. */
+  .rich-content__item--text {
+    grid-template-columns: minmax(0, 760px);
+  }
+}
+
+/* Parágrafos seguidos dentro do mesmo texto (uma linha do metafield por parágrafo). */
+.rich-content__body p + p {
+  margin-top: 12px;
+}
+
+/* Subtítulo de um item dentro do bloco ("Sobre a vitamina C", "Advertências"). */
+.rich-content__group {
+  margin-top: 24px;
+}
+
+.rich-content__subtitle {
+  margin-bottom: 8px;
+  color: var(--color-ink);
+  font-size: 18px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.3;
+}
+
+.rich-content__list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.rich-content__list li + li {
+  margin-top: 6px;
+}
+
+/* "Como tomar": caixas de composição e de informação nutricional embaixo do texto. */
+.rich-content__boxes {
+  display: grid;
+  gap: 16px;
+}
+
+* + .rich-content__boxes {
+  margin-top: 24px;
+}
+
+.rich-content__facts-list {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-text-muted);
+}
+
+.rich-content__facts-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 0, 24, 56), 0.12);
+}
+
+.rich-content__facts-list li:last-child {
+  border-bottom: 0;
+}
+
+.rich-content__facts-label {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+

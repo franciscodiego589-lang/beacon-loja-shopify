@@ -1,0 +1,127 @@
+{%- comment -%}
+  Dados estruturados (schema.org em JSON-LD) para o Google mostrar preço, disponibilidade e trilha
+  no resultado de busca. Incluído em layout/theme.liquid, dentro do <head>.
+
+  - Home: Organization (nome empresarial e CNPJ do cartão CNPJ, consultado em 03/10/2026) e WebSite
+    com a busca da loja.
+  - Produto: o filtro structured_data da Shopify (Product sem variantes, ProductGroup com variantes),
+    mais BreadcrumbList (Início, coleção de origem quando houver, produto).
+  - Coleção: BreadcrumbList (Início, coleção).
+  - Artigo: o filtro structured_data da Shopify (Article).
+  - FAQPage (etapa M1 do mercado, 03/10/2026), só com o que a própria página mostra:
+    * produto: as perguntas do metacampo beacon.faq (as mesmas de sections/product-faq.liquid);
+    * página /pages/perguntas-frequentes: NÃO sai daqui. As perguntas ficam em blocos de uma seção
+      de um modelo JSON (templates/page.faq.json) e o objeto "sections" da Liquid só enxerga seções
+      estáticas e de grupo, então o <head> não alcança os blocos (testado na prévia em 03/10/2026:
+      sections['faq'].blocks.size volta vazio). O JSON-LD dessa página sai da própria seção
+      sections/faq-list.liquid, pelo ajuste "Marcar as perguntas para o Google".
+    Resposta sem HTML (strip_html) e texto sempre pelo filtro json. Sem pergunta válida, nada sai.
+
+  Sem nota média (aggregateRating): a loja ainda não tem avaliações; incluir só quando houver app de
+  avaliações com dados reais. Análise de 03/10/2026, docs/superpowers/analise-mercado-2026-10-03/.
+{%- endcomment -%}
+{%- assign sd_root = shop.url | append: routes.root_url -%}
+{%- assign sd_busca = shop.url | append: routes.search_url | append: '?q={search_term_string}' -%}
+{%- if request.page_type == 'index' -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": {{ sd_root | append: '#organizacao' | json }},
+          "name": "Beacon Labs",
+          "legalName": "DIEGO FRANCISCO CAMARGOS LTDA",
+          "taxID": "64.764.725/0001-39",
+          "url": {{ sd_root | json }},
+          "logo": {{ 'logo-beacon-labs.svg' | asset_url | prepend: 'https:' | json }},
+          "email": {{ shop.email | json }},
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Rua Érico Veríssimo, Quadra 05, Lote 10, Santa Cruz",
+            "addressLocality": "Cuiabá",
+            "addressRegion": "MT",
+            "postalCode": "78068-190",
+            "addressCountry": "BR"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": {{ sd_root | append: '#site' | json }},
+          "name": "Beacon Labs",
+          "url": {{ sd_root | json }},
+          "inLanguage": "pt-BR",
+          "publisher": { "@id": {{ sd_root | append: '#organizacao' | json }} },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": {{ sd_busca | json }}
+            },
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+  </script>
+{%- elsif request.page_type == 'product' -%}
+  <script type="application/ld+json">
+    {{ product | structured_data }}
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Início", "item": {{ sd_root | json }} }
+        {%- if collection -%}
+          ,{ "@type": "ListItem", "position": 2, "name": {{ collection.title | json }}, "item": {{ shop.url | append: collection.url | json }} }
+          ,{ "@type": "ListItem", "position": 3, "name": {{ product.title | json }}, "item": {{ shop.url | append: product.url | json }} }
+        {%- else -%}
+          ,{ "@type": "ListItem", "position": 2, "name": {{ product.title | json }}, "item": {{ shop.url | append: product.url | json }} }
+        {%- endif -%}
+      ]
+    }
+  </script>
+  {%- assign sd_faq_produto = product.metafields.beacon.faq.value -%}
+  {%- if sd_faq_produto != blank -%}
+    {%- capture sd_faq_itens -%}
+      {%- assign sd_faq_n = 0 -%}
+      {%- for item in sd_faq_produto -%}
+        {%- if item.pergunta != blank and item.resposta != blank -%}
+          {%- assign sd_resposta = item.resposta | strip_html | strip_newlines | strip -%}
+          {%- if sd_resposta != blank -%}
+            {%- if sd_faq_n > 0 -%},{%- endif -%}
+            { "@type": "Question", "name": {{ item.pergunta | strip | json }}, "acceptedAnswer": { "@type": "Answer", "text": {{ sd_resposta | json }} } }
+            {%- assign sd_faq_n = sd_faq_n | plus: 1 -%}
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endcapture -%}
+    {%- if sd_faq_n > 0 -%}
+      <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "inLanguage": "pt-BR",
+          "mainEntity": [{{ sd_faq_itens }}]
+        }
+      </script>
+    {%- endif -%}
+  {%- endif -%}
+{%- elsif request.page_type == 'collection' and collection.handle != blank -%}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Início", "item": {{ sd_root | json }} },
+        { "@type": "ListItem", "position": 2, "name": {{ collection.title | json }}, "item": {{ shop.url | append: collection.url | json }} }
+      ]
+    }
+  </script>
+{%- elsif request.page_type == 'article' -%}
+  <script type="application/ld+json">
+    {{ article | structured_data }}
+  </script>
+{%- endif -%}

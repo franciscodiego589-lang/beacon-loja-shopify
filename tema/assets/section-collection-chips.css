@@ -1,0 +1,135 @@
+/*
+  Beacon Labs · fichas de categoria (section-collection-chips.css)
+  Marcação em sections/collection-chips.liquid.
+
+  Redesenho v3 (spec 2.5; alvo.css linhas 270 a 273 e 452; emendas V6 e G4):
+  - O invólucro da seção é pintado com o campo claro (#ECF3F9), igual ao banner (section-main-
+    collection-banner.css) e ao cabeçalho: topo, título e fichas formam um bloco só.
+  - Uma linha só, com rolagem lateral em todas as larguras (a ficha "MSM" não fica sozinha numa
+    segunda linha). A lista sangra até as bordas da coluna da página (margem negativa igual ao
+    recuo lateral): as fichas rolam por cima do recuo em vez de serem cortadas na altura do
+    texto da página.
+  - Cápsula de 40 px (44 px até 760 px e em tela de toque), recuo de 16 px, intervalo de 7 px,
+    texto de 14 px, peso 500 (o alvo tem 17 px de recuo e 8 px de intervalo; 1 px a menos por lado
+    faz as 12 fichas atuais caberem na coluna de 1200 px, em vez de passarem dela por 27 px e
+    ficarem cortadas na borda: medido em 02/10/2026, 1227 px antes e 1192 px depois). Vidro
+    funcional fino SEM desfoque (.glass .glass--thin .glass--interactive; fundo, borda
+    de luz e sombra vêm de liquid-glass.css); texto na tinta (16,5:1 no vidro fino sobre o campo).
+    Hover: o fundo do vidro sobe a 0,70 e o fio ganha a tinta; o texto nunca some. Atual: tinta
+    sólida (.lg-fill--ink) com texto branco (17,29:1).
+  - A rolagem lateral corta tudo que passa da lista (o overflow-x também vale na vertical), então
+    a lista ganha 6 px em cima, para o anel de foco, e 24 px embaixo, para a sombra fina das
+    fichas (0 6px 16px), sempre com margem negativa igual: a lista ocupa só os 40 px da ficha.
+  - Sinal de rolagem com mouse (emenda 18, M7, etapa 8c): de 761 a 1239 px as 12 fichas passam da
+    coluna (a lista tem 1240 px) e, sem roda lateral, o mouse não alcançava as últimas (só Tab ou
+    Shift com a roda). Com mouse (pointer: fine) a barra de rolagem lateral fica visível, fina, na
+    tinta a 50% (3,27:1 sobre o campo claro, acima dos 3:1 de componente); em tela de toque (e até 760 px) ela continua escondida,
+    porque o dedo rola. A barra só aparece quando há o que rolar.
+*/
+
+.section-collection-chips {
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.collection-chips {
+  padding-block: 4px 36px;
+}
+
+.collection-chips__list {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: -6px calc(-1 * var(--page-gutter, 24px)) -24px;
+  padding: 6px var(--page-gutter, 24px) 24px;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.collection-chips__list::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mouse, de 761 px para cima: a barra de rolagem lateral é fina e visível (ver o comentário do topo).
+   Chrome e Safari: barra estilizada pelo ::-webkit-scrollbar, que fica sempre à vista, também no Mac
+   com trackpad (a barra do sistema só aparece ao rolar); o scrollbar-width volta a auto, porque com
+   none ou thin o Chrome ignora o ::-webkit-scrollbar. Firefox, que não conhece esse seletor: barra fina
+   pelas propriedades padrão (bloco @supports abaixo; o Firefox não foi testado, não está instalado
+   neste ambiente). */
+@media screen and (min-width: 761px) and (pointer: fine) {
+  .collection-chips__list {
+    scrollbar-width: auto;
+  }
+
+  .collection-chips__list::-webkit-scrollbar {
+    display: block;
+    height: 8px;
+  }
+
+  /* A trilha entra no recuo da página dos dois lados: a barra alinha com a primeira ficha. */
+  .collection-chips__list::-webkit-scrollbar-track {
+    margin-inline: var(--page-gutter, 24px);
+    background: transparent;
+  }
+
+  .collection-chips__list::-webkit-scrollbar-thumb {
+    border-radius: var(--radius-pill);
+    background: rgba(var(--color-ink-rgb), 0.5);
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    .collection-chips__list {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(var(--color-ink-rgb), 0.5) transparent;
+    }
+  }
+}
+
+.collection-chips__item {
+  flex-shrink: 0;
+  display: flex;
+}
+
+.collection-chips__chip {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.collection-chips__chip:hover {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .collection-chips__chip.glass--interactive:hover {
+    --glass-outline: var(--lg-hairline-strong);
+  }
+}
+
+.collection-chips__chip--current,
+.collection-chips__chip--current:hover {
+  border: 1px solid transparent;
+  color: var(--color-on-dark);
+}
+
+@media screen and (max-width: 760px), (pointer: coarse) {
+  .collection-chips__chip {
+    height: 44px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .collection-chips {
+    padding-block: 4px 26px;
+  }
+}

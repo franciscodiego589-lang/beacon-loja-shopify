@@ -1,0 +1,137 @@
+/*
+  Beacon Labs · peças compartilhadas dos carrosséis da página inicial (home-carousel.css)
+  Área home. Carregado pelas seções product-carousel, testimonials, video-reels,
+  trust-strip, seals-strip e blog-posts.
+
+  - carousel-slider[data-mode="scroll"]: envolve título, setas, trilho e indicador (as setas
+    precisam estar dentro dele para o carousel-slider.js encontrá-las).
+
+  - .home-carousel-track: trilho com rolagem horizontal, scroll-snap e barra de rolagem escondida.
+    Cada seção define as colunas (grid-auto-columns) e o espaço entre os cards.
+  - .home-carousel-arrow: setas (a aparência vem de .icon-button, em base.css).
+  - .home-carousel-progress e .carousel-slider__dot: indicador decorativo de páginas,
+    montado por carousel-slider.js dentro de [data-carousel-progress].
+  - .home-editor-note: aviso que só aparece no editor de tema.
+
+  Liquid Glass (spec 5.10, 8.2 e 8.3): as setas são o .icon-button de base.css (vidro fino sem
+  desfoque; dentro de painel viram preenchimento). Cada seção dá ao trilho padding-block de
+  8 px com margin-block negativa, para o anel de foco e a elevação dos cards não serem
+  cortados. Indicador: ativa em cápsula ink, inativas #6F8798 (3,36:1 na névoa; indicador
+  nunca fica sobre o campo maré, spec 6.6).
+*/
+
+/* O <carousel-slider> é um custom element (inline por padrão): vira bloco para envolver
+   título, setas, trilho e indicador. */
+carousel-slider[data-mode="scroll"] {
+  display: block;
+}
+
+/* Especificidade zero (:where): cada seção sobrescreve o trilho (recuo, grade fixa no
+   computador etc.) e este arquivo entra de novo, com <link> repetido, em cada seção que o
+   usa. Sem :where, o <link> repetido mais abaixo na página vencia as sobrescritas das seções
+   anteriores (ex.: o recuo lateral dos vídeos e a grade fixa dos posts do blog). */
+:where(.home-carousel-track) {
+  display: grid;
+  grid-auto-flow: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+:where(.home-carousel-track)::-webkit-scrollbar {
+  display: none;
+}
+
+:where(.home-carousel-track > *) {
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+/* Sem JS as setas somem; a barra de rolagem volta para quem usa mouse. */
+.no-js .home-carousel-track {
+  scrollbar-width: thin;
+}
+
+.no-js .home-carousel-track::-webkit-scrollbar {
+  display: block;
+  height: 6px;
+}
+
+.no-js [data-carousel-prev],
+.no-js [data-carousel-next],
+.no-js [data-carousel-pause],
+.no-js [data-carousel-progress] {
+  display: none !important;
+}
+
+/* Seta na ponta: opacidade 0,5 e sem hover (base.css, .icon-button[aria-disabled]). */
+.home-carousel-arrow[aria-disabled="true"] {
+  cursor: default;
+}
+
+.home-carousel-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 22px;
+  margin-top: 12px;
+}
+
+.carousel-slider__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-input-border);
+  /* Só a cor anima; a largura (8 para a cápsula ativa) muda direto, sem refazer o layout a
+     cada quadro. */
+  transition: background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+.carousel-slider__dot.is-active {
+  width: 24px;
+  background: var(--color-ink);
+}
+
+.home-editor-note {
+  margin: 0;
+  padding: 16px 20px;
+  border: 1px dashed var(--color-input-border);
+  border-radius: var(--radius-input);
+  background: var(--color-surface-1);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Cores forçadas (spec 9.4): inativas em CanvasText, ativa em Highlight (e mais larga). */
+@media (forced-colors: active) {
+  .carousel-slider__dot {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .carousel-slider__dot.is-active {
+    background: Highlight;
+  }
+}
+
+/* Links de seção ("Ver todos"), spec 8.5: #0058B8 14 px 700 sem sublinhado (6,088:1 na névoa;
+   5,769:1 no painel); hover em ink sublinhado com afastamento de 3 px. Área de toque de 44 px
+   pelo .lg-hit da marcação. */
+.section-heading__link.link {
+  text-decoration: none;
+}
+
+.section-heading__link.link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

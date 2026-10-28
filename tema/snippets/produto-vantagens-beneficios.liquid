@@ -1,0 +1,56 @@
+{%- comment -%}
+  Área produto. Linhas de benefício de UM produto para o cartão "Por que escolher"
+  (snippets/produto-vantagens). Imprime <li> (ícone de traço + frase), no máximo `limite` linhas.
+  O tema não escreve benefício: a fonte é a mesma do site (decisão do dono de 29/09/2026,
+  benefícios livres, só no site, nunca no rótulo):
+  1. o item "Benefícios" de beacon.conteudo (uma frase por linha; as mesmas frases de
+     config-loja/beneficios-site.json), sem mudar nenhuma palavra. Esse item mistura frases de
+     benefício com frases de definição ("A riboflavina ... é uma vitamina do complexo B"; "Está
+     presente em carnes e peixes"), e o cartão é de benefício: entram só as frases que começam por
+     Contribui, Ajuda, Apoia, Facilita ou Participa (o verbo de papel fisiológico que o próprio
+     texto usa), na ordem do cadastro. Com menos de 2 frases assim, a fonte passa a ser a 2;
+  2. o título de cada benefício de beacon.detalhes (a lista da página "Benefícios").
+  Produto sem nenhuma das duas fontes não imprime nada.
+
+  Parâmetros:
+  - produto: o produto
+  - limite: número máximo de linhas (inteiro maior que zero)
+{%- endcomment -%}
+{%- liquid
+  assign pvb_conteudo = produto.metafields.beacon.conteudo.value
+  assign pvb_texto = ''
+  for pvb_bloco in pvb_conteudo
+    if pvb_bloco.titulo == 'Benefícios'
+      assign pvb_texto = pvb_bloco.texto
+    endif
+  endfor
+  assign pvb_verbos = 'Contribui,Ajuda,Apoia,Facilita,Participa' | split: ','
+  assign pvb_linhas = pvb_texto | newline_to_br | split: '<br />'
+  assign pvb_certas = 0
+  for pvb_linha in pvb_linhas
+    assign pvb_frase = pvb_linha | strip
+    assign pvb_verbo = pvb_frase | split: ' ' | first
+    if pvb_verbos contains pvb_verbo
+      assign pvb_certas = pvb_certas | plus: 1
+    endif
+  endfor
+  assign pvb_feitas = 0
+-%}
+{%- if pvb_certas >= 2 -%}
+  {%- for pvb_linha in pvb_linhas -%}
+    {%- assign pvb_frase = pvb_linha | strip -%}
+    {%- assign pvb_verbo = pvb_frase | split: ' ' | first -%}
+    {%- if pvb_verbos contains pvb_verbo and pvb_feitas < limite -%}
+      {%- assign pvb_feitas = pvb_feitas | plus: 1 -%}
+      <li class="pv-benef__item">{% render 'icon', name: 'check-circle', size: 20, stroke: 1.6 %}<span>{{ pvb_frase | escape }}</span></li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- else -%}
+  {%- for pvb_beneficio in produto.metafields.beacon.detalhes.value.beneficios -%}
+    {%- assign pvb_frase = pvb_beneficio.titulo | strip -%}
+    {%- if pvb_frase != blank and pvb_feitas < limite -%}
+      {%- assign pvb_feitas = pvb_feitas | plus: 1 -%}
+      <li class="pv-benef__item">{% render 'icon', name: 'check-circle', size: 20, stroke: 1.6 %}<span>{{ pvb_frase | escape }}</span></li>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endif -%}

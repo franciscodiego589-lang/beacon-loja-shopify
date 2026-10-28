@@ -1,0 +1,142 @@
+{{ 'home-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'section-testimonials.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  "Quem usa, recomenda": carrossel de depoimentos reais de clientes. Nunca invente
+  depoimento, nota ou contagem: os três vêm de ajustes preenchidos pela loja.
+  Sem blocos com texto, a seção não renderiza nada.
+  Liquid Glass (spec 8.5): cada depoimento é um cartão de vidro de conteúdo (.glass
+  .glass--card) sobre a névoa; o avatar é preenchimento de foto (.lg-fill--photo).
+{%- endcomment -%}
+
+{%- liquid
+  assign tm_count = 0
+  for block in section.blocks
+    if block.type == 'testimonial' and block.settings.text != blank
+      assign tm_count = tm_count | plus: 1
+    endif
+  endfor
+  assign tm_heading_id = 'Testimonials-' | append: section.id
+  assign tm_track_id = 'TestimonialsTrack-' | append: section.id
+  assign tm_nav_previous = 'home.testimonials.previous' | t
+  assign tm_nav_next = 'home.testimonials.next' | t
+-%}
+
+{%- if tm_count > 0 -%}
+  <div class="testimonials section">
+    {%- comment -%}
+      O <carousel-slider> envolve o título e as setas: o carousel-slider.js só enxerga
+      os controles que estão dentro dele.
+    {%- endcomment -%}
+    <carousel-slider class="page-width testimonials__carousel" data-mode="scroll">
+      <div class="section-heading">
+        <div class="testimonials__heading-group">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="section-heading__title" id="{{ tm_heading_id }}">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if section.settings.rating_summary != blank -%}
+            <span class="testimonials__summary text-muted">{{ section.settings.rating_summary | escape }}</span>
+          {%- endif -%}
+        </div>
+        {%- if tm_count > 1 -%}
+          <div class="testimonials__nav">
+            {% render 'home-carousel-arrows', controls: tm_track_id, label_previous: tm_nav_previous, label_next: tm_nav_next %}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <ul class="testimonials__track home-carousel-track" id="{{ tm_track_id }}" data-carousel-track role="list" aria-label="{{ 'home.testimonials.list_label' | t }}">
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'testimonial' and block.settings.text != blank -%}
+            <li class="testimonials__item" data-carousel-slide {{ block.shopify_attributes }}>
+              <figure class="testimonials__figure glass glass--card">
+                {% render 'rating-stars', value: block.settings.rating, scale_max: 5, size: 16, show_count: false, class: 'testimonials__rating' %}
+                <blockquote class="testimonials__quote">{{ block.settings.text | escape }}</blockquote>
+                {%- if block.settings.name != blank or block.settings.product != blank -%}
+                  <figcaption class="testimonials__caption">
+                    <span class="testimonials__avatar lg-fill--photo" aria-hidden="true"></span>
+                    <span class="testimonials__identity">
+                      {%- if block.settings.name != blank -%}
+                        <span class="testimonials__name">{{ block.settings.name | escape }}</span>
+                      {%- endif -%}
+                      {%- if block.settings.product != blank -%}
+                        <span class="testimonials__product">{{ block.settings.product | escape }}</span>
+                      {%- endif -%}
+                    </span>
+                  </figcaption>
+                {%- endif -%}
+              </figure>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+      <div class="home-carousel-progress" data-carousel-progress aria-hidden="true"></div>
+    </carousel-slider>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Depoimentos",
+  "tag": "section",
+  "class": "section-testimonials",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Quem usa, recomenda"
+    },
+    {
+      "type": "text",
+      "id": "rating_summary",
+      "label": "Resumo da nota (opcional)",
+      "info": "Use o valor real do seu app de avaliações. Ex.: 4,8 de 5 · 1.240 avaliações."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "Depoimento",
+      "settings": [
+        {
+          "type": "range",
+          "id": "rating",
+          "min": 1,
+          "max": 5,
+          "step": 1,
+          "label": "Nota",
+          "default": 5
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Depoimento",
+          "info": "Use só depoimentos reais, publicados com autorização do cliente."
+        },
+        {
+          "type": "text",
+          "id": "name",
+          "label": "Nome do cliente"
+        },
+        {
+          "type": "text",
+          "id": "product",
+          "label": "Produto comprado"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Depoimentos",
+      "blocks": [
+        { "type": "testimonial" },
+        { "type": "testimonial" },
+        { "type": "testimonial" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,97 @@
+/*
+  Beacon Labs · Topo só de texto (sections/hero-texto.liquid), Liquid Glass Apple v2 (01/10/2026).
+  Título grande em SF Pro semibold (pilha em liquid-glass-apple.css), texto de apoio, dois
+  botões em cápsula (primário sólido + vidro fino) e a foto do produto à direita no computador.
+  A foto é a principal do produto, inteira: só ganha cantos arredondados.
+*/
+
+.hero-texto {
+  padding-block: 32px 16px;
+}
+
+.hero-texto__inner {
+  display: grid;
+  gap: 24px;
+  align-items: center;
+}
+
+.hero-texto__eyebrow {
+  margin: 0 0 12px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.hero-texto__title {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 40px;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.hero-texto__lead {
+  max-width: 32em;
+  margin: 16px 0 0;
+  color: var(--color-text-muted);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+.hero-texto__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.hero-texto__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 24px;
+  border-radius: var(--lg-radius-capsule, 999px);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* O texto do botão de vidro fica ink em todos os estados (nunca some no hover). */
+.hero-texto__button--glass,
+.hero-texto__button--glass:hover {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.hero-texto__media {
+  display: block;
+  max-width: 420px;
+  margin-inline: auto;
+}
+
+.hero-texto__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--lg-radius-sheet, 32px);
+}
+
+@media screen and (min-width: 990px) {
+  .hero-texto {
+    padding-block: 56px 24px;
+  }
+
+  .hero-texto__inner--with-image {
+    grid-template-columns: minmax(0, 1fr) 520px;
+    gap: 48px;
+  }
+
+  .hero-texto__title {
+    font-size: 64px;
+  }
+
+  .hero-texto__media {
+    max-width: 520px;
+  }
+}

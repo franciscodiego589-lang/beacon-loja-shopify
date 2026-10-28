@@ -1,0 +1,188 @@
+/*
+  Beacon Labs · conta-auth.css (área conta, compartilhado)
+
+  Layout das telas de acesso: login, cadastro, nova senha e ativação de conta.
+  Maquete de referência (prancheta de login e cadastro):
+  - Computador: duas colunas de 50%. Formulário à esquerda, centralizado, com até
+    576 px; imagem à direita ocupando a altura toda, cantos arredondados só do lado de
+    dentro (20 px).
+  - Celular: imagem em faixa no topo e o cartão do formulário sobreposto a ela, com
+    fundo de superfície clara e raio de 20 px.
+
+  Modificadores do contêiner .conta-auth:
+  - --has-image: há imagem escolhida (no celular o cartão sobe sobre a faixa).
+  - --placeholder: sem imagem escolhida; o placeholder aparece só no computador.
+  - --no-media: coluna única, sem imagem.
+  - --media-left: imagem à esquerda no computador.
+
+  Liquid Glass (spec 4.2 e 6.3): o cartão do formulário é vidro de conteúdo (.glass
+  .glass--card na marcação), raio 24 (20 no celular). No celular com imagem, o cartão sobe 88 px
+  sobre a foto: ali o fundo por trás é livre (foto), e o vidro de conteúdo só vale sobre campo
+  controlado; por isso o cartão usa o alfa do espesso sem desfoque (branco a 0,96: apoio 5,995:1
+  e ink 16,189:1 no pior caso livre). No computador com imagem, o formulário fica sem caixa,
+  direto na névoa, como antes.
+*/
+
+.conta-auth {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  padding-bottom: 48px;
+}
+
+.conta-auth__media {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background: var(--color-photo-bg);
+}
+
+.conta-auth__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.conta-auth__media--placeholder {
+  display: none;
+}
+
+.conta-auth__body {
+  position: relative;
+  padding: 32px var(--page-gutter) 0;
+}
+
+.conta-auth--has-image .conta-auth__body {
+  margin-top: -88px;
+  padding-top: 0;
+}
+
+.conta-auth__card {
+  width: 100%;
+  max-width: 576px;
+  margin-inline: auto;
+  padding: 24px;
+  border-radius: var(--lg-radius-box, var(--radius-card-lg));
+}
+
+.conta-auth--has-image .conta-auth__card {
+  --glass-bg: var(--glass-thick-bg-fallback);
+  --glass-bg-fallback: var(--glass-thick-bg-fallback);
+}
+
+.conta-auth__title {
+  margin-bottom: 8px;
+  font-size: 30px;
+}
+
+.conta-auth__text {
+  margin-bottom: 24px;
+  color: var(--color-text-muted);
+}
+
+.conta-auth__actions {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.conta-auth__link-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.conta-auth__link-row .link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+}
+
+.conta-auth__blocks {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.conta-auth__blocks:empty {
+  display: none;
+}
+
+/* Divisória com texto no meio ("Primeira vez por aqui?"). */
+.conta-divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 28px 0 16px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.conta-divider::before,
+.conta-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--lg-divider, var(--color-line));
+}
+
+@media screen and (min-width: 750px) {
+  .conta-auth__card {
+    padding: 32px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .conta-auth {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 640px;
+    padding-bottom: 0;
+  }
+
+  .conta-auth--no-media {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    padding-block: 64px;
+  }
+
+  .conta-auth__media {
+    order: 2;
+    height: auto;
+    border-radius: var(--radius-card-lg) 0 0 var(--radius-card-lg);
+  }
+
+  .conta-auth__media--placeholder {
+    display: block;
+  }
+
+  .conta-auth--media-left .conta-auth__media {
+    order: 0;
+    border-radius: 0 var(--radius-card-lg) var(--radius-card-lg) 0;
+  }
+
+  .conta-auth__body,
+  .conta-auth--has-image .conta-auth__body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0;
+    padding: 64px 72px;
+  }
+
+  /* Com imagem, o formulário fica sem caixa no computador: sai o material do cartão. */
+  .conta-auth:not(.conta-auth--no-media) .conta-auth__card {
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .conta-auth--no-media .conta-auth__card {
+    padding: 40px;
+  }
+
+  .conta-auth__title {
+    font-size: 44px;
+  }
+}

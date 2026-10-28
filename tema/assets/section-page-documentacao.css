@@ -1,0 +1,355 @@
+/*
+  Beacon Labs · página Documentação (section-page-documentacao.css)
+  Estrutura em sections/main-page-documentacao.liquid.
+
+  Etapa 8e, leva D (03/10/2026): a página saiu da linguagem da v2. Antes: capa sobre o campo maré (título de
+  48 px, 34 px no celular), corpo num cartão de vidro de conteúdo (.glass .glass--card: branco a 0,66, fio, sombra,
+  raio 28 e recuo de 40 x 48 px) e, dentro dele, as normas, as licenças, o histórico e a lista de dados em
+  cartões brancos a 0,72 com fio (raio 16), separados por filete e por 36 + 28 px. Agora:
+  - topo: campo claro (#ECF3F9) de ponta a ponta, trilha única, linha pequena vermelha e título de 56 px
+    (36 px até 760 px), tudo de .pb-topo (paginas-blog.css, carregada pela seção);
+  - corpo: direto sobre a página branca, sem recipiente, na coluna de 1200 px. Cada seção do texto (o <h2>)
+    vem 104 px (68 px até 760 px) abaixo da anterior, o primeiro <h2> a 104 px do topo, e a última linha fica
+    a 104 px do rodapé (margem do .main-content::after); o filete e o recuo de cima do <h2> saíram;
+  - blocos: as normas (.doc-norma), as licenças e os avisos (.doc-card), o resumo do histórico (<summary>) e a lista
+    de dados (<dl>) são blocos sólidos #ECF3F9, sem borda e sem sombra, de raio --radius-card (22 px; 20 px no
+    celular). A ficha de vigência passa a branco para não sumir dentro do bloco. O <details> não tem caixa
+    própria (caixa dentro de caixa): o resumo é o bloco e, aberto, as normas do histórico vêm como blocos logo abaixo.
+  O conteúdo é o texto cadastrado na página da loja (o tema só dá o recipiente): as classes doc-* vêm do HTML
+  do dono. Texto em tinta (parágrafos) e apoio #566472 (descrições e rótulos); links na tinta, sublinhados dentro
+  do texto (parágrafo e valor da lista de dados; redesenho v3, emenda C3). O corpo tem a classe .rte, então o nome
+  da norma (título do cartão) também sai sublinhado, por .rte a do base.css, como já saía.
+  Contraste sobre o bloco #ECF3F9: tinta 15,44:1 e apoio 5,42:1; sobre o branco: tinta 17,29:1 e apoio 6,07:1 (calculado).
+*/
+
+/* ---------- Corpo ---------- */
+
+.doc-page__body {
+  padding-top: var(--section-gap);
+  color: var(--color-text);
+}
+
+.doc-page__body > :last-child {
+  margin-bottom: 0;
+}
+
+/* Seção do texto: o <h2> abre uma, com o --section-gap (104 px; 68 px no celular) acima. O primeiro fica no
+   alto do corpo, que já tem o mesmo vão em cima. */
+.doc-page__body > h2 {
+  margin: var(--section-gap) 0 16px;
+  font-size: 26px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.doc-page__body > h2:first-child {
+  margin-top: 0;
+}
+
+/* Subtítulo dentro de uma seção (RDC e IN): 18 px no celular e 20 px a partir de 761 px, para sobrar hierarquia
+   entre o <h2> de 26 a 32 px e o parágrafo de 15 px. */
+.doc-page__body h3 {
+  margin: 32px 0 8px;
+  font-size: 18px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.3;
+}
+
+.doc-page__body p {
+  max-width: 72ch;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.doc-page__body p strong {
+  color: var(--color-ink);
+}
+
+/* ---------- Normas e cartões de licença (blocos sólidos) ---------- */
+
+.doc-page__body .doc-normas,
+.doc-page__body .doc-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--grid-gap);
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.doc-page__body .doc-cards--1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.doc-page__body .doc-norma,
+.doc-page__body .doc-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  box-shadow: none;
+}
+
+.doc-page__body .doc-norma p,
+.doc-page__body .doc-card p {
+  max-width: none;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.doc-page__body .doc-card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.doc-page__body .doc-norma__nome a {
+  color: var(--lg-link-glass, var(--color-ink));
+  font-size: 16px;
+  font-weight: var(--font-heading-weight);
+}
+
+.doc-page__body .doc-norma__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.doc-page__body .doc-norma__data {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+/* Ficha de vigência: branca dentro do bloco (o tom do chip da fundação é o do próprio bloco e sumiria). */
+.doc-page__body .doc-norma__vig {
+  padding: 2px 10px;
+  border-radius: var(--lg-radius-capsule, 999px);
+  background-color: #FFFFFF;
+  color: var(--lg-chip-text, var(--color-ink));
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.doc-page__body .doc-normas--mini {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+.doc-page__body .doc-norma--mini {
+  padding: 14px 16px;
+}
+
+/* A linha do número e da validade da licença fica em tinta; três classes para vencer a cor de apoio de
+   ".doc-card p" (duas classes e um elemento). */
+.doc-page__body .doc-card .doc-card__num {
+  color: var(--color-ink);
+}
+
+/* ---------- Histórico (<details>) ---------- */
+
+/* Sem caixa própria: o resumo é o bloco e, aberto, o texto e as normas vêm logo abaixo, no branco. */
+.doc-page__body details {
+  margin-top: 24px;
+}
+
+.doc-page__body details > summary + * {
+  margin-top: 16px;
+}
+
+.doc-page__body details > * + * {
+  margin-top: 12px;
+}
+
+.doc-page__body summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  padding: 8px 20px;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  font-size: 15px;
+  font-weight: var(--font-heading-weight);
+  list-style: none;
+  cursor: pointer;
+}
+
+.doc-page__body summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Sinal de mais que gira 45 graus ao abrir, como o das perguntas frequentes (desenhado em CSS, o texto do
+   resumo é o do cadastro). */
+.doc-page__body summary::after {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background:
+    linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat;
+  transition: transform var(--lg-dur-state, 240ms) var(--lg-ease-glass, ease);
+}
+
+.doc-page__body details[open] > summary::after {
+  transform: rotate(45deg);
+}
+
+.doc-page__body summary:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Lista de dados (<dl>) ---------- */
+
+.doc-page__body dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin: 20px 0 0;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  overflow: hidden;
+}
+
+.doc-page__body dt {
+  padding: 14px 20px 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  line-height: 22px;
+  letter-spacing: 0.05em;
+}
+
+.doc-page__body dd {
+  margin: 0;
+  padding: 2px 20px 14px;
+  border-bottom: 1px solid var(--lg-divider, var(--color-line));
+  font-size: 15px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.doc-page__body dd:last-child {
+  border-bottom: 0;
+}
+
+/* Link dentro de parágrafo e de valor da lista de dados: sublinhado, sem depender da classe .rte
+   (o corpo da página tem .rte, e por isso .rte a, do base.css, já sublinha todos os links dele,
+   inclusive o nome da norma no cartão, como era antes do redesenho v3). */
+.doc-page__body p a,
+.doc-page__body dd a {
+  color: var(--lg-link-glass, var(--color-ink));
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* Alvo de toque do link da lista de dados (o e-mail do SAC): a caixa do link tem só a altura do texto (18 px) e
+   a auditoria reprovava (24 x 24 px no computador, 44 x 44 px no celular). A ::after posicionada leva a área de
+   resposta a 44 px de altura sem mudar o layout nem o anel de foco, que segue rente ao texto. Link dentro de
+   parágrafo é texto corrido e fica de fora da regra de toque. */
+.doc-page__body dd a {
+  position: relative;
+}
+
+.doc-page__body dd a::after {
+  content: "";
+  position: absolute;
+  inset: -13px -8px;
+}
+
+@media screen and (min-width: 750px) {
+  .doc-page__body .doc-norma,
+  .doc-page__body .doc-card {
+    padding: 20px;
+  }
+
+  .doc-page__body .doc-norma--mini {
+    padding: 14px 16px;
+  }
+
+  .doc-page__body dl {
+    grid-template-columns: minmax(180px, max-content) minmax(0, 1fr);
+  }
+
+  .doc-page__body dt,
+  .doc-page__body dd {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--lg-divider, var(--color-line));
+  }
+
+  /* 2 px a mais em cima e 2 px a menos embaixo: a linha de base do rótulo de 12 px fica na do valor de 15 px (antes
+     o rótulo ficava 4 px acima) e a linha da lista mantém os 50 px de altura. */
+  .doc-page__body dt {
+    padding-block: 16px 12px;
+  }
+
+  .doc-page__body dt:nth-last-of-type(1),
+  .doc-page__body dd:last-child {
+    border-bottom: 0;
+  }
+}
+
+@media screen and (min-width: 761px) {
+  .doc-page__body > h2 {
+    font-size: 32px;
+  }
+
+  .doc-page__body h3 {
+    margin-top: 40px;
+    font-size: 20px;
+  }
+}
+
+/* ---------- Movimento, contraste, cores forçadas e impressão ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .doc-page__body summary::after {
+    transition: none;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): os blocos ganham o anel de tinta (como .pb-bloco em paginas-blog.css, cuja
+   classe não chega ao HTML do cadastro). */
+@media (prefers-contrast: more) {
+  .doc-page__body .doc-norma,
+  .doc-page__body .doc-card,
+  .doc-page__body summary,
+  .doc-page__body dl {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+
+  .doc-page__body dd,
+  .doc-page__body dt {
+    border-bottom-color: var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .doc-page__body .doc-norma,
+  .doc-page__body .doc-card,
+  .doc-page__body summary,
+  .doc-page__body dl {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Impressão (Salvar a documentação em PDF): sem o cabeçalho do site, o rodapé e o campo claro do topo. Era a
+   regra "body:has(.dp)" de component-produto-dossie.css, que esta página deixou de carregar. O <header> do
+   próprio topo fica de fora, como o .dp-hero ficava. */
+@media print {
+  body:has(.doc-page) header:not(.doc-page__topo),
+  body:has(.doc-page) footer {
+    display: none !important;
+  }
+
+  .doc-page .doc-page__topo {
+    background: none;
+  }
+}

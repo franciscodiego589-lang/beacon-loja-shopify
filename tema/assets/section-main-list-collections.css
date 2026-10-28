@@ -1,0 +1,167 @@
+/*
+  Beacon Labs · lista de coleções (section-main-list-collections.css)
+  Página /collections, sem maquete própria: segue a linguagem do topo da coleção e a do card de produto
+  (component-product-card.css).
+
+  Etapa 8e, leva D (03/10/2026): a página saiu do vidro da v2 (grade sobre o campo maré, com cards .glass
+  .glass--card .glass--interactive: branco a 0,66, borda de 1 px, sombra, raio 28 e padding de 16 px em volta
+  de uma foto de 4:3 cortada). Agora:
+  - topo: campo claro (#ECF3F9) de ponta a ponta, trilha única e título de 56 px (36 px até 760 px), tudo de
+    .pb-topo (paginas-blog.css, carregada pela seção); aqui só a grade;
+  - grade: 104 px (68 px até 760 px) abaixo do topo, 4 colunas a partir de 990 px, 3 a partir de 750 px e 2 no
+    celular (as da classe .grid de base.css), com o vão de 20 px de --grid-gap; o recuo de baixo saiu, e o vão
+    até o rodapé é o da margem do .main-content::after (104 px; 68 px no celular);
+  - card: bloco sólido #ECF3F9 (--color-photo-bg), raio --radius-card (22 px; 20 px no celular), sem borda,
+    sem sombra e sem vidro. A foto vem inteira e sem recorte (object-fit: contain), no mesmo quadro do card de
+    produto: quadrada, com a faixa de 40 px em cima (36 px até 760 px) e o pote solto no campo claro pela máscara
+    de .lg-pote-solto (liquid-glass.css), então o pote tem o mesmo tamanho e a mesma posição nos dois cards.
+    Nome e quantidade de produtos embaixo, com o recuo de 14 px (20 px quando o card tem 228 px ou mais, por
+    @container, como o card de produto).
+  Contraste sobre o bloco #ECF3F9: tinta 15,44:1 (nome) e apoio #566472 5,42:1 (quantidade).
+*/
+
+/* ---------- Grade ---------- */
+
+.colecao-list__grid {
+  margin-top: var(--section-gap);
+}
+
+.colecao-list__item {
+  display: flex;
+  min-width: 0;
+}
+
+/* ---------- Card ---------- */
+
+.colecao-collection-card {
+  --card-faixa: 40px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-card);
+  background-color: var(--color-photo-bg);
+  box-shadow: none;
+  color: var(--color-text);
+  text-decoration: none;
+  container: colecao-card / inline-size;
+}
+
+.colecao-collection-card:hover {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.colecao-collection-card__media {
+  display: block;
+  flex: none;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding-top: var(--card-faixa);
+  overflow: hidden;
+}
+
+.colecao-collection-card__image,
+.colecao-collection-card__placeholder {
+  display: block;
+  width: calc(100% - var(--card-faixa));
+  height: 100%;
+  margin-inline: auto;
+  object-fit: contain;
+}
+
+.colecao-collection-card__image {
+  transition: transform 350ms ease;
+}
+
+/* Foto fora do padrão (imagem própria da coleção ou produto fora de "capsulas"): sem máscara, a foto fica inteira
+   dentro da caixa quadrada, e os cantos da caixa levam o raio do card. A classe .v3-foto-quadro mora em
+   component-product-card.css, que a lista não carrega. */
+.colecao-collection-card__image.v3-foto-quadro {
+  border-radius: var(--radius-card);
+}
+
+.colecao-collection-card__placeholder {
+  fill: var(--color-text-muted);
+}
+
+@media (hover: hover) {
+  .colecao-collection-card:hover .colecao-collection-card__image {
+    transform: scale(1.03);
+  }
+}
+
+.colecao-collection-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 14px 14px;
+}
+
+.colecao-collection-card__title {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 15px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.colecao-collection-card__count {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+/* Card largo (a partir de 228 px), como o card de produto. */
+@container colecao-card (min-width: 228px) {
+  .colecao-collection-card__body {
+    padding: 2px 20px 20px;
+  }
+
+  .colecao-collection-card__title {
+    font-size: 17px;
+  }
+
+  .colecao-collection-card__count {
+    font-size: 14px;
+  }
+}
+
+/* ---------- Celular, movimento, contraste e cores forçadas ---------- */
+
+@media screen and (max-width: 760px) {
+  .colecao-collection-card {
+    --card-faixa: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .colecao-collection-card__image {
+    transition: none;
+  }
+
+  .colecao-collection-card:hover .colecao-collection-card__image {
+    transform: none;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): o bloco ganha o contorno de tinta; cores forçadas: o fundo some, então a
+   borda mantém o contorno (como o card de produto). */
+@media (prefers-contrast: more) {
+  .colecao-collection-card {
+    border: 1px solid var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .colecao-collection-card {
+    border: 1px solid CanvasText;
+  }
+}

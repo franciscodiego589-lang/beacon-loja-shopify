@@ -1,0 +1,86 @@
+{%- comment -%}
+  Área produto. Caixa "Informação nutricional" montada a partir do metafield
+  beacon.tabela_nutricional (json):
+    {"porcao":"…","porcoes":30,"linhas":[{"nome":"…","qtd":"…","vd":"…","recuo":false}],"notas":["…"]}
+  O tema não grava nenhum número: tudo sai do metafield. Sem linhas, nada é renderizado.
+
+  Parâmetros:
+  - product: produto (obrigatório)
+  - tabela: tabela no mesmo formato json (opcional). Usado pelo dossiê do produto
+    (snippets/produto-dossie, campo "composicao" do metaobjeto "dossie"). Sem ele, vale o
+    metafield beacon.tabela_nutricional.
+  - heading_tag: 'h2', 'h3' (padrão) ou 'h4'
+  - id_prefix: prefixo único para os ids (ex.: section.id)
+  - class: classe extra (opcional)
+  Estilo: assets/component-produto-nutrition.css (a seção que usa o snippet carrega o arquivo).
+{%- endcomment -%}
+{%- if tabela == blank -%}
+  {%- assign tabela = product.metafields.beacon.tabela_nutricional.value -%}
+{%- endif -%}
+{%- if tabela != blank and tabela.linhas != blank -%}
+  {%- liquid
+    assign nutrition_heading = 'h3'
+    case heading_tag
+      when 'h2', 'h3', 'h4'
+        assign nutrition_heading = heading_tag
+    endcase
+    assign nutrition_id = 'Nutrition-' | append: id_prefix | append: '-' | append: product.id
+    assign porcoes = tabela.porcoes
+    assign porcao = tabela.porcao
+  -%}
+  <div class="produto-nutrition{% if class != blank %} {{ class }}{% endif %}" role="group" aria-labelledby="{{ nutrition_id }}">
+    <{{ nutrition_heading }} class="produto-nutrition__title" id="{{ nutrition_id }}">
+      {{- 'produto.nutrition.title' | t -}}
+    </{{ nutrition_heading }}>
+
+    {%- if porcoes != blank or porcao != blank -%}
+      <p class="produto-nutrition__serving">
+        {%- if porcoes != blank -%}
+          <span>{{ 'produto.nutrition.servings' | t: porcoes: porcoes }}</span>
+        {%- endif -%}
+        {%- if porcao != blank -%}
+          <span>{{ 'produto.nutrition.serving' | t: porcao: porcao }}</span>
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+
+    <div class="produto-nutrition__scroll">
+      <table class="produto-nutrition__table">
+        {%- capture nutrition_nome -%}
+          {%- render 'v3-nome-visivel', produto: product, modo: 'texto' -%}
+        {%- endcapture -%}
+        <caption class="visually-hidden">{{ 'produto.nutrition.caption' | t: title: nutrition_nome }}</caption>
+        <thead>
+          <tr>
+            <th scope="col"><span class="visually-hidden">{{ 'produto.nutrition.nutrient' | t }}</span></th>
+            <th scope="col">{{ 'produto.nutrition.amount' | t }}</th>
+            <th scope="col">{{ 'produto.nutrition.daily_value' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for linha in tabela.linhas -%}
+            {%- if linha.nome != blank -%}
+              {%- liquid
+                assign linha_recuo = false
+                if linha.recuo == true or linha.recuo == 'true'
+                  assign linha_recuo = true
+                endif
+              -%}
+              <tr{% if linha_recuo %} class="produto-nutrition__row--indent"{% endif %}>
+                <th scope="row">{{ linha.nome | escape }}</th>
+                <td>{{ linha.qtd | escape }}</td>
+                <td>{{ linha.vd | escape }}</td>
+              </tr>
+            {%- endif -%}
+          {%- endfor -%}
+        </tbody>
+      </table>
+    </div>
+
+    {%- for nota in tabela.notas -%}
+      {%- if nota != blank -%}
+        <p class="produto-nutrition__note">{{ nota | escape }}</p>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+{%- endif -%}

@@ -1,0 +1,74 @@
+/*
+  Beacon Labs · estrelas de avaliação (component-rating-stars.css)
+  Estrutura em snippets/rating-stars.liquid: camada de estrelas vazias (__base) e,
+  por cima, a camada cheia (__fill) cortada na largura em % vinda do Liquid.
+
+  Liquid Glass (spec 6.6 e 8.5): estrelas cheias em #0058B8 (--color-chip-text; 6,087:1 no
+  cartão), vazias na cor de linhas do tema (decorativas: a nota vai no aria-label). Contagem em texto
+  de apoio com no mínimo 12 px sobre qualquer vidro (spec 5.8, regra 3).
+*/
+
+.rating-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+
+.rating-stars__icons {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.rating-stars__base,
+.rating-stars__fill {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.rating-stars__base {
+  color: var(--color-line);
+}
+
+.rating-stars__fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  color: var(--color-chip-text);
+}
+
+.rating-stars__count {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text-muted);
+}
+
+@media screen and (max-width: 749px) {
+  .rating-stars {
+    gap: 4px;
+  }
+
+  .rating-stars__base,
+  .rating-stars__fill {
+    gap: 1px;
+  }
+
+  .rating-stars__count {
+    font-size: 12px;
+  }
+}
+
+@media (forced-colors: active) {
+  .rating-stars__base {
+    color: GrayText;
+  }
+
+  .rating-stars__fill {
+    color: CanvasText;
+  }
+}

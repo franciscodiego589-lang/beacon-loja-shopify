@@ -1,0 +1,36 @@
+{%- comment -%}
+  Trilha de navegação da área coleção ("Você está em": Início / [pai] / página atual).
+  Parâmetros:
+  - current: texto da página atual (obrigatório; sai com escape_once: aceita texto puro e também o nome
+    do produto de snippets/v3-nome-visivel no modo 'texto', que já vem escapado)
+  - parent_label: texto de um nível intermediário (opcional)
+  - parent_url: link do nível intermediário (opcional; os dois precisam estar preenchidos)
+  - class: classe extra (opcional)
+
+  Estilo: assets/component-colecao-breadcrumb.css (carregado pela seção que usa o snippet).
+
+  Etapa 8e, item 17 (03/10/2026): é a trilha única do tema. A coleção, a busca, o produto e as páginas
+  de texto, do blog e de ajuda (via snippets/paginas-blog-breadcrumbs) usam este mesmo snippet, com o mesmo
+  desenho (12 px, peso 400, texto de apoio, separador "/"); antes eram três desenhos (13 px em peso 600 no
+  produto e nas páginas de texto, 12 px em peso 400 na coleção e na busca).
+
+  Redesenho v3: os links têm alvo de toque de 44 px de verdade (o próprio elemento mede 44 px, não
+  um pseudo-elemento), por isso saiu a classe lg-hit. O separador "/" é desenhado pelo CSS.
+{%- endcomment -%}
+{%- if current != blank -%}
+  <nav class="colecao-breadcrumb{% if class != blank %} {{ class }}{% endif %}" aria-label="{{ 'colecao.breadcrumb.label' | t }}">
+    <ol class="colecao-breadcrumb__list" role="list">
+      <li class="colecao-breadcrumb__item">
+        <a href="{{ routes.root_url }}" class="colecao-breadcrumb__link">{{ 'colecao.breadcrumb.home' | t }}</a>
+      </li>
+      {%- if parent_label != blank and parent_url != blank -%}
+        <li class="colecao-breadcrumb__item">
+          <a href="{{ parent_url | escape }}" class="colecao-breadcrumb__link">{{ parent_label | escape }}</a>
+        </li>
+      {%- endif -%}
+      <li class="colecao-breadcrumb__item">
+        <span class="colecao-breadcrumb__current" aria-current="page">{{ current | escape_once }}</span>
+      </li>
+    </ol>
+  </nav>
+{%- endif -%}

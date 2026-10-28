@@ -1,0 +1,224 @@
+{{ 'section-popup-cupom.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'popup-cupom.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Janela de cadastro com o cupom de boas-vindas (etapa M1 do mercado, 03/10/2026).
+  Grupo do rodapé (sections/footer-group.json). É um <dialog> aberto com openModal() de global.js:
+  foco preso, Esc fecha, clique fora fecha, rolagem travada e foco de volta a quem estava ativo.
+  A lógica fica em assets/popup-cupom.js (elemento <popup-cupom>).
+
+  Quando abre: uma vez, depois do atraso, e só se a pessoa não fechou nem se cadastrou nos últimos
+  N dias (localStorage; sem localStorage, não abre). Nunca em carrinho, conta, senha, busca,
+  cartão-presente ou página 404, e nunca por cima de outra janela aberta (gaveta do carrinho, menu, busca).
+  A Liquid já deixa essas páginas sem o elemento; o JavaScript confere de novo.
+
+  Formulário: {% form 'customer' %} com contact[email] e contact[tags] = newsletter,popup-bemvindo10
+  (as mesmas etiquetas do cadastro do rodapé, mais a da origem). Depois do envio a Shopify volta à
+  mesma página com ?customer_posted=true; aí form.posted_successfully? é verdadeiro e a janela abre
+  já no estado de sucesso, com o código em destaque e o botão "Copiar código". Erro da Shopify
+  (form.errors) abre a janela no estado de formulário, com a mensagem. O código só é escrito no HTML
+  quando o envio deu certo.
+
+  Liquid Glass: o <dialog> é vidro espesso com desfoque (como a gaveta e a busca); o conteúdo
+  (código, campos, texto) é sólido. Celular: folha que sobe de baixo; computador: caixa central.
+
+  Textos de interface em locales/pt-BR.default.json, chave fundacao.popup_cupom.
+{%- endcomment -%}
+{%- liquid
+  assign popup_page_ok = true
+  case request.page_type
+    when 'cart', 'search', 'password', 'gift_card', 'challenge', '404'
+      assign popup_page_ok = false
+    else
+      if request.page_type contains 'customers/'
+        assign popup_page_ok = false
+      endif
+  endcase
+
+  assign popup_code = section.settings.coupon_code | strip | upcase
+  assign popup_days = section.settings.days | default: 30
+  assign popup_delay = section.settings.delay | default: 12
+  assign popup_id = 'PopupCupom-' | append: section.id
+  assign popup_button = section.settings.button_label | strip
+  if popup_button == blank
+    assign popup_button = 'fundacao.popup_cupom.button_default' | t
+  endif
+  assign popup_privacy_url = shop.privacy_policy.url
+  assign popup_terms_url = shop.terms_of_service.url
+-%}
+
+{%- if section.settings.enabled and popup_page_ok and popup_code != blank -%}
+  {%- comment -%}
+    O formulário vem primeiro (dentro de um capture) porque form.posted_successfully? e
+    form.errors só existem dentro da tag form, e o título e o corpo da janela dependem do estado.
+  {%- endcomment -%}
+  {%- capture popup_form_html -%}
+    {%- form 'customer', id: popup_id, class: 'popup-cupom__form' -%}
+      {%- liquid
+        assign popup_ok = form.posted_successfully?
+        assign popup_erro = false
+        if form.errors
+          assign popup_erro = true
+        endif
+      -%}
+      <input type="hidden" name="contact[tags]" value="newsletter,popup-bemvindo10">
+
+      <label for="{{ popup_id }}-email" class="popup-cupom__label">{{ 'fundacao.footer.newsletter_email_label' | t }}</label>
+      <input
+        type="email"
+        id="{{ popup_id }}-email"
+        class="popup-cupom__input"
+        name="contact[email]"
+        required
+        autocomplete="email"
+        autocapitalize="off"
+        spellcheck="false"
+        placeholder="{{ 'fundacao.footer.newsletter_email_example' | t }}"
+        {% if popup_erro %}
+          aria-invalid="true"
+          aria-describedby="{{ popup_id }}-erro"
+        {% endif %}
+      >
+
+      {%- if popup_erro -%}
+        <div id="{{ popup_id }}-erro" class="form-message form-message--error popup-cupom__message" role="alert">
+          {{ form.errors | default_errors }}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.show_consent -%}
+        <p class="popup-cupom__consent">
+          {%- if popup_privacy_url != blank and popup_terms_url != blank -%}
+            {%- liquid
+              assign popup_privacy_attr = popup_privacy_url | escape
+              assign popup_terms_attr = popup_terms_url | escape
+            -%}
+            {{- 'fundacao.footer.newsletter_consent_links_html' | t: privacy_url: popup_privacy_attr, terms_url: popup_terms_attr -}}
+          {%- else -%}
+            {{- 'fundacao.footer.newsletter_consent' | t -}}
+          {%- endif -%}
+        </p>
+      {%- endif -%}
+
+      <button type="submit" class="button button--primary popup-cupom__submit" name="commit">
+        {{- popup_button -}}
+      </button>
+    {%- endform -%}
+  {%- endcapture -%}
+
+  <popup-cupom
+    class="popup-cupom"
+    data-days="{{ popup_days }}"
+    data-delay="{{ popup_delay }}"
+    data-copied="{{ 'fundacao.popup_cupom.copied' | t | escape }}"
+    data-copy-failed="{{ 'fundacao.popup_cupom.copy_failed' | t | escape }}"
+    data-copy-label="{{ 'fundacao.popup_cupom.copy' | t | escape }}"
+    {% if popup_ok %}data-state="success"{% elsif popup_erro %}data-state="error"{% else %}data-state="form"{% endif %}
+  >
+    <dialog
+      id="{{ popup_id }}-dialog"
+      class="popup-cupom__dialog glass glass--thick glass--blur"
+      aria-labelledby="{{ popup_id }}-titulo"
+      data-popup-cupom-dialog
+    >
+      <div class="popup-cupom__inner">
+        <button type="button" class="popup-cupom__close" aria-label="{{ 'fundacao.popup_cupom.close' | t }}" data-popup-cupom-close>
+          {% render 'icon', name: 'close', size: 22 %}
+        </button>
+
+        <p class="popup-cupom__eyebrow v3-eyebrow">{{ 'fundacao.popup_cupom.eyebrow' | t }}</p>
+
+        {%- if popup_ok -%}
+          <h2 id="{{ popup_id }}-titulo" class="popup-cupom__title">{{ 'fundacao.popup_cupom.success_title' | t }}</h2>
+          <p class="popup-cupom__code-label">{{ 'fundacao.popup_cupom.code_label' | t }}</p>
+          <p class="popup-cupom__code" data-popup-cupom-code translate="no">{{ popup_code | escape }}</p>
+          <button type="button" class="button button--primary popup-cupom__copy" data-popup-cupom-copy>
+            <span data-popup-cupom-copy-label>{{ 'fundacao.popup_cupom.copy' | t }}</span>
+          </button>
+          <a class="button button--secondary popup-cupom__apply" href="/discount/{{ popup_code | url_encode }}?redirect={{ routes.cart_url | url_encode }}">{{ 'fundacao.popup_cupom.apply' | t }}</a>
+          <p class="popup-cupom__notice">{{ 'fundacao.popup_cupom.use_notice' | t }}</p>
+          <p class="popup-cupom__status" role="status" aria-live="polite" data-popup-cupom-status></p>
+        {%- else -%}
+          <h2 id="{{ popup_id }}-titulo" class="popup-cupom__title">{{ section.settings.heading | escape }}</h2>
+          {%- if section.settings.text != blank -%}
+            <p class="popup-cupom__text">{{ section.settings.text | escape }}</p>
+          {%- endif -%}
+          {{ popup_form_html }}
+        {%- endif -%}
+      </div>
+    </dialog>
+  </popup-cupom>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Janela do cupom",
+  "class": "section-popup-cupom",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enabled",
+      "label": "Mostrar a janela do cupom",
+      "info": "Abre uma vez, depois do atraso. Não aparece no carrinho, na conta, na busca, na página de senha nem na de erro 404.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "delay",
+      "label": "Atraso para abrir (segundos)",
+      "min": 3,
+      "max": 60,
+      "step": 1,
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "days",
+      "label": "Dias sem mostrar de novo depois de fechada ou de cadastrada",
+      "min": 1,
+      "max": 90,
+      "step": 1,
+      "default": 30
+    },
+    {
+      "type": "header",
+      "content": "Textos"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Ganhe 10% OFF no seu pedido"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Texto",
+      "default": "Cadastre seu e-mail e use o cupom BEMVINDO10. Vale uma vez por cliente e não se soma a outros descontos."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto do botão",
+      "default": "Quero o cupom"
+    },
+    {
+      "type": "text",
+      "id": "coupon_code",
+      "label": "Código do cupom",
+      "info": "Tem de existir e estar ativo no painel (Descontos). O código só aparece depois do cadastro.",
+      "default": "BEMVINDO10"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_consent",
+      "label": "Mostrar texto de consentimento",
+      "info": "O mesmo texto do cadastro do rodapé, com os links da política de privacidade e dos termos da loja.",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

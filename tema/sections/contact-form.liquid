@@ -1,0 +1,669 @@
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-contact-form.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Formulário de contato (form 'contact' da Shopify; as mensagens chegam no e-mail da loja).
+  - Campos fixos: nome, e-mail (sempre obrigatório), telefone e mensagem, com validação nativa.
+  - Campos extras por bloco (revenda, prescritores): cada um vira contact[Nome do campo].
+  - Um campo oculto contact[Formulário] leva o nome deste formulário (ajuste "Identificação"),
+    para separar no e-mail o que veio do contato, da revenda ou dos prescritores.
+  - Mensagens de sucesso (role="status") e de erro (role="alert", com links para os campos).
+  Use só um formulário de contato por página: a resposta da Shopify vale para todos.
+
+  Etapa 8e, leva C (03/10/2026): o cartão do formulário é o bloco sólido #ECF3F9 (.pb-bloco, paginas-blog.css),
+  sem borda e sem sombra, direto sobre a página branca. Antes eram duas molduras de vidro da v2, uma dentro da
+  outra: o painel da seção (.glass-layer .glass--panel, do fundo "Cinza-azulado claro", que era o padrão) e o
+  cartão (.glass-fill). O padrão do fundo passou a "Branco"; "Cinza-azulado claro" e "Azul claro" valem como
+  Branco (snippets/paginas-blog-surface.liquid). Os campos, o seletor e o botão seguem como controles. No
+  fundo azul-marinho o cartão continua branco sólido.
+{%- endcomment -%}
+
+{%- liquid
+  assign cf_id = 'ContactForm-' | append: section.id
+
+  assign cf_heading_tag = 'h2'
+  if section.settings.heading_tag == 'h1'
+    assign cf_heading_tag = 'h1'
+  endif
+
+  assign cf_has_intro = false
+  if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.text != blank
+    assign cf_has_intro = true
+  endif
+
+  assign cf_submit = section.settings.submit_label
+  if cf_submit == blank
+    assign cf_submit = 'paginas_blog.contact.submit' | t
+  endif
+
+  assign cf_success = section.settings.success_message
+  if cf_success == blank
+    assign cf_success = 'paginas_blog.contact.success' | t
+  endif
+
+  assign cf_origin = section.settings.origin
+  if cf_origin == blank
+    assign cf_origin = page.title | default: shop.name
+  endif
+
+  assign cf_origin_key = 'paginas_blog.contact.origin_field' | t
+
+  assign cf_message_label = section.settings.message_label
+  if cf_message_label == blank
+    assign cf_message_label = 'paginas_blog.contact.message' | t
+  endif
+
+  # A caixa é o bloco claro sólido (#ECF3F9) e, no campo noite, o cartão branco sólido (.pb-scheme--ink
+  # .contact-form__card, section-contact-form.css).
+  assign cf_card_class = ' pb-bloco'
+  assign cf_ink = false
+  if section.settings.color_scheme == 'ink'
+    assign cf_card_class = ''
+    assign cf_ink = true
+  endif
+-%}
+
+<div class="contact-form contact-form--{{ section.settings.layout }} pb-scheme--{{ section.settings.color_scheme }}{% render 'paginas-blog-surface', scheme: section.settings.color_scheme %} pb-pad--{{ section.settings.padding }}">
+  <div class="page-width">
+    <div class="contact-form__grid{% unless cf_has_intro %} contact-form__grid--no-intro{% endunless %}">
+      {%- if cf_has_intro -%}
+        <div class="contact-form__intro">
+          {%- if section.settings.eyebrow != blank -%}
+            {%- if cf_ink -%}
+              <span class="chip contact-form__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- else -%}
+              <span class="v3-eyebrow contact-form__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- endif -%}
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <{{ cf_heading_tag }} class="contact-form__heading">{{ section.settings.heading | escape }}</{{ cf_heading_tag }}>
+          {%- endif -%}
+          {%- if section.settings.text != blank -%}
+            <div class="contact-form__text rte">{{ section.settings.text }}</div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="contact-form__card{{ cf_card_class }}">
+        {%- form 'contact', id: cf_id, class: 'contact-form__form pb-form' -%}
+          {%- liquid
+            assign cf_email_error = false
+            assign cf_body_error = false
+            if form.errors
+              if form.errors contains 'email'
+                assign cf_email_error = true
+              endif
+              if form.errors contains 'body'
+                assign cf_body_error = true
+              endif
+            endif
+          -%}
+
+          {%- comment -%}
+            A mensagem já vem pronta na página que volta do envio: role="status"/"alert" não é
+            anunciado nesse caso. Por isso ela recebe o foco ao carregar (autofocus num elemento
+            com tabindex="-1", sem JavaScript), e o leitor de tela lê o conteúdo.
+          {%- endcomment -%}
+          {%- if form.posted_successfully? -%}
+            <div class="pb-status pb-status--success" id="{{ cf_id }}-status" role="status" tabindex="-1" autofocus>
+              {%- render 'icon', name: 'check-circle', size: 20 -%}
+              <p>{{ cf_success | escape }}</p>
+            </div>
+          {%- elsif form.errors -%}
+            <div class="pb-status pb-status--error" id="{{ cf_id }}-status" role="alert" tabindex="-1" autofocus>
+              {%- render 'icon', name: 'help-circle', size: 20 -%}
+              <div>
+                <p class="pb-status__title">{{ 'paginas_blog.form.error_title' | t }}</p>
+                <ul class="pb-status__list">
+                  {%- for field in form.errors -%}
+                    <li>
+                      {%- if field == 'form' -%}
+                        {{ form.errors.messages[field] | escape }}
+                      {%- else -%}
+                        <a href="#{{ cf_id }}-{{ field | handle }}">
+                          {{- form.errors.translated_fields[field] | capitalize | escape }} {{ form.errors.messages[field] | escape -}}
+                        </a>
+                      {%- endif -%}
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            </div>
+          {%- endif -%}
+
+          <input type="hidden" name="contact[{{ cf_origin_key | escape }}]" value="{{ cf_origin | escape }}">
+
+          <p class="pb-form__note contact-form__required-note">{{ 'paginas_blog.form.required_note' | t }}</p>
+
+          <div class="pb-form__grid">
+            {%- if section.settings.show_name -%}
+              <div class="field pb-form__field">
+                <label class="field__label" for="{{ cf_id }}-name">
+                  {{- 'paginas_blog.contact.name' | t -}}
+                  {%- if section.settings.name_required %} <span class="pb-form__required" aria-hidden="true">*</span>{% endif -%}
+                </label>
+                <input
+                  type="text"
+                  id="{{ cf_id }}-name"
+                  name="contact[name]"
+                  autocomplete="name"
+                  maxlength="120"
+                  value="{{ form.name | default: customer.name | escape }}"
+                  {% if section.settings.name_required %}required{% endif %}
+                >
+              </div>
+            {%- endif -%}
+
+            <div class="field pb-form__field">
+              <label class="field__label" for="{{ cf_id }}-email">
+                {{- 'paginas_blog.contact.email' | t }} <span class="pb-form__required" aria-hidden="true">*</span>
+              </label>
+              <input
+                type="email"
+                id="{{ cf_id }}-email"
+                name="contact[email]"
+                autocomplete="email"
+                autocapitalize="off"
+                spellcheck="false"
+                maxlength="254"
+                value="{{ form.email | default: customer.email | escape }}"
+                required
+                {% if cf_email_error %}
+                  aria-invalid="true"
+                  aria-describedby="{{ cf_id }}-status"
+                {% endif %}
+              >
+            </div>
+
+            {%- if section.settings.show_phone -%}
+              <div class="field pb-form__field">
+                <label class="field__label" for="{{ cf_id }}-phone">
+                  {{- 'paginas_blog.contact.phone' | t -}}
+                  {%- if section.settings.phone_required %} <span class="pb-form__required" aria-hidden="true">*</span>{% endif -%}
+                </label>
+                <input
+                  type="tel"
+                  id="{{ cf_id }}-phone"
+                  name="contact[phone]"
+                  autocomplete="tel"
+                  maxlength="30"
+                  value="{{ form.phone | escape }}"
+                  {% if section.settings.phone_required %}required{% endif %}
+                >
+              </div>
+            {%- endif -%}
+
+            {%- for block in section.blocks -%}
+              {%- liquid
+                assign f_label = block.settings.label | strip
+                assign f_key = block.settings.field_key | strip
+                if f_key == blank
+                  assign f_key = f_label
+                endif
+                assign f_key = f_key | remove: '[' | remove: ']'
+                assign f_id = cf_id | append: '-' | append: block.id
+                assign f_type = block.settings.type
+                assign f_full = false
+                if block.settings.width == 'full' or f_type == 'textarea' or f_type == 'checkbox'
+                  assign f_full = true
+                endif
+                assign f_hint_id = ''
+                if block.settings.hint != blank
+                  assign f_hint_id = f_id | append: '-hint'
+                endif
+              -%}
+              {%- if f_label != blank and f_key != blank -%}
+                <div class="field pb-form__field{% if f_full %} pb-form__field--full{% endif %}" {{ block.shopify_attributes }}>
+                  {%- case f_type -%}
+                    {%- when 'checkbox' -%}
+                      <label class="checkbox" for="{{ f_id }}">
+                        <input
+                          type="checkbox"
+                          id="{{ f_id }}"
+                          name="contact[{{ f_key | escape }}]"
+                          value="{{ 'paginas_blog.contact.checkbox_value' | t }}"
+                          {% if block.settings.required %}required{% endif %}
+                          {% if f_hint_id != blank %}aria-describedby="{{ f_hint_id }}"{% endif %}
+                        >
+                        <span>
+                          {{- f_label | escape -}}
+                          {%- if block.settings.required %} <span class="pb-form__required" aria-hidden="true">*</span>{% endif -%}
+                        </span>
+                      </label>
+
+                    {%- else -%}
+                      <label class="field__label" for="{{ f_id }}">
+                        {{- f_label | escape -}}
+                        {%- if block.settings.required %} <span class="pb-form__required" aria-hidden="true">*</span>{% endif -%}
+                      </label>
+
+                      {%- case f_type -%}
+                        {%- when 'textarea' -%}
+                          <textarea
+                            id="{{ f_id }}"
+                            name="contact[{{ f_key | escape }}]"
+                            rows="4"
+                            maxlength="2000"
+                            {% if block.settings.placeholder != blank %}placeholder="{{ block.settings.placeholder | escape }}"{% endif %}
+                            {% if block.settings.required %}required{% endif %}
+                            {% if f_hint_id != blank %}aria-describedby="{{ f_hint_id }}"{% endif %}
+                          ></textarea>
+
+                        {%- when 'select' -%}
+                          {%- assign f_options = block.settings.options | newline_to_br | split: '<br />' -%}
+                          <select
+                            id="{{ f_id }}"
+                            name="contact[{{ f_key | escape }}]"
+                            {% if block.settings.required %}required{% endif %}
+                            {% if f_hint_id != blank %}aria-describedby="{{ f_hint_id }}"{% endif %}
+                          >
+                            <option value="">{{ 'paginas_blog.contact.select_placeholder' | t }}</option>
+                            {%- for f_option in f_options -%}
+                              {%- assign f_option_text = f_option | strip -%}
+                              {%- if f_option_text != blank -%}
+                                <option value="{{ f_option_text | escape }}">{{ f_option_text | escape }}</option>
+                              {%- endif -%}
+                            {%- endfor -%}
+                          </select>
+
+                        {%- else -%}
+                          {%- liquid
+                            case f_type
+                              when 'email', 'tel', 'number', 'date'
+                                assign f_input_type = f_type
+                              else
+                                assign f_input_type = 'text'
+                            endcase
+                          -%}
+                          <input
+                            type="{{ f_input_type }}"
+                            id="{{ f_id }}"
+                            name="contact[{{ f_key | escape }}]"
+                            {% if f_input_type == 'text' %}maxlength="250"{% endif %}
+                            {% if block.settings.autocomplete != 'none' %}autocomplete="{{ block.settings.autocomplete }}"{% endif %}
+                            {% if block.settings.numeric_keyboard and f_input_type == 'text' %}inputmode="numeric"{% endif %}
+                            {% if block.settings.placeholder != blank %}placeholder="{{ block.settings.placeholder | escape }}"{% endif %}
+                            {% if block.settings.required %}required{% endif %}
+                            {% if f_hint_id != blank %}aria-describedby="{{ f_hint_id }}"{% endif %}
+                          >
+                      {%- endcase -%}
+                  {%- endcase -%}
+
+                  {%- if f_hint_id != blank -%}
+                    <p class="field__hint" id="{{ f_hint_id }}">{{ block.settings.hint | escape }}</p>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- if section.settings.show_message -%}
+              <div class="field pb-form__field pb-form__field--full">
+                <label class="field__label" for="{{ cf_id }}-body">
+                  {{- cf_message_label | escape -}}
+                  {%- if section.settings.message_required %} <span class="pb-form__required" aria-hidden="true">*</span>{% endif -%}
+                </label>
+                <textarea
+                  id="{{ cf_id }}-body"
+                  name="contact[body]"
+                  rows="6"
+                  maxlength="5000"
+                  {% if section.settings.message_required %}required{% endif %}
+                  {% if cf_body_error %}
+                    aria-invalid="true"
+                    aria-describedby="{{ cf_id }}-status"
+                  {% endif %}
+                >{{ form.body | escape }}</textarea>
+              </div>
+            {%- endif -%}
+          </div>
+
+          <button type="submit" class="button button--large button--{{ section.settings.button_style }} pb-form__submit contact-form__submit">
+            {{- cf_submit | escape -}}
+          </button>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Formulário de contato",
+  "tag": "section",
+  "class": "section-contact-form",
+  "max_blocks": 16,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "As mensagens chegam no e-mail de contato da loja (Configurações > Informações da loja). Use só um formulário de contato por página."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Fale com a gente"
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Nível do título",
+      "options": [
+        {
+          "value": "h2",
+          "label": "h2"
+        },
+        {
+          "value": "h1",
+          "label": "h1"
+        }
+      ],
+      "default": "h2"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "origin",
+      "label": "Identificação do formulário",
+      "info": "Vai no e-mail recebido, para saber de qual página veio a mensagem. Vazio usa o título da página."
+    },
+    {
+      "type": "header",
+      "content": "Campos"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_name",
+      "label": "Mostrar campo Nome",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "name_required",
+      "label": "Nome obrigatório",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_phone",
+      "label": "Mostrar campo Telefone",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "phone_required",
+      "label": "Telefone obrigatório",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_message",
+      "label": "Mostrar campo Mensagem",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "message_required",
+      "label": "Mensagem obrigatória",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "message_label",
+      "label": "Rótulo do campo Mensagem",
+      "info": "Vazio usa \"Mensagem\"."
+    },
+    {
+      "type": "text",
+      "id": "submit_label",
+      "label": "Texto do botão",
+      "info": "Vazio usa \"Enviar mensagem\"."
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Estilo do botão",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Azul"
+        },
+        {
+          "value": "dark",
+          "label": "Azul-marinho"
+        },
+        {
+          "value": "accent",
+          "label": "Amarelo-limão"
+        }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "text",
+      "id": "success_message",
+      "label": "Mensagem de envio concluído",
+      "info": "Vazio usa o texto padrão do tema."
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Arranjo no computador",
+      "options": [
+        {
+          "value": "split",
+          "label": "Texto à esquerda e formulário à direita"
+        },
+        {
+          "value": "stacked",
+          "label": "Texto acima do formulário"
+        }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "info": "Cinza-azulado claro e Azul claro valem como Branco (o painel de vidro saiu). O cartão do formulário já é um bloco azul claro.",
+      "options": [
+        {
+          "value": "default",
+          "label": "Branco"
+        },
+        {
+          "value": "surface",
+          "label": "Cinza-azulado claro"
+        },
+        {
+          "value": "surface-2",
+          "label": "Azul claro"
+        },
+        {
+          "value": "ink",
+          "label": "Azul-marinho"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        }
+      ],
+      "default": "normal"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "field",
+      "name": "Campo extra",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Rótulo"
+        },
+        {
+          "type": "text",
+          "id": "field_key",
+          "label": "Nome do campo no e-mail",
+          "info": "Vazio usa o rótulo. Deve ser único neste formulário. Colchetes são removidos."
+        },
+        {
+          "type": "select",
+          "id": "type",
+          "label": "Tipo",
+          "options": [
+            {
+              "value": "text",
+              "label": "Texto curto"
+            },
+            {
+              "value": "textarea",
+              "label": "Texto longo"
+            },
+            {
+              "value": "email",
+              "label": "E-mail"
+            },
+            {
+              "value": "tel",
+              "label": "Telefone"
+            },
+            {
+              "value": "number",
+              "label": "Número"
+            },
+            {
+              "value": "date",
+              "label": "Data"
+            },
+            {
+              "value": "select",
+              "label": "Lista de opções"
+            },
+            {
+              "value": "checkbox",
+              "label": "Caixa de seleção"
+            }
+          ],
+          "default": "text"
+        },
+        {
+          "type": "checkbox",
+          "id": "required",
+          "label": "Obrigatório",
+          "default": false
+        },
+        {
+          "type": "textarea",
+          "id": "options",
+          "label": "Opções da lista",
+          "info": "Só para o tipo Lista de opções. Uma opção por linha."
+        },
+        {
+          "type": "text",
+          "id": "placeholder",
+          "label": "Exemplo dentro do campo",
+          "info": "Não substitui o rótulo."
+        },
+        {
+          "type": "text",
+          "id": "hint",
+          "label": "Texto de ajuda abaixo do campo"
+        },
+        {
+          "type": "select",
+          "id": "autocomplete",
+          "label": "Preenchimento automático do navegador",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nenhum"
+            },
+            {
+              "value": "organization",
+              "label": "Empresa"
+            },
+            {
+              "value": "organization-title",
+              "label": "Cargo"
+            },
+            {
+              "value": "address-level2",
+              "label": "Cidade"
+            },
+            {
+              "value": "address-level1",
+              "label": "Estado"
+            },
+            {
+              "value": "postal-code",
+              "label": "CEP"
+            },
+            {
+              "value": "street-address",
+              "label": "Endereço"
+            },
+            {
+              "value": "url",
+              "label": "Site"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "checkbox",
+          "id": "numeric_keyboard",
+          "label": "Teclado numérico no celular",
+          "info": "Para CNPJ, inscrição e registros. Só vale para Texto curto.",
+          "default": false
+        },
+        {
+          "type": "select",
+          "id": "width",
+          "label": "Largura",
+          "options": [
+            {
+              "value": "half",
+              "label": "Meia linha"
+            },
+            {
+              "value": "full",
+              "label": "Linha inteira"
+            }
+          ],
+          "default": "half"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Formulário de contato"
+    }
+  ]
+}
+{% endschema %}

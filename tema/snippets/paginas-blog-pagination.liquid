@@ -1,0 +1,55 @@
+{%- comment -%}
+  Paginação acessível (área paginas-blog), usada na lista do blog e nos comentários do artigo.
+  Parâmetros:
+  - paginate: o objeto paginate da tag paginate (obrigatório)
+  - anchor: âncora acrescentada aos links, com o # (opcional, por exemplo '#ArticleComments')
+  Só aparece quando há mais de uma página. Estilo em assets/paginas-blog.css.
+{%- endcomment -%}
+{%- if paginate.pages > 1 -%}
+  {%- comment -%}
+    part.title é texto (string) e paginate.current_page é número, segundo a documentação da
+    Shopify (objetos part e paginate, shopify.dev, consultada em 27/09/2026). Os dois lados
+    viram texto antes de comparar, para a página atual não cair no ramo das reticências.
+  {%- endcomment -%}
+  {%- assign pagination_current = paginate.current_page | append: '' -%}
+  <nav class="pb-pagination" aria-label="{{ 'paginas_blog.pagination.label' | t }}">
+    <ul class="pb-pagination__list" role="list">
+      {%- if paginate.previous.is_link -%}
+        <li>
+          <a href="{{ paginate.previous.url | escape }}{{ anchor }}" class="pb-pagination__item pb-pagination__item--arrow">
+            {%- render 'icon', name: 'chevron-left', size: 20 -%}
+            <span class="visually-hidden">{{ 'paginas_blog.pagination.previous' | t }}</span>
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        {%- assign part_title = part.title | append: '' -%}
+        <li>
+          {%- if part.is_link -%}
+            <a href="{{ part.url | escape }}{{ anchor }}" class="pb-pagination__item">
+              <span class="visually-hidden">{{ 'paginas_blog.pagination.page' | t }}</span>
+              {{- part.title -}}
+            </a>
+          {%- elsif part_title == pagination_current -%}
+            <span class="pb-pagination__item pb-pagination__item--current" aria-current="page">
+              <span class="visually-hidden">{{ 'paginas_blog.pagination.page' | t }}</span>
+              {{- part.title -}}
+            </span>
+          {%- else -%}
+            <span class="pb-pagination__item pb-pagination__item--gap" aria-hidden="true">{{ part.title }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+
+      {%- if paginate.next.is_link -%}
+        <li>
+          <a href="{{ paginate.next.url | escape }}{{ anchor }}" class="pb-pagination__item pb-pagination__item--arrow">
+            {%- render 'icon', name: 'chevron-right', size: 20 -%}
+            <span class="visually-hidden">{{ 'paginas_blog.pagination.next' | t }}</span>
+          </a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

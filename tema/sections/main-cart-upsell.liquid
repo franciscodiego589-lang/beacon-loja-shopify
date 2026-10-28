@@ -1,0 +1,38 @@
+{{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
+{{ 'component-cart-upsell.css' | asset_url | stylesheet_tag }}
+{{ 'component-cart-combos.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'cart-combos.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Sugestões da página do carrinho (templates/cart.json), entre a lista de itens e o resumo com o botão
+  de finalizar. Pedido do dono em 29/09/2026: produtos para a pessoa adicionar antes de pagar. A etapa
+  de pagamento em si não aceita produtos no plano Basic (ver snippets/cart-upsell.liquid).
+
+  Os produtos vêm do metafield beacon.combo dos itens do carrinho (snippets/cart-upsell). O gancho
+  [data-cart-page-section] faz assets/cart-page.js trocar esta seção depois de qualquer mudança no
+  carrinho, então a lista se atualiza sozinha (produto adicionado sai da lista). Sem itens no
+  carrinho ou sem sugestão, a seção fica vazia/oculta.
+{%- endcomment -%}
+<div class="main-cart-upsell page-width" id="MainCartUpsell-{{ section.id }}" data-cart-page-section="{{ section.id }}"{% if cart.item_count == 0 %} hidden{% endif %}>
+  {%- if cart.item_count > 0 -%}
+    {% render 'cart-combos', limit: 3 %}
+    {% render 'cart-upsell', limit: section.settings.limit %}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Leve junto",
+  "settings": [
+    {
+      "type": "range",
+      "id": "limit",
+      "min": 1,
+      "max": 12,
+      "step": 1,
+      "default": 10,
+      "label": "Máximo de sugestões"
+    }
+  ]
+}
+{% endschema %}

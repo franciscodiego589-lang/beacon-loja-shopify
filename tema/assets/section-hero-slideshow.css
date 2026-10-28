@@ -1,0 +1,150 @@
+/*
+  Beacon Labs · seção Banner principal (sections/hero-slideshow.liquid)
+  Imagem cheia (sem padding lateral), 3:1 no computador e 4:5 no celular.
+  Setas sobre a imagem (só a partir do tablet); bolinhas e pausa abaixo.
+
+  Liquid Glass (spec 7.3 e 8.2): a foto continua sangrada, sem raio. A faixa dos controles
+  fica sobre a névoa do <body> (o fundo branco da seção saiu). Setas: vidro fino COM desfoque
+  (.glass--thin .glass--blur, na marcação), 44 px, ícone ink 20 px (6,206:1 no pior caso
+  livre), a 24 px das bordas; centradas por top (e não por transform), para o pressionado
+  (escala 0,97) não deslocar a seta. Pausa: vidro fino sem desfoque, 32 px, área de toque
+  de 44 (.lg-hit). Bolinhas: ativa em cápsula ink de 28 × 8; inativas #6F8798 (3,36:1 na
+  névoa) e #4A6072 no hover.
+*/
+
+.hero-slideshow {
+  position: relative;
+  background: transparent;
+}
+
+.hero-slideshow__carousel {
+  position: relative;
+  display: block;
+}
+
+.hero-slideshow__track {
+  position: relative;
+}
+
+.hero-slideshow__slide {
+  display: block;
+}
+
+.hero-slideshow__link {
+  display: block;
+}
+
+.hero-slideshow__picture {
+  display: block;
+}
+
+/* Um <img> só por slide (a arte do celular vem pelo <source> do <picture>): 4:5 até 749 px,
+   3:1 a partir de 750 px, os mesmos pontos de troca de antes (hidden-mobile/hidden-tablet-up). */
+.hero-slideshow__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: var(--color-surface-2);
+}
+
+@media screen and (min-width: 750px) {
+  .hero-slideshow__image {
+    aspect-ratio: 3 / 1;
+  }
+}
+
+.hero-slideshow__nav {
+  display: none;
+}
+
+.hero-slideshow__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 6px 0;
+}
+
+.hero-slideshow__dots {
+  display: flex;
+  align-items: center;
+}
+
+.hero-slideshow__dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.hero-slideshow__dot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-input-border);
+  /* Só a cor anima; a largura (8 para a cápsula ativa) muda direto, sem refazer o layout a
+     cada quadro. */
+  transition: background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+@media (hover: hover) {
+  .hero-slideshow__dot:hover:not([aria-current="true"])::before {
+    background: var(--lg-input-border-glass, var(--color-text-muted));
+  }
+}
+
+.hero-slideshow__dot[aria-current="true"]::before {
+  width: 28px;
+  background: var(--color-ink);
+}
+
+/* Pausa: círculo de 32 px em vidro fino sem desfoque; o .lg-hit dá os 44 x 44 de toque. */
+.hero-slideshow__pause {
+  width: 32px;
+  height: 32px;
+  margin-left: 8px;
+}
+
+@media screen and (min-width: 750px) {
+  .hero-slideshow__nav {
+    position: absolute;
+    top: calc(50% - 22px);
+    z-index: 2;
+    display: flex;
+  }
+
+  .hero-slideshow__nav--prev {
+    left: 24px;
+  }
+
+  .hero-slideshow__nav--next {
+    right: 24px;
+  }
+}
+
+/* Sem JavaScript, setas, bolinhas e pausa não funcionam: ficam escondidas (só o 1º banner aparece). */
+.no-js .hero-slideshow__nav,
+.no-js .hero-slideshow__controls {
+  display: none;
+}
+
+/* Cores forçadas (spec 9.4): inativas em CanvasText, ativa em Highlight (e mais larga). */
+@media (forced-colors: active) {
+  .hero-slideshow__dot::before {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+
+  .hero-slideshow__dot[aria-current="true"]::before {
+    background: Highlight;
+  }
+}

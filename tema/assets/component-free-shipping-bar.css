@@ -1,0 +1,91 @@
+/*
+  Beacon Labs · barra de frete grátis (component-free-shipping-bar.css)
+  Estrutura em snippets/free-shipping-bar.liquid. Usada na barra de anúncio e na gaveta do carrinho.
+  Cores por variável: --free-shipping-fill (preenchimento) e --free-shipping-track (trilho).
+
+  Liquid Glass (spec 6.6, 8.1 e 8.8): na gaveta, trilho de 6 px na cor de linhas (--color-line)
+  com preenchimento na primária (--color-primary, hoje a tinta), sobre a faixa de preenchimento
+  ink a 4% da gaveta. Na barra de anúncio (campo claro #ECF3F9, texto tinta), o preenchimento vem
+  do ajuste "Cor da barra de progresso" (--announcement-progress, tinta por padrão) e o trilho é a
+  tinta a 24%, definido só em section-announcement-bar.css.
+*/
+
+.free-shipping-bar {
+  --free-shipping-fill: var(--color-primary);
+  --free-shipping-track: var(--color-line);
+
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.free-shipping-bar__text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.free-shipping-bar__icon {
+  flex-shrink: 0;
+}
+
+.free-shipping-bar__track {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: var(--free-shipping-track);
+}
+
+/* Progresso por transform, não por largura (a largura refaria o layout a cada quadro da
+   animação): o preenchimento tem a largura do trilho e desliza da esquerda até --fs-progress
+   (0 a 100, sem unidade; Liquid no style e cart-chrome.js). O trilho, com overflow hidden e
+   raio, recorta a parte de fora, então a ponta continua arredondada. */
+.free-shipping-bar__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--free-shipping-fill);
+  transform: translateX(calc(var(--fs-progress, 0) * 1% - 100%));
+  transition: transform 400ms var(--lg-ease-glass, var(--ease-out, ease-out));
+}
+
+.free-shipping-bar--done .free-shipping-bar__icon {
+  color: var(--free-shipping-fill);
+}
+
+/* Na barra de anúncio (campo claro): o preenchimento vem do ajuste "Cor da barra de progresso".
+   O trilho não é definido aqui: antes havia dois trilhos neste arquivo (branco a 0,24 e a mistura
+   da cor do texto a 24%) e um terceiro em section-announcement-bar.css, que, por vir depois,
+   era o único que valia. Ficou só o dele (tinta a 24%), que é o que aparece. */
+.announcement-bar .free-shipping-bar {
+  --free-shipping-fill: var(--announcement-progress, var(--color-accent));
+
+  gap: 4px;
+}
+
+.announcement-bar .free-shipping-bar__track {
+  height: 4px;
+}
+
+.announcement-bar .free-shipping-bar--done .free-shipping-bar__icon {
+  color: inherit;
+}
+
+@media (forced-colors: active) {
+  .free-shipping-bar__track {
+    border: 1px solid CanvasText;
+  }
+
+  .free-shipping-bar__fill {
+    background: Highlight;
+  }
+}

@@ -1,0 +1,46 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-page-documentacao.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Página "Documentação" (templates/page.documentacao.json; página da loja com handle
+  "documentacao"), aberta em nova aba pelos botões "Documentação" do produto e do dossiê.
+  Conteúdo: o corpo da página (cópia fiel da /documentacao do catálogo do dono, lida em
+  29/09/2026; HTML de referência em docs/superpowers/catalogo-lemoncaps-2026-09-29/). O tema não
+  escreve nada do conteúdo; só tira do corpo a primeira linha "DOCUMENTAÇÃO REGULATÓRIA", que
+  vira a linha pequena do topo.
+
+  Etapa 8e, leva D (03/10/2026): a página saiu da linguagem da v2 (capa sobre o campo maré e o corpo num
+  cartão de vidro de conteúdo, .glass .glass--card, com as normas e as licenças em cartões brancos
+  dentro dele). Agora começa pelo topo em campo claro de ponta a ponta (.pb-topo, paginas-blog.css): trilha
+  única (snippet colecao-breadcrumb), linha pequena em #8A0503 e título de 56 px (36 px até 760 px). O corpo
+  fica direto sobre a página branca, sem recipiente; as normas, as licenças e a lista de dados são blocos
+  sólidos #ECF3F9 (section-page-documentacao.css). A classe .dp e a folha do dossiê
+  (component-produto-dossie.css) não são mais carregadas aqui: o único uso era a capa antiga e a regra de
+  impressão, que passou para a folha desta página.
+{%- endcomment -%}
+{%- assign doc_corpo = page.content | remove_first: '<p><strong>DOCUMENTAÇÃO REGULATÓRIA</strong></p>' -%}
+<article class="doc-page" aria-labelledby="DocTitulo-{{ section.id }}">
+  <header class="doc-page__topo pb-topo">
+    <div class="page-width">
+      {% render 'colecao-breadcrumb', current: page.title, class: 'pb-topo__trilha' %}
+
+      <div class="pb-topo__corpo">
+        <p class="doc-page__eyebrow v3-eyebrow">{{ 'produto.dossie.docs_eyebrow' | t }}</p>
+        <h1 class="doc-page__titulo pb-topo__titulo" id="DocTitulo-{{ section.id }}">{{ page.title | escape }}</h1>
+      </div>
+    </div>
+  </header>
+  <div class="page-width">
+    <div class="doc-page__body rte">
+      {{ doc_corpo }}
+    </div>
+  </div>
+</article>
+
+{% schema %}
+{
+  "name": "Documentação",
+  "settings": []
+}
+{% endschema %}

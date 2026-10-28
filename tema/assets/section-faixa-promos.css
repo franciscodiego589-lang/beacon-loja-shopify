@@ -1,0 +1,106 @@
+/*
+  Beacon Labs · Faixa de banners entre as prateleiras da home (sections/faixa-promos.liquid), 03/10/2026.
+  O banner em si (cores, texto, potes, leiaute de celular) vem de assets/component-promo.css.
+
+  Grade: duas colunas no computador (ajuste "Colunas" = 2), uma coluna até 760 px e quando o ajuste é 1.
+  Cada célula é um container de medida (container-type: inline-size): os tamanhos do banner são em cqw da
+  largura da célula. Espaço entre blocos: --grid-gap (20 px; 12 px até 760 px). Espaço entre seções (emenda 15):
+  margin-block: var(--section-gap) no próprio bloco da seção, como a seção Destaques.
+*/
+
+.faixa-promos {
+  margin-block: var(--section-gap, 64px);
+}
+
+/* Tamanho grande (padrão): mesma largura do banner do carrossel do topo (.vitrine-topo__inner: largura inteira
+   da janela, no máximo --page-max-width, centralizado), para o banner ter o mesmo tamanho do de cima. */
+.faixa-promos--grande {
+  width: 100%;
+  max-width: var(--page-max-width, 1440px);
+  margin-inline: auto;
+}
+
+/* Tamanho cartão: largura do conteúdo da página, como as demais seções. */
+.faixa-promos--cartao {
+  width: 100%;
+  max-width: calc(var(--page-content) + 2 * var(--page-gutter));
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+.faixa-promos__grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap, 20px);
+}
+
+.faixa-promos--colunas-1 .faixa-promos__grade {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.faixa-promos__cel {
+  min-width: 0;
+  container-type: inline-size;
+}
+
+@media screen and (max-width: 760px) {
+  .faixa-promos__grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Quebra de linha equilibrada só nos banners desta faixa (o carrossel do topo não muda): evita uma palavra sozinha
+   na última linha do texto de apoio, do selo e do título (03/10/2026). */
+.faixa-promos .v3-promo__apoio,
+.faixa-promos .v3-promo__selo,
+.faixa-promos .v3-promo__titulo {
+  text-wrap: balance;
+}
+
+/* Bloco "imagem" (Banner de imagem, 03/10/2026): imagem inteira com os mesmos cantos do banner promocional grande
+   (cqw da largura da célula, que é container de medida): 2,444cqw no computador e 7,407cqw até 760 px, como em
+   assets/component-promo.css. A altura vem da própria imagem (3:1 no computador, 4:5 no celular), sem recorte. */
+.faixa-promos__imagem {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 2.444cqw;
+}
+
+.faixa-promos__imagem picture {
+  display: block;
+}
+
+.faixa-promos__imagem img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media screen and (max-width: 760px) {
+  .faixa-promos__imagem {
+    border-radius: 7.407cqw;
+  }
+}
+
+/* Banner de imagem sem versão de celular (03/10/2026): some até 760 px; a seção inteira some quando só tem banners assim. */
+@media screen and (max-width: 760px) {
+  .faixa-promos__cel--so-pc { display: none; }
+  .shopify-section:has(.faixa-promos__cel--so-pc):not(:has(.faixa-promos__cel:not(.faixa-promos__cel--so-pc))) { display: none; }
+}
+
+/* Borda de vidro nas faixas de imagem (06/10/2026, "tudo em modelo liquid apple glass"), igual às capas do carrossel. */
+.faixa-promos__imagem {
+  position: relative;
+  isolation: isolate;
+}
+
+.faixa-promos__imagem::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--lg-rim-light-inset), inset 0 0 0 1px rgba(255, 255, 255, 0.55), var(--lg-hairline);
+  pointer-events: none;
+  z-index: 1;
+}

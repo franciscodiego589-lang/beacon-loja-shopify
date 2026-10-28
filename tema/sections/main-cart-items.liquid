@@ -1,0 +1,254 @@
+{{ 'section-main-cart-items.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'cart-items.js' | asset_url }}" type="module"></script>
+<script src="{{ 'cart-page.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Itens da página do carrinho (templates/cart.json), área busca-carrinho.
+
+  Funciona sem JavaScript:
+  - quantidade: campos updates[] + botão "Atualizar carrinho" (envia o formulário #CartForm);
+  - remover: link item.url_to_remove;
+  - finalizar: botão name="checkout" da seção main-cart-footer, ligado a #CartForm pelo atributo form.
+
+  Com JavaScript, <cart-items> (assets/cart-items.js, fundação) usa os mesmos ganchos da gaveta:
+  li.cart-item[data-line][data-key][data-cart-item], [data-cart-remove="LINHA"],
+  input.quantity-input__field[name="updates[]"][data-line][data-key], [data-cart-item-error].
+  Ganchos próprios da página:
+  - <cart-items data-cart-page data-section-id>: toda chamada de add() e change() (fundação,
+    assets/cart.api.js, pageSections) já pede de uma vez, à Section Rendering API embutida no
+    /cart/change.js, a gaveta e as seções da página pelos ids dinâmicos (section.id, ex.:
+    template--123__cart-footer) de todos os [data-cart-page-section], lidos do HTML. A chave do
+    template ("cart-footer") não serve: a Section Rendering API devolve null para ela;
+  - [data-cart-page-section="{{ section.id }}"]: presente nas três seções do carrinho (itens,
+    resumo e vazio); é nele que assets/cart-page.js (área) troca o HTML depois de cada mudança;
+  - [data-cart-errors]: mensagem de erro geral; [data-cart-note]: campo da observação.
+
+  Segurança: nota do pedido e propriedades de item só saem com | escape; link de arquivo
+  enviado só quando começa com https:// e aponta para /uploads/.
+
+  Blocos sólidos (etapa 8e, leva B, 03/10/2026; spec: conteúdo é sólido, vidro só nos controles): a lista
+  de itens, a barra de frete (quando ligada) e a observação são blocos #ECF3F9 sem borda e sem sombra,
+  como as sugestões do carrinho (component-cart-upsell.css). Antes eram cartões de vidro de conteúdo da v2
+  (.glass .glass--card). O seletor de quantidade e o campo da observação seguem como controles claros.
+{%- endcomment -%}
+
+{%- liquid
+  assign mci_count = cart.item_count
+  assign mci_continue = section.settings.continue_link | default: routes.all_products_collection_url
+-%}
+
+<div class="main-cart-items page-width" id="MainCartItems-{{ section.id }}" data-cart-page-section="{{ section.id }}"{% if mci_count == 0 %} hidden{% endif %}>
+  {%- if mci_count > 0 -%}
+    <div class="main-cart-items__header">
+      <h1 class="main-cart-items__title">
+        {{- 'busca_carrinho.cart.title' | t }}
+        <span class="main-cart-items__count">{{ 'fundacao.cart.item_count' | t: count: mci_count }}</span>
+      </h1>
+      <a href="{{ mci_continue }}" class="link main-cart-items__continue">
+        {%- render 'icon', name: 'arrow-left', size: 16 -%}
+        <span>{{ 'fundacao.cart.continue' | t }}</span>
+      </a>
+    </div>
+
+    {%- if section.settings.show_free_shipping -%}
+      {% render 'free-shipping-bar', class: 'main-cart-items__free-shipping' %}
+    {%- endif -%}
+
+    <form action="{{ routes.cart_url }}" method="post" id="CartForm" class="main-cart-items__form" novalidate>
+      <cart-items class="cart-items main-cart-items__items" data-cart-items data-cart-page data-section-id="{{ section.id }}">
+        <h2 class="visually-hidden" id="MainCartItemsHeading-{{ section.id }}">{{ 'fundacao.cart.items_label' | t }}</h2>
+
+        <div class="main-cart-items__columns" aria-hidden="true">
+          <span>{{ 'busca_carrinho.cart.column_product' | t }}</span>
+          <span>{{ 'busca_carrinho.cart.column_quantity' | t }}</span>
+          <span>{{ 'busca_carrinho.cart.column_total' | t }}</span>
+        </div>
+
+        <ul class="cart-items__list main-cart-items__list" role="list" aria-labelledby="MainCartItemsHeading-{{ section.id }}">
+          {%- for item in cart.items -%}
+            {%- liquid
+              # Nome sem o trecho depois de " – " (emenda 2 da tarefa 3, G3), pela fonte única
+              # snippets/v3-nome-visivel (emenda 15 da tarefa 8). Os três já saem escapados (S1):
+              # 'html' vai entre tags; 'texto' vai aos rótulos (o filtro t não escapa de novo);
+              # o alt leva | escape_once, porque o image_tag escaparia o texto uma segunda vez.
+              # A variante (1, 3 ou 6 potes) segue em item.variant.title.
+              capture mci_title_html
+                render 'v3-nome-visivel', produto: item.product, modo: 'html'
+              endcapture
+              assign mci_title_html = mci_title_html | strip
+              capture mci_title
+                render 'v3-nome-visivel', produto: item.product, modo: 'texto'
+              endcapture
+              assign mci_title = mci_title | strip
+              assign mci_title_alt = mci_title | escape_once
+              assign mci_input_id = 'CartQuantity-' | append: section.id | append: '-' | append: forloop.index
+              assign mci_max = ''
+              if item.variant.inventory_management == 'shopify' and item.variant.inventory_policy == 'deny'
+                assign mci_max = item.variant.inventory_quantity
+              endif
+            -%}
+            <li class="cart-item main-cart-item" id="CartItem-{{ section.id }}-{{ forloop.index }}" data-line="{{ forloop.index }}" data-key="{{ item.key }}" data-cart-item>
+              <a href="{{ item.url }}" class="cart-item__media main-cart-item__media" tabindex="-1" aria-hidden="true">
+                {%- if item.image -%}
+                  {%- assign mci_alt = item.image.alt | default: mci_title_alt -%}
+                  {{ item.image | image_url: width: 240 | image_tag: widths: '96, 120, 180, 240', sizes: '(min-width: 750px) 120px, 88px', loading: 'lazy', alt: mci_alt, class: 'cart-item__image' }}
+                {%- else -%}
+                  {{ 'product-1' | placeholder_svg_tag: 'cart-item__placeholder' }}
+                {%- endif -%}
+              </a>
+
+              <div class="cart-item__info main-cart-item__info">
+                <a href="{{ item.url }}" class="cart-item__title">{{ mci_title_html }}</a>
+
+                {%- unless item.product.has_only_default_variant -%}
+                  <p class="cart-item__variant">{{ item.variant.title | escape }}</p>
+                {%- endunless -%}
+                {%- render 'cart-troca-kit', item: item -%}
+
+                {%- if item.selling_plan_allocation -%}
+                  <p class="cart-item__plan">{{ item.selling_plan_allocation.selling_plan.name | escape }}</p>
+                {%- endif -%}
+
+                {%- for property in item.properties -%}
+                  {%- assign mci_property_first_char = property.first | slice: 0 -%}
+                  {%- if property.last != blank and mci_property_first_char != '_' -%}
+                    <p class="cart-item__property">
+                      <span class="cart-item__property-name">{{ property.first | escape }}:</span>
+                      {%- assign mci_property_scheme = property.last | slice: 0, 8 -%}
+                      {% if property.last contains '/uploads/' and mci_property_scheme == 'https://' %}
+                        <a href="{{ property.last | escape }}" class="link" target="_blank" rel="noopener noreferrer">{{ property.last | split: '/' | last | escape }}</a>
+                      {% else %}
+                        {{ property.last | escape }}
+                      {% endif %}
+                    </p>
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {%- if item.line_level_discount_allocations.size > 0 -%}
+                  <ul class="cart-item__discounts" role="list">
+                    {%- for allocation in item.line_level_discount_allocations -%}
+                      <li class="cart-item__discount">
+                        {% render 'icon', name: 'tag', size: 14 %}
+                        {{ allocation.discount_application.title | escape }} (-{{ allocation.amount | money }})
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+
+                {%- if item.quantity > 1 -%}
+                  {%- assign mci_unit_money = item.final_price | money -%}
+                  <p class="main-cart-item__unit">{{ 'busca_carrinho.cart.unit_price' | t: price: mci_unit_money }}</p>
+                {%- endif -%}
+              </div>
+
+              <div class="main-cart-item__quantity">
+                <quantity-input class="quantity-input cart-item__quantity">
+                  <button type="button" class="quantity-input__button" data-quantity-step="-1" aria-label="{{ 'fundacao.cart.decrease' | t: title: mci_title }}">
+                    {% render 'icon', name: 'minus', size: 16 %}
+                  </button>
+                  <label for="{{ mci_input_id }}" class="visually-hidden">{{ 'fundacao.cart.quantity_label' | t: title: mci_title }}</label>
+                  <input
+                    type="number"
+                    id="{{ mci_input_id }}"
+                    class="quantity-input__field"
+                    name="updates[]"
+                    autocomplete="off"
+                    value="{{ item.quantity }}"
+                    min="0"
+                    {% if mci_max != '' %}max="{{ mci_max }}"{% endif %}
+                    step="1"
+                    inputmode="numeric"
+                    data-line="{{ forloop.index }}"
+                    data-key="{{ item.key }}"
+                  >
+                  <button type="button" class="quantity-input__button" data-quantity-step="1" aria-label="{{ 'fundacao.cart.increase' | t: title: mci_title }}">
+                    {% render 'icon', name: 'plus', size: 16 %}
+                  </button>
+                </quantity-input>
+
+                <a href="{{ item.url_to_remove }}" class="cart-item__remove main-cart-item__remove" data-cart-remove="{{ forloop.index }}" aria-label="{{ 'fundacao.cart.remove' | t: title: mci_title }}">
+                  {% render 'icon', name: 'trash', size: 18 %}
+                  <span class="cart-item__remove-label" aria-hidden="true">{{ 'fundacao.cart.remove_short' | t }}</span>
+                </a>
+              </div>
+
+              <div class="cart-item__prices main-cart-item__total">
+                <span class="visually-hidden">{{ 'busca_carrinho.cart.line_total' | t }}</span>
+                {%- if item.original_line_price > item.final_line_price -%}
+                  <span class="visually-hidden">{{ 'fundacao.price.regular' | t }}</span>
+                  <s class="cart-item__compare">{{ item.original_line_price | money }}</s>
+                {%- elsif item.variant.compare_at_price > item.variant.price -%}
+                  <span class="visually-hidden">{{ 'fundacao.price.regular' | t }}</span>
+                  <s class="cart-item__compare">{{ item.variant.compare_at_price | times: item.quantity | money }}</s>
+                {%- endif -%}
+                <span class="cart-item__price">{{ item.final_line_price | money }}</span>
+              </div>
+
+              <p class="cart-item__error form-message form-message--error main-cart-item__error" role="alert" hidden data-cart-item-error></p>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        <p class="form-message form-message--error main-cart-items__errors" role="alert" hidden data-cart-errors></p>
+      </cart-items>
+
+      <div class="main-cart-items__actions">
+        {%- if section.settings.show_note -%}
+          <details class="main-cart-note"{% if cart.note != blank %} open{% endif %}>
+            <summary class="main-cart-note__summary">
+              {%- render 'icon', name: 'message', size: 18, class: 'main-cart-note__icon' -%}
+              <span>{{ 'busca_carrinho.cart.note_label' | t }}</span>
+              {%- render 'icon', name: 'chevron-down', size: 16, class: 'main-cart-note__chevron' -%}
+            </summary>
+            <div class="main-cart-note__body">
+              <label for="CartNote-{{ section.id }}" class="main-cart-note__label">{{ 'busca_carrinho.cart.note_hint' | t }}</label>
+              <textarea id="CartNote-{{ section.id }}" class="main-cart-note__field" name="note" rows="3" data-cart-note>{{ cart.note | escape }}</textarea>
+            </div>
+          </details>
+        {%- endif -%}
+
+        <button type="submit" name="update" class="button button--secondary button--small main-cart-items__update">
+          {%- render 'icon', name: 'refresh', size: 16 -%}
+          <span>{{ 'busca_carrinho.cart.update' | t }}</span>
+        </button>
+      </div>
+    </form>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Itens do carrinho",
+  "class": "section-main-cart-items",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["cart"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_free_shipping",
+      "label": "Mostrar barra de frete grátis",
+      "info": "A meta vem de Configurações do tema > Carrinho. Com meta 0, a barra não aparece.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_note",
+      "label": "Mostrar campo de observação do pedido",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "continue_link",
+      "label": "Link de \"Continuar comprando\"",
+      "info": "Sem link, leva para a coleção com todos os produtos."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Itens do carrinho"
+    }
+  ]
+}
+{% endschema %}

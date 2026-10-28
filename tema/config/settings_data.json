@@ -1,0 +1,94 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "current": {
+    "color_ink": "#081C2D",
+    "color_primary": "#081C2D",
+    "color_accent": "#E9AD05",
+    "color_petroleo": "#15375A",
+    "color_offer": "#C2410C",
+    "color_background": "#FFFFFF",
+    "color_text_muted": "#566472",
+    "color_line": "#D9E1E8",
+    "color_input_border": "#6F8798",
+    "color_focus": "#081C2D",
+    "color_surface_1": "#F5F9FB",
+    "color_surface_2": "#EAF2F6",
+    "color_photo_bg": "#ECF3F9",
+    "color_chip_bg": "#ECF3F9",
+    "color_chip_text": "#081C2D",
+    "color_badge_bg": "#E9AD05",
+    "color_badge_text": "#081C2D",
+    "color_footer_bg": "#001838",
+    "color_footer_surface": "#082848",
+    "color_footer_line": "#1E3F66",
+    "color_on_dark_muted": "#BFD7E6",
+    "type_heading_font": "system_ui_n7",
+    "type_body_font": "system_ui_n4",
+    "logo_width": 150,
+    "logo_width_mobile": 116,
+    "favicon": "shopify://shop_images/beacon-labs-favicon-512.png",
+    "share_image": "shopify://shop_images/beacon-labs-compartilhamento-1200x630.jpg",
+    "cart_type": "drawer",
+    "free_shipping_threshold": 17900,
+    "cart_show_recommendations": true,
+    "cart_recommendations_limit": 3,
+    "installments_enabled": false,
+    "installments_count": 6,
+    "installments_min_value": 0,
+    "predictive_search_enabled": true,
+    "social_instagram_link": "",
+    "social_youtube_link": "",
+    "social_facebook_link": "",
+    "social_tiktok_link": "",
+    "content_for_index": []
+  },
+  "presets": {
+    "Beacon Labs": {
+      "color_ink": "#001838",
+      "color_primary": "#0068D0",
+      "color_accent": "#E8F800",
+      "color_petroleo": "#1E3F66",
+      "color_offer": "#C2410C",
+      "color_background": "#FFFFFF",
+      "color_text_muted": "#4A6072",
+      "color_line": "#D6E2EA",
+      "color_input_border": "#6F8798",
+      "color_focus": "#0058B8",
+      "color_surface_1": "#F5F9FB",
+      "color_surface_2": "#EAF2F6",
+      "color_photo_bg": "#F0F5F9",
+      "color_chip_bg": "#E8F1FC",
+      "color_chip_text": "#0058B8",
+      "color_badge_bg": "#0058B8",
+      "color_badge_text": "#FFFFFF",
+      "color_footer_bg": "#001838",
+      "color_footer_surface": "#082848",
+      "color_footer_line": "#1E3F66",
+      "color_on_dark_muted": "#BFD7E6",
+      "type_heading_font": "plus_jakarta_sans_n8",
+      "type_body_font": "plus_jakarta_sans_n4",
+      "logo_width": 150,
+      "logo_width_mobile": 116,
+      "cart_type": "drawer",
+      "free_shipping_threshold": 17900,
+      "cart_show_recommendations": true,
+      "cart_recommendations_limit": 3,
+      "installments_enabled": true,
+      "installments_count": 6,
+      "installments_min_value": 0,
+      "predictive_search_enabled": true,
+      "social_instagram_link": "",
+      "social_youtube_link": "",
+      "social_facebook_link": "",
+      "social_tiktok_link": ""
+    }
+  }
+}

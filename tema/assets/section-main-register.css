@@ -1,0 +1,27 @@
+/*
+  Beacon Labs · section-main-register.css (área conta)
+
+  Cadastro: "Voltar" no topo do cartão e Nome e Sobrenome lado a lado (como na maquete,
+  inclusive no celular). Layout geral em conta-auth.css; campos em conta-base.css.
+*/
+
+.conta-register .conta-back {
+  margin-bottom: 8px;
+}
+
+.conta-register__names {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.conta-register__names + .conta-field {
+  margin-top: 16px;
+}
+
+/* Telas muito estreitas: um campo por linha. */
+@media screen and (max-width: 359px) {
+  .conta-register__names {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

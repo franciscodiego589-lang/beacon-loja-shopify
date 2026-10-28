@@ -1,0 +1,175 @@
+{{ 'section-combo-pagina.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Página de combo (etapa M0, 03/10/2026). "O que vem no combo" e a conta da economia.
+  Modelo: templates/product.combo.json, aberto por {{ product.url }}?view=combo e, depois da
+  conferência, pelo templateSuffix "combo" dos combos (produto do tipo Kit).
+
+  Dados (o tema não escreve preço, dose nem texto):
+  - beacon.combo_itens (list.product_reference): os produtos avulsos que o combo leva, 1 pote de
+    cada, na ordem da página. Sem o metacampo, a seção não aparece.
+  - De cada avulso: foto principal (mesma classe de pote solto das páginas de produto), nome visível
+    (snippets/v3-nome-visivel), beacon.insumos (nome e quantidade por porção), beacon.capsulas_por_pote,
+    beacon.capsulas_por_dia e o preço da primeira variante (1 pote).
+  - Economia em centavos, calculada aqui a partir dos preços reais da API (nada fixo no texto):
+    soma = preço do 1 pote de cada avulso; economia = soma menos o preço do combo; percentual =
+    economia * 100 / soma, inteiro para baixo (mesma regra do selo "% OFF" da foto, em
+    sections/main-product.liquid); preço por dia = preço do combo / dias, onde dias = cápsulas por
+    pote / cápsulas por dia (o menor entre os itens). Sem cápsulas ou sem insumos informados em algum
+    item, a linha que depende do dado não aparece (sem valor plausível no lugar).
+  Conteúdo é sólido (bloco claro #ECF3F9), sem vidro. Seção sem item não renderiza nada.
+{%- endcomment -%}
+{%- liquid
+  assign itens = product.metafields.beacon.combo_itens.value
+  assign combo_preco = product.variants.first.price
+  assign soma = 0
+  assign dias = 0
+  assign dias_ok = true
+  assign n_itens = 0
+  for item in itens
+    if item != blank
+      assign n_itens = n_itens | plus: 1
+      assign soma = soma | plus: item.variants.first.price
+      assign i_pote = item.metafields.beacon.capsulas_por_pote.value | plus: 0
+      assign i_dia = item.metafields.beacon.capsulas_por_dia.value | plus: 0
+      if i_pote > 0 and i_dia > 0
+        assign i_dias = i_pote | divided_by: i_dia
+        if dias == 0 or i_dias < dias
+          assign dias = i_dias
+        endif
+      else
+        assign dias_ok = false
+      endif
+    endif
+  endfor
+  if dias_ok == false
+    assign dias = 0
+  endif
+  assign economia = soma | minus: combo_preco
+  assign percentual = 0
+  if economia > 0 and soma > 0
+    assign percentual = economia | times: 100 | divided_by: soma
+  endif
+  assign por_dia = 0
+  if dias > 0
+    assign dias_f = dias | times: 1.0
+    assign por_dia = combo_preco | divided_by: dias_f | round
+  endif
+-%}
+{%- if n_itens > 0 -%}
+  <section class="combo-secao combo-itens" id="combo-itens" aria-labelledby="ComboItensTitulo-{{ section.id }}">
+    <div class="page-width">
+      <div class="combo-secao__cabeca">
+        <h2 class="combo-secao__titulo" id="ComboItensTitulo-{{ section.id }}">{{ 'produto.combo_pagina.itens_titulo' | t }}</h2>
+        <p class="combo-secao__apoio">{{ 'produto.combo_pagina.itens_intro' | t: count: n_itens }}</p>
+      </div>
+
+      <ul class="combo-itens__lista" role="list">
+        {%- for item in itens -%}
+          {%- if item != blank -%}
+            {%- liquid
+              capture i_nome_html
+                render 'v3-nome-visivel', produto: item, modo: 'html'
+              endcapture
+              assign i_nome_html = i_nome_html | strip
+              capture i_nome_texto
+                render 'v3-nome-visivel', produto: item, modo: 'texto'
+              endcapture
+              assign i_nome_texto = i_nome_texto | strip
+              capture i_foto_classe
+                render 'v3-classe-foto', product: item
+              endcapture
+              assign i_foto_classe = i_foto_classe | strip | prepend: 'combo-item__img '
+              assign i_pote = item.metafields.beacon.capsulas_por_pote.value | plus: 0
+              assign i_dia = item.metafields.beacon.capsulas_por_dia.value | plus: 0
+              assign i_dias = 0
+              if i_pote > 0 and i_dia > 0
+                assign i_dias = i_pote | divided_by: i_dia
+              endif
+              assign i_insumos = item.metafields.beacon.insumos.value
+            -%}
+            <li class="combo-item">
+              <a class="combo-item__foto lg-field--claro" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+                {%- if item.featured_media -%}
+                  {{ item.featured_media | image_url: width: 480 | image_tag: widths: '240, 360, 480', sizes: '(min-width: 990px) 260px, (min-width: 750px) 40vw, 112px', loading: 'lazy', alt: '', class: i_foto_classe }}
+                {%- endif -%}
+              </a>
+              <div class="combo-item__corpo">
+                <h3 class="combo-item__nome">{{ i_nome_html }}</h3>
+                {%- if i_insumos != blank and i_dia > 0 -%}
+                  <p class="combo-item__rotulo">{{ 'produto.combo_pagina.dose' | t: count: i_dia }}</p>
+                  <ul class="combo-item__doses" role="list">
+                    {%- for insumo in i_insumos -%}
+                      {%- if insumo != blank and insumo.nome.value != blank and insumo.quantidade_por_porcao.value != blank -%}
+                        <li><span>{{ insumo.nome.value | escape }}</span> <strong>{{ insumo.quantidade_por_porcao.value | escape | replace: ' mg', '&nbsp;mg' | replace: ' µg', '&nbsp;µg' }}</strong></li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                {%- endif -%}
+                {%- if i_dias > 0 -%}
+                  <p class="combo-item__potes">{{ 'produto.combo_pagina.potes_dias' | t: capsulas: i_pote, dias: i_dias }}</p>
+                {%- endif -%}
+                <p class="combo-item__preco"><span>{{ 'produto.combo_pagina.preco_avulso' | t }}</span> <strong>{{ item.variants.first.price | money }}</strong></p>
+                <a class="combo-item__link" href="{{ item.url }}" aria-label="{{ 'produto.combo_pagina.ver_produto_de' | t: nome: i_nome_texto }}">
+                  <span>{{ 'produto.combo_pagina.ver_produto' | t }}</span>
+                  {%- render 'icon', name: 'arrow-right', size: 16 -%}
+                </a>
+              </div>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+
+      {%- if economia > 0 -%}
+        <div class="combo-economia" role="group" aria-labelledby="ComboEconomiaTitulo-{{ section.id }}">
+          <h3 class="combo-economia__titulo" id="ComboEconomiaTitulo-{{ section.id }}">{{ 'produto.combo_pagina.economia_titulo' | t }}</h3>
+          <dl class="combo-economia__grade">
+            <div class="combo-economia__item">
+              <dt>{{ 'produto.combo_pagina.economia_soma' | t }}</dt>
+              <dd class="combo-economia__riscado">{{ soma | money }}</dd>
+            </div>
+            <div class="combo-economia__item">
+              <dt>{{ 'produto.combo_pagina.economia_combo' | t }}</dt>
+              <dd>{{ combo_preco | money }}</dd>
+            </div>
+            <div class="combo-economia__item combo-economia__item--destaque">
+              <dt>{{ 'produto.combo_pagina.economia_valor' | t }}</dt>
+              <dd>{{ economia | money }} <span>({{ percentual }}%)</span></dd>
+            </div>
+            {%- if por_dia > 0 -%}
+              <div class="combo-economia__item">
+                <dt>{{ 'produto.combo_pagina.economia_dia' | t }}</dt>
+                <dd>{{ por_dia | money }} <span>{{ 'produto.combo_pagina.economia_dia_nota' | t: dias: dias }}</span></dd>
+              </div>
+            {%- endif -%}
+          </dl>
+          <p class="combo-economia__nota">{{ 'produto.combo_pagina.economia_nota' | t }}</p>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <p class="home-editor-note page-width">{{ 'produto.editor.empty' | t: field: 'beacon.combo_itens' }}</p>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Combo: itens e economia",
+  "tag": "div",
+  "class": "section-combo-itens",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Os produtos vêm do metacampo beacon.combo_itens. Preços, doses e a economia são calculados com os dados reais; a seção não aparece sem o metacampo."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Combo: itens e economia"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,126 @@
+{%- comment -%}
+  Fontes (font_face) e tokens visuais em :root.
+  Usado por layout/theme.liquid e layout/password.liquid.
+  Os nomes das variáveis são o contrato da fundação: seções e componentes
+  usam somente var(--...) daqui, nunca cores fixas.
+
+  Letra (redesenho v3, 02/10/2026): com a fonte do sistema escolhida nos ajustes
+  (system_ui_n4 no corpo e system_ui_n7 nos títulos), nada é baixado: sem font_face e sem
+  font_modify, e a família vem da pilha explícita do alvo (San Francisco em iPhone e Mac).
+  Enquanto a fonte for do sistema, o peso dos títulos fica fixo em 600 (spec 8, item 7).
+  Com uma fonte da biblioteca da Shopify, o caminho antigo continua: corpo em 400, 500, 600
+  e 700 e títulos no peso do ajuste.
+
+  Liquid Glass (assets/liquid-glass.css): os tokens de vidro que dependem de cor leem estas
+  variáveis, com o valor atual como reserva. Os pares -rgb (--color-ink-rgb e
+  --color-primary-rgb) existem para as tintas e sombras com alfa (rgba). O --focus-outline
+  daqui é trocado pelo anel ink de liquid-glass.css (spec D7); --color-focus continua valendo
+  para quem ainda o lê.
+
+  Medidas do redesenho v3 (alvo.css, linhas 16 a 53 e 394): valores de computador em :root
+  e de celular até 760 px. --bleed-gutter só existe até 760 px: é o recuo único dos blocos
+  que sangram no celular (cápsula do cabeçalho, painel de compra, "Compre junto", barra fixa).
+{%- endcomment -%}
+{%- liquid
+  assign heading_font = settings.type_heading_font
+  assign body_font = settings.type_body_font
+  assign system_stack = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", Roboto, Arial, sans-serif'
+  unless body_font.system?
+    assign body_font_500 = body_font | font_modify: 'weight', '500'
+    assign body_font_600 = body_font | font_modify: 'weight', '600'
+    assign body_font_700 = body_font | font_modify: 'weight', '700'
+  endunless
+-%}
+{% style %}
+  {%- unless body_font.system? -%}
+    {{ body_font | font_face: font_display: 'swap' }}
+    {%- if body_font_500 %}{{ body_font_500 | font_face: font_display: 'swap' }}{% endif -%}
+    {%- if body_font_600 %}{{ body_font_600 | font_face: font_display: 'swap' }}{% endif -%}
+    {%- if body_font_700 %}{{ body_font_700 | font_face: font_display: 'swap' }}{% endif -%}
+  {%- endunless -%}
+  {%- unless heading_font.system? -%}
+    {{ heading_font | font_face: font_display: 'swap' }}
+  {%- endunless %}
+
+  :root {
+    {%- if body_font.system? %}
+    --font-body-family: {{ system_stack }};
+    {%- else %}
+    --font-body-family: {{ body_font.family }}, {{ body_font.fallback_families }};
+    {%- endif %}
+    --font-body-style: {{ body_font.style }};
+    --font-body-weight: {{ body_font.weight }};
+    {%- if heading_font.system? %}
+    --font-heading-family: {{ system_stack }};
+    --font-heading-style: normal;
+    --font-heading-weight: 600;
+    {%- else %}
+    --font-heading-family: {{ heading_font.family }}, {{ heading_font.fallback_families }};
+    --font-heading-style: {{ heading_font.style }};
+    --font-heading-weight: {{ heading_font.weight }};
+    {%- endif %}
+
+    --color-background: {{ settings.color_background }};
+    --color-ink: {{ settings.color_ink }};
+    --color-ink-rgb: {{ settings.color_ink.red }}, {{ settings.color_ink.green }}, {{ settings.color_ink.blue }};
+    --color-primary: {{ settings.color_primary }};
+    --color-primary-rgb: {{ settings.color_primary.red }}, {{ settings.color_primary.green }}, {{ settings.color_primary.blue }};
+    --color-primary-hover: {{ settings.color_primary_hover }};
+    --color-accent: {{ settings.color_accent }};
+    --color-eyebrow: {{ settings.color_eyebrow }};
+    --color-petroleo: {{ settings.color_petroleo }};
+    --color-offer: {{ settings.color_offer }};
+    --color-text: {{ settings.color_ink }};
+    --color-text-muted: {{ settings.color_text_muted }};
+    --color-line: {{ settings.color_line }};
+    --color-input-border: {{ settings.color_input_border }};
+    --color-focus: {{ settings.color_focus }};
+    --color-surface-1: {{ settings.color_surface_1 }};
+    --color-surface-2: {{ settings.color_surface_2 }};
+    --color-photo-bg: {{ settings.color_photo_bg }};
+    --color-chip-bg: {{ settings.color_chip_bg }};
+    --color-chip-text: {{ settings.color_chip_text }};
+    --color-badge-bg: {{ settings.color_badge_bg }};
+    --color-badge-text: {{ settings.color_badge_text }};
+    --color-footer-bg: {{ settings.color_footer_bg }};
+    --color-footer-surface: {{ settings.color_footer_surface }};
+    --color-footer-line: {{ settings.color_footer_line }};
+    --color-on-dark: #FFFFFF;
+    --color-on-dark-muted: {{ settings.color_on_dark_muted }};
+
+    --radius-pill: 999px;
+    --radius-tile: 28px;
+    --radius-card: 22px;
+    --radius-card-sm: 16px;
+    --radius-card-lg: 20px;
+    --radius-panel: 30px;
+    --radius-media: 12px;
+    --radius-input: 12px;
+
+    --focus-outline: 3px solid var(--color-focus);
+    --focus-offset: 2px;
+    --touch-target: 44px;
+
+    --page-content: 1200px;
+    --page-gutter: 24px;
+    --page-max-width: 1440px;
+    --page-gutter-desktop: 80px;
+    --section-gap: 104px;
+    --grid-gap: 20px;
+
+    --logo-width: {{ settings.logo_width }}px;
+    --logo-width-mobile: {{ settings.logo_width_mobile }}px;
+  }
+
+  @media screen and (max-width: 760px) {
+    :root {
+      --page-gutter: 20px;
+      --section-gap: 68px;
+      --grid-gap: 12px;
+      --radius-tile: 24px;
+      --radius-card: 20px;
+      --radius-panel: 26px;
+      --bleed-gutter: 10px;
+    }
+  }
+{% endstyle %}

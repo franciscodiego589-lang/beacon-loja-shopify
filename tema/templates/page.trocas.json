@@ -1,0 +1,761 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "topo": {
+      "type": "ajuda-topo",
+      "blocks": {
+        "botao-solicitar": {
+          "type": "botao",
+          "settings": {
+            "label": "Solicitar troca ou devolução",
+            "link": "",
+            "style": "primary",
+            "icon": "none"
+          }
+        },
+        "botao-atendimento": {
+          "type": "botao",
+          "settings": {
+            "label": "Falar com o atendimento",
+            "link": "shopify://pages/contact",
+            "style": "secondary",
+            "icon": "chat"
+          }
+        }
+      },
+      "block_order": [
+        "botao-solicitar",
+        "botao-atendimento"
+      ],
+      "settings": {
+        "show_breadcrumbs": true,
+        "icon": "refresh",
+        "eyebrow": "Central de ajuda",
+        "heading": "",
+        "heading_tag": "h1",
+        "text": "<p>Desistiu da compra, recebeu um produto com defeito ou um item diferente do pedido? Veja os prazos da lei e como falar com a gente.</p>",
+        "updated": "",
+        "aside": "botoes",
+        "search_label": "Buscar nas páginas e no blog",
+        "search_placeholder": "Ex.: troca, entrega, rastreio",
+        "search_scope": "conteudo",
+        "shortcuts_heading": "Acesso rápido",
+        "aside_heading": "",
+        "aside_text": "",
+        "aside_note": "Tenha em mãos o número do pedido.",
+        "padding": "small"
+      }
+    },
+    "prazos": {
+      "type": "ajuda-cartoes",
+      "blocks": {
+        "prazo-desistir": {
+          "type": "cartao",
+          "settings": {
+            "icon": "calendar",
+            "destaque": "7 dias",
+            "title": "para desistir da compra",
+            "text": "<p>Contados do recebimento do produto, nas compras feitas pelo site. O frete de volta é por nossa conta. CDC, art. 49.</p>",
+            "list_style": "marcadores",
+            "anchor": "",
+            "button_label": "",
+            "button_link": "",
+            "button_anchor": "",
+            "button_style": "primary",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "prazo-defeito": {
+          "type": "cartao",
+          "settings": {
+            "icon": "alert-triangle",
+            "destaque": "30 dias",
+            "title": "para reclamar de defeito aparente",
+            "text": "<p>Em produtos não duráveis, contados da entrega. Defeito oculto: a partir de quando aparece. CDC, art. 26.</p>",
+            "list_style": "marcadores",
+            "anchor": "",
+            "button_label": "",
+            "button_link": "",
+            "button_anchor": "",
+            "button_style": "primary",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "prazo-resposta": {
+          "type": "cartao",
+          "settings": {
+            "icon": "clock",
+            "destaque": "Até 5 dias",
+            "title": "para a resposta do atendimento",
+            "text": "<p>Para dúvidas, reclamações, suspensão ou cancelamento da compra. Decreto nº 7.962/2013, art. 4º, V e parágrafo único.</p>",
+            "list_style": "marcadores",
+            "anchor": "",
+            "button_label": "",
+            "button_link": "",
+            "button_anchor": "",
+            "button_style": "primary",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "prazo-troca": {
+          "type": "cartao",
+          "settings": {
+            "icon": "refresh",
+            "destaque": "Até 30 dias",
+            "title": "para trocarmos o produto com defeito",
+            "text": "<p>Contados do dia em que você faz a solicitação. Os dois fretes, o da devolução e o do produto novo, são por nossa conta.</p>",
+            "list_style": "marcadores",
+            "anchor": "",
+            "button_label": "",
+            "button_link": "",
+            "button_anchor": "",
+            "button_style": "primary",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        }
+      },
+      "block_order": [
+        "prazo-desistir",
+        "prazo-defeito",
+        "prazo-resposta",
+        "prazo-troca"
+      ],
+      "settings": {
+        "heading": "Os prazos, em resumo",
+        "text": "",
+        "link_label": "",
+        "link": "",
+        "region_label": "",
+        "anchor": "",
+        "style": "resumo",
+        "columns_desktop": 4,
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "casos": {
+      "type": "ajuda-cartoes",
+      "blocks": {
+        "caso-desistencia": {
+          "type": "cartao",
+          "settings": {
+            "icon": "arrow-left",
+            "destaque": "Até 7 dias",
+            "title": "Desisti da compra",
+            "text": "<p>Comprou pelo site e mudou de ideia? A lei garante o direito de desistir da compra feita fora da loja física.</p>",
+            "list_style": "marcadores",
+            "anchor": "caso-desistencia",
+            "button_label": "Ver como solicitar",
+            "button_link": "",
+            "button_anchor": "passo-a-passo",
+            "button_style": "link",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "desist-1": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Prazo de 7 dias corridos a partir do recebimento do produto."
+          }
+        },
+        "desist-2": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "O produto volta em perfeito estado, na embalagem original lacrada."
+          }
+        },
+        "desist-3": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Você pode desistir pela mesma ferramenta usada na compra, sem prejuízo de outros meios."
+          }
+        },
+        "caso-defeito": {
+          "type": "cartao",
+          "settings": {
+            "icon": "alert-triangle",
+            "destaque": "Até 30 dias",
+            "title": "Chegou com defeito ou avaria",
+            "text": "<p>Pote violado, cápsulas danificadas ou produto fora da validade? Não consuma e fale com a gente.</p>",
+            "list_style": "marcadores",
+            "anchor": "caso-defeito",
+            "button_label": "Ver como solicitar",
+            "button_link": "",
+            "button_anchor": "passo-a-passo",
+            "button_style": "link",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "defeito-1": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Avise em até 30 dias após o recebimento e envie o produto na embalagem original."
+          }
+        },
+        "defeito-2": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Defeito oculto: o prazo conta a partir de quando o problema aparece."
+          }
+        },
+        "defeito-3": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Analisamos o produto e fazemos a troca em até 30 dias corridos, contados da sua solicitação. Os dois fretes são por nossa conta."
+          }
+        },
+        "caso-errado": {
+          "type": "cartao",
+          "settings": {
+            "icon": "bag",
+            "destaque": "Até 30 dias",
+            "title": "Veio errado ou faltando",
+            "text": "<p>Recebeu um produto diferente do que pediu ou faltou algum item na caixa? Aplicamos a mesma regra do produto com defeito.</p>",
+            "list_style": "marcadores",
+            "anchor": "caso-errado",
+            "button_label": "Ver como solicitar",
+            "button_link": "",
+            "button_anchor": "passo-a-passo",
+            "button_style": "link",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "errado-1": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Avise em até 30 dias após o recebimento, com o número do pedido."
+          }
+        },
+        "errado-2": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Resolvemos em até 30 dias corridos, contados da sua solicitação. O frete fica por nossa conta."
+          }
+        },
+        "errado-3": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Sem solução nesse prazo, você escolhe: o produto certo, outro produto de valor equivalente ou o reembolso do valor pago."
+          }
+        },
+        "desist-4": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "O frete de volta é por nossa conta, e você recebe de volta todos os valores pagos."
+          }
+        },
+        "defeito-4": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Sem solução nesse prazo, você escolhe: um produto igual e novo, outro produto de valor equivalente ou o reembolso do valor pago. A lei também prevê o abatimento proporcional do preço."
+          }
+        },
+        "defeito-5": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Dano causado por mau uso ou manuseio inadequado não entra na troca."
+          }
+        }
+      },
+      "block_order": [
+        "caso-desistencia",
+        "desist-1",
+        "desist-2",
+        "desist-4",
+        "desist-3",
+        "caso-defeito",
+        "defeito-1",
+        "defeito-2",
+        "defeito-3",
+        "defeito-4",
+        "defeito-5",
+        "caso-errado",
+        "errado-1",
+        "errado-2",
+        "errado-3"
+      ],
+      "settings": {
+        "heading": "Qual é o seu caso?",
+        "text": "<p>Cada situação tem um prazo e um caminho. Encontre a sua.</p>",
+        "link_label": "",
+        "link": "",
+        "region_label": "",
+        "anchor": "",
+        "style": "padrao",
+        "columns_desktop": 3,
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "passos": {
+      "type": "ajuda-passos",
+      "blocks": {
+        "passo-1": {
+          "type": "passo",
+          "settings": {
+            "title": "Abra a solicitação",
+            "text": "<p>Fale com o atendimento pela página <a href=\"/pages/contact\">Contato</a> e informe o número do pedido e o motivo.</p>"
+          }
+        },
+        "passo-2": {
+          "type": "passo",
+          "settings": {
+            "title": "Receba as instruções",
+            "text": "<p>O atendimento responde com as instruções para enviar o produto. Na desistência em até 7 dias e no produto com defeito, o frete de volta é por nossa conta.</p>"
+          }
+        },
+        "passo-3": {
+          "type": "passo",
+          "settings": {
+            "title": "Envie o produto",
+            "text": "<p>Na desistência, o produto volta em perfeito estado, na embalagem original lacrada. No defeito, envie o produto na embalagem original. Por isso, vale guardar a embalagem em que o pedido chegou.</p>"
+          }
+        },
+        "passo-4": {
+          "type": "passo",
+          "settings": {
+            "title": "Receba a solução",
+            "text": "<p>Na desistência, você recebe de volta todos os valores pagos. No defeito, fazemos a troca em até 30 dias corridos, contados da solicitação. Os prazos do reembolso estão logo abaixo, em Como o dinheiro volta.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "passo-1",
+        "passo-2",
+        "passo-3",
+        "passo-4"
+      ],
+      "settings": {
+        "heading": "Como pedir a troca ou a devolução",
+        "text": "",
+        "badge": "",
+        "step_label": "Passo",
+        "anchor": "passo-a-passo",
+        "layout": "linha",
+        "note_icon": "shield-check",
+        "note": "<p>Pediu para desistir? A loja deve confirmar na hora que recebeu o seu pedido e avisar a administradora do cartão de crédito, para que a compra não seja lançada na fatura ou para que o valor seja estornado.</p>",
+        "note_source": "Decreto nº 7.962/2013, art. 5º, § 3º e § 4º.",
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "condicoes": {
+      "type": "ajuda-cartoes",
+      "blocks": {
+        "cartao-condicoes": {
+          "type": "cartao",
+          "settings": {
+            "icon": "none",
+            "destaque": "",
+            "title": "Condições para a devolução",
+            "text": "",
+            "list_style": "marcadores",
+            "anchor": "",
+            "button_label": "",
+            "button_link": "",
+            "button_anchor": "",
+            "button_style": "primary",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "cond-1": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Número do pedido e motivo da solicitação."
+          }
+        },
+        "cond-2": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Na desistência, produto em perfeito estado, na embalagem original lacrada."
+          }
+        },
+        "cond-3": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "No defeito, produto enviado na embalagem original."
+          }
+        },
+        "cond-4": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Compra feita neste site. Compras feitas em outras lojas são resolvidas com a loja onde foram feitas."
+          }
+        },
+        "cond-5": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": "Sem troca nem reembolso quando o dano vem de mau uso ou de manuseio inadequado. Nesse caso, o produto é devolvido a você."
+          }
+        },
+        "cond-6": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "title": "",
+            "text": ""
+          }
+        },
+        "nota-improprio": {
+          "type": "nota",
+          "settings": {
+            "icon": "alert-triangle",
+            "title": "",
+            "text": "<p>Produto vencido, adulterado ou avariado é impróprio ao consumo. Não consuma, guarde a embalagem e fale com a gente.</p>",
+            "source": "Código de Defesa do Consumidor, art. 18, § 6º."
+          }
+        },
+        "cartao-dinheiro": {
+          "type": "cartao",
+          "settings": {
+            "icon": "none",
+            "destaque": "",
+            "title": "Como o dinheiro volta",
+            "text": "<p>Veja em quanto tempo e de que forma o valor volta para você.</p>",
+            "list_style": "marcadores",
+            "anchor": "",
+            "button_label": "",
+            "button_link": "",
+            "button_anchor": "",
+            "button_style": "primary",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "dinheiro-cartao": {
+          "type": "item",
+          "settings": {
+            "icon": "card",
+            "title": "Cartão de crédito",
+            "text": "Se você pagou com cartão, o estorno é feito no mesmo cartão e o comprovante vai para o seu e-mail. A data em que o valor aparece depende do banco emissor."
+          }
+        },
+        "dinheiro-pix": {
+          "type": "item",
+          "settings": {
+            "icon": "coin",
+            "title": "Pix",
+            "text": ""
+          }
+        },
+        "dinheiro-boleto": {
+          "type": "item",
+          "settings": {
+            "icon": "file-text",
+            "title": "Boleto",
+            "text": "Se você pagou com boleto, devolvemos por transferência bancária ou Pix, para a conta que você informar."
+          }
+        },
+        "dinheiro-credito": {
+          "type": "item",
+          "settings": {
+            "icon": "tag",
+            "title": "Crédito na loja",
+            "text": ""
+          }
+        },
+        "dinheiro-nao-enviado": {
+          "type": "item",
+          "settings": {
+            "icon": "cashback",
+            "title": "Pedido ainda não enviado",
+            "text": "Se o pedido ainda não foi faturado nem enviado, o reembolso sai em até 1 dia útil."
+          }
+        },
+        "dinheiro-devolvido": {
+          "type": "item",
+          "settings": {
+            "icon": "cashback",
+            "title": "Produto devolvido",
+            "text": "Nos demais casos, o reembolso sai em até 30 dias depois que o produto devolvido chega até nós."
+          }
+        },
+        "nota-sem-reembolso": {
+          "type": "nota",
+          "settings": {
+            "icon": "help-circle",
+            "title": "",
+            "text": "<p>Se o caso não der direito a reembolso, avisamos por e-mail em até 30 dias depois que o produto chega até nós.</p>",
+            "source": ""
+          }
+        }
+      },
+      "block_order": [
+        "cartao-condicoes",
+        "cond-1",
+        "cond-2",
+        "cond-3",
+        "cond-4",
+        "cond-5",
+        "cond-6",
+        "nota-improprio",
+        "cartao-dinheiro",
+        "dinheiro-nao-enviado",
+        "dinheiro-devolvido",
+        "dinheiro-cartao",
+        "dinheiro-pix",
+        "dinheiro-boleto",
+        "dinheiro-credito",
+        "nota-sem-reembolso"
+      ],
+      "settings": {
+        "heading": "",
+        "text": "",
+        "link_label": "",
+        "link": "",
+        "region_label": "Condições e reembolso",
+        "anchor": "",
+        "style": "padrao",
+        "columns_desktop": 2,
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "faq": {
+      "type": "faq-list",
+      "blocks": {
+        "q-cancelar": {
+          "type": "question",
+          "settings": {
+            "question": "Posso cancelar o pedido antes de ele ser enviado?",
+            "answer": "<p>Pode. Peça o cancelamento ao nosso atendimento, pela página <a href=\"/pages/contact\">Contato</a>, com o número do pedido. Se o pedido ainda não foi faturado nem enviado, o reembolso sai em até 1 dia útil.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-frete-volta": {
+          "type": "question",
+          "settings": {
+            "question": "Quem paga o frete da devolução?",
+            "answer": "<p>Nós pagamos. Na desistência em até 7 dias, o frete de volta é por nossa conta. No produto com defeito, pagamos o frete da devolução e o do produto novo até você.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-pote-aberto": {
+          "type": "question",
+          "settings": {
+            "question": "Posso devolver um pote que já abri?",
+            "answer": "<p>Para desistir da compra, o produto precisa voltar em perfeito estado, na embalagem original lacrada. Se você abriu o pote e encontrou um defeito, vale a regra do produto com defeito: avise em até 30 dias após o recebimento e envie o produto na embalagem original.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-caixa": {
+          "type": "question",
+          "settings": {
+            "question": "Recebi a caixa amassada. O que faço?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-trocar": {
+          "type": "question",
+          "settings": {
+            "question": "Posso trocar por outro produto da loja?",
+            "answer": "<p>No produto com defeito, sim: se não resolvermos a troca em até 30 dias corridos, você pode escolher outro produto de valor equivalente. Se você só mudou de ideia, use a desistência em até 7 dias: você devolve o produto e recebe de volta todos os valores pagos.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-kit": {
+          "type": "question",
+          "settings": {
+            "question": "Comprei um kit. Posso devolver só um item?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-acompanhar": {
+          "type": "question",
+          "settings": {
+            "question": "Como acompanho a minha solicitação?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-enviado": {
+          "type": "question",
+          "settings": {
+            "question": "O pedido já foi enviado. Ainda posso cancelar?",
+            "answer": "<p>Pode. Recuse o pacote na hora da entrega. Ele volta para nós pela transportadora, e o reembolso sai em até 30 dias depois que a transportadora confirmar a devolução.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        }
+      },
+      "block_order": [
+        "q-cancelar",
+        "q-enviado",
+        "q-frete-volta",
+        "q-pote-aberto",
+        "q-caixa",
+        "q-trocar",
+        "q-kit",
+        "q-acompanhar"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "Perguntas frequentes",
+        "heading_tag": "h2",
+        "text": "",
+        "intro_align": "left",
+        "layout": "one",
+        "link_label": "",
+        "link": "",
+        "nav_heading": "Categorias",
+        "nav_all_label": "Todas as perguntas",
+        "show_counts": true,
+        "count_singular": "pergunta",
+        "count_plural": "perguntas",
+        "nav_help_text": "",
+        "nav_help_link_label": "",
+        "nav_help_link": "",
+        "open_first": true,
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "contato": {
+      "type": "ajuda-contato",
+      "blocks": {
+        "canal-whatsapp": {
+          "type": "canal",
+          "settings": {
+            "icon": "chat",
+            "rotulo": "WhatsApp",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        },
+        "canal-email": {
+          "type": "canal",
+          "settings": {
+            "icon": "message",
+            "rotulo": "E-mail",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        },
+        "canal-horario": {
+          "type": "canal",
+          "settings": {
+            "icon": "clock",
+            "rotulo": "Horário",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        }
+      },
+      "block_order": [
+        "canal-whatsapp",
+        "canal-email",
+        "canal-horario"
+      ],
+      "settings": {
+        "anchor": "contato",
+        "icon": "chat",
+        "heading": "Ainda com dúvida?",
+        "text": "<p>Fale com o nosso time. Tenha em mãos o número do pedido.</p>",
+        "button_label": "Ir para a página de Contato",
+        "button_link": "shopify://pages/contact",
+        "button_style": "primary",
+        "padding": "normal"
+      }
+    },
+    "base_legal": {
+      "type": "rich-text",
+      "settings": {
+        "eyebrow": "",
+        "heading": "Base legal desta página",
+        "heading_tag": "h2",
+        "heading_size": "medium",
+        "text": "<p>Código de Defesa do Consumidor (Lei nº 8.078/1990): art. 18, § 1º e § 6º; art. 26, I, § 1º e § 3º; art. 49 e parágrafo único. Decreto nº 7.962/2013: art. 4º, V e parágrafo único; art. 5º, § 1º, § 3º e § 4º. Esta página resume os seus direitos e não substitui a lei.</p>",
+        "button_label": "Ler o Código de Defesa do Consumidor",
+        "button_link": "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm",
+        "button_style": "secondary",
+        "button2_label": "Ler o Decreto nº 7.962/2013",
+        "button2_link": "https://www.planalto.gov.br/ccivil_03/_ato2011-2014/2013/decreto/d7962.htm",
+        "alignment": "left",
+        "width": "wide",
+        "color_scheme": "default",
+        "background_overlay": 75,
+        "padding": "small"
+      }
+    }
+  },
+  "order": [
+    "topo",
+    "prazos",
+    "casos",
+    "passos",
+    "condicoes",
+    "faq",
+    "contato",
+    "base_legal"
+  ]
+}

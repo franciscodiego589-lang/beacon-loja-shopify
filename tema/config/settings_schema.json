@@ -1,0 +1,371 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Beacon Labs",
+    "theme_author": "Beacon Labs",
+    "theme_version": "1.0.0",
+    "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
+    "theme_support_url": "https://help.shopify.com/"
+  },
+  {
+    "name": "Cores",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Marca"
+      },
+      {
+        "type": "color",
+        "id": "color_ink",
+        "label": "Tinta (texto principal e azul-marinho)",
+        "default": "#001838"
+      },
+      {
+        "type": "color",
+        "id": "color_primary",
+        "label": "Primária (botões e links)",
+        "default": "#0068D0"
+      },
+      {
+        "type": "color",
+        "id": "color_primary_hover",
+        "label": "Primária ao passar o mouse e ao pressionar",
+        "default": "#15375A"
+      },
+      {
+        "type": "color",
+        "id": "color_accent",
+        "label": "Destaque (amarelo-limão)",
+        "default": "#E8F800"
+      },
+      {
+        "type": "color",
+        "id": "color_eyebrow",
+        "label": "Linha pequena acima do título",
+        "default": "#8A0503"
+      },
+      {
+        "type": "color",
+        "id": "color_petroleo",
+        "label": "Azul-petróleo",
+        "default": "#1E3F66"
+      },
+      {
+        "type": "color",
+        "id": "color_offer",
+        "label": "Oferta (laranja)",
+        "default": "#C2410C"
+      },
+      {
+        "type": "header",
+        "content": "Texto e linhas"
+      },
+      {
+        "type": "color",
+        "id": "color_background",
+        "label": "Fundo da página",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "color",
+        "id": "color_text_muted",
+        "label": "Texto de apoio",
+        "default": "#4A6072"
+      },
+      {
+        "type": "color",
+        "id": "color_line",
+        "label": "Linhas e bordas",
+        "default": "#D6E2EA"
+      },
+      {
+        "type": "color",
+        "id": "color_input_border",
+        "label": "Borda de campos",
+        "default": "#6F8798"
+      },
+      {
+        "type": "color",
+        "id": "color_focus",
+        "label": "Contorno de foco",
+        "default": "#0058B8"
+      },
+      {
+        "type": "header",
+        "content": "Superfícies"
+      },
+      {
+        "type": "color",
+        "id": "color_surface_1",
+        "label": "Superfície clara 1",
+        "default": "#F5F9FB"
+      },
+      {
+        "type": "color",
+        "id": "color_surface_2",
+        "label": "Superfície clara 2",
+        "default": "#EAF2F6"
+      },
+      {
+        "type": "color",
+        "id": "color_photo_bg",
+        "label": "Fundo de foto de produto",
+        "default": "#F0F5F9"
+      },
+      {
+        "type": "header",
+        "content": "Chips e selos"
+      },
+      {
+        "type": "color",
+        "id": "color_chip_bg",
+        "label": "Fundo do chip",
+        "default": "#E8F1FC"
+      },
+      {
+        "type": "color",
+        "id": "color_chip_text",
+        "label": "Texto do chip",
+        "default": "#0058B8"
+      },
+      {
+        "type": "color",
+        "id": "color_badge_bg",
+        "label": "Fundo do selo",
+        "default": "#0058B8"
+      },
+      {
+        "type": "color",
+        "id": "color_badge_text",
+        "label": "Texto do selo",
+        "default": "#FFFFFF"
+      },
+      {
+        "type": "header",
+        "content": "Áreas escuras"
+      },
+      {
+        "type": "paragraph",
+        "content": "Cores das faixas azul-marinho do tema. As cores do rodapé, que é claro, ficam na seção Rodapé."
+      },
+      {
+        "type": "color",
+        "id": "color_footer_bg",
+        "label": "Fundo escuro",
+        "default": "#001838"
+      },
+      {
+        "type": "color",
+        "id": "color_footer_surface",
+        "label": "Superfície escura (campos e etiquetas)",
+        "default": "#082848"
+      },
+      {
+        "type": "color",
+        "id": "color_footer_line",
+        "label": "Linhas sobre fundo escuro",
+        "default": "#1E3F66"
+      },
+      {
+        "type": "color",
+        "id": "color_on_dark_muted",
+        "label": "Texto de apoio sobre fundo escuro",
+        "default": "#BFD7E6"
+      }
+    ]
+  },
+  {
+    "name": "Tipografia",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Padrão: Plus Jakarta Sans (biblioteca de fontes da Shopify). Títulos em peso 800 e corpo em peso 400."
+      },
+      {
+        "type": "font_picker",
+        "id": "type_heading_font",
+        "label": "Fonte dos títulos",
+        "default": "plus_jakarta_sans_n8"
+      },
+      {
+        "type": "font_picker",
+        "id": "type_body_font",
+        "label": "Fonte do corpo",
+        "default": "plus_jakarta_sans_n4"
+      }
+    ]
+  },
+  {
+    "name": "Logo",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Sem imagem, o cabeçalho (fundo branco) usa o logo oficial Beacon Labs positivo, com BEACON em azul-marinho. O rodapé não mostra logo."
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Logo do cabeçalho (fundo claro)",
+        "info": "Altura fixa de 52 px (44 px no celular); mais largo que 132 px (112 px no celular) encolhe."
+      },
+      {
+        "type": "range",
+        "id": "logo_width",
+        "min": 70,
+        "max": 310,
+        "step": 4,
+        "unit": "px",
+        "label": "Largura do logo na página de senha (computador)",
+        "info": "Vale só na página de senha. No cabeçalho este ajuste não é usado: o logo tem altura fixa de 52 px e largura máxima de 132 px no computador.",
+        "default": 150
+      },
+      {
+        "type": "range",
+        "id": "logo_width_mobile",
+        "min": 60,
+        "max": 200,
+        "step": 4,
+        "unit": "px",
+        "label": "Largura do logo na página de senha (celular)",
+        "info": "Vale só na página de senha. No cabeçalho este ajuste não é usado: o logo tem altura fixa de 44 px e largura máxima de 112 px no celular.",
+        "default": 116
+      }
+    ]
+  },
+  {
+    "name": "Favicon",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "favicon",
+        "label": "Favicon",
+        "info": "Imagem quadrada. Será exibida em 32 × 32 px."
+      }
+    ]
+  },
+  {
+    "name": "Compartilhamento",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "share_image",
+        "label": "Imagem de compartilhamento da página inicial",
+        "info": "Aparece quando o link da loja é compartilhado (WhatsApp, Facebook, X). Tamanho: 1200 × 630 px. Se a imagem de compartilhamento das Preferências da loja virtual estiver preenchida, ela vale no lugar desta."
+      }
+    ]
+  },
+  {
+    "name": "Carrinho",
+    "settings": [
+      {
+        "type": "select",
+        "id": "cart_type",
+        "label": "Tipo de carrinho",
+        "options": [
+          {
+            "value": "drawer",
+            "label": "Gaveta lateral"
+          },
+          {
+            "value": "page",
+            "label": "Página"
+          }
+        ],
+        "default": "drawer"
+      },
+      {
+        "type": "number",
+        "id": "free_shipping_threshold",
+        "label": "Meta de frete grátis (em centavos)",
+        "info": "Exemplo: 17900 = R$ 179,00. Use 0 para esconder a barra de progresso.",
+        "default": 17900
+      },
+      {
+        "type": "checkbox",
+        "id": "cart_show_recommendations",
+        "label": "Mostrar sugestões de produtos na gaveta",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "cart_recommendations_limit",
+        "min": 1,
+        "max": 6,
+        "step": 1,
+        "label": "Quantidade de sugestões",
+        "default": 3
+      }
+    ]
+  },
+  {
+    "name": "Parcelamento",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Texto de parcelamento exibido junto aos preços. Confira se o número bate com as condições do seu meio de pagamento."
+      },
+      {
+        "type": "checkbox",
+        "id": "installments_enabled",
+        "label": "Mostrar parcelamento",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "installments_count",
+        "min": 1,
+        "max": 12,
+        "step": 1,
+        "label": "Número de parcelas sem juros",
+        "default": 6
+      },
+      {
+        "type": "number",
+        "id": "installments_min_value",
+        "label": "Valor mínimo da parcela (em centavos)",
+        "info": "Exemplo: 500 = R$ 5,00. Use 0 para não limitar.",
+        "default": 0
+      }
+    ]
+  },
+  {
+    "name": "Busca",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "predictive_search_enabled",
+        "label": "Ativar busca preditiva",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Redes sociais",
+    "settings": [
+      {
+        "type": "text",
+        "id": "social_instagram_link",
+        "label": "Instagram",
+        "info": "Endereço completo, começando com https://"
+      },
+      {
+        "type": "text",
+        "id": "social_youtube_link",
+        "label": "YouTube",
+        "info": "Endereço completo, começando com https://"
+      },
+      {
+        "type": "text",
+        "id": "social_facebook_link",
+        "label": "Facebook",
+        "info": "Endereço completo, começando com https://"
+      },
+      {
+        "type": "text",
+        "id": "social_tiktok_link",
+        "label": "TikTok",
+        "info": "Endereço completo, começando com https://"
+      }
+    ]
+  }
+]

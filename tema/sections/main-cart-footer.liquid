@@ -1,0 +1,122 @@
+{{ 'section-main-cart-footer.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Resumo da página do carrinho (templates/cart.json), área busca-carrinho.
+  Subtotal (cart.items_subtotal_price), descontos do carrinho, total estimado (cart.total_price),
+  aviso de impostos e frete, botão de finalizar e botões de pagamento acelerado.
+  O botão de finalizar pertence ao formulário #CartForm (seção main-cart-items) pelo atributo form,
+  para levar junto a observação do pedido e as quantidades.
+  Blocos: aplicativos (@app), por exemplo cashback ou selos de confiança.
+  Sem itens no carrinho, a seção não mostra nada (o estado vazio é da seção cart-empty).
+  Gancho para o JS: [data-cart-page-section="ID"] (ver main-cart-items).
+  Bloco sólido (etapa 8e, leva B, 03/10/2026; spec: conteúdo é sólido, vidro só nos controles): o
+  resumo é um bloco #ECF3F9 sem borda e sem sombra, como as sugestões do carrinho. Antes era um
+  cartão de vidro de conteúdo da v2 (.glass .glass--card). O botão de finalizar é o primário.
+{%- endcomment -%}
+
+<div class="main-cart-footer page-width" id="MainCartFooter-{{ section.id }}" data-cart-page-section="{{ section.id }}"{% if cart.item_count == 0 %} hidden{% endif %}>
+  {%- if cart.item_count > 0 -%}
+    <div class="main-cart-footer__inner{% if section.blocks.size > 0 %} main-cart-footer__inner--blocks{% endif %}">
+      {%- if section.blocks.size > 0 -%}
+        <div class="main-cart-footer__blocks">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when '@app' -%}
+                <div class="main-cart-footer__app">{% render block %}</div>
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+
+      <section class="main-cart-summary" aria-labelledby="CartSummaryHeading-{{ section.id }}">
+        <h2 class="main-cart-summary__title" id="CartSummaryHeading-{{ section.id }}">{{ 'busca_carrinho.cart_footer.summary_heading' | t }}</h2>
+
+        <dl class="main-cart-summary__rows">
+          <div class="main-cart-summary__row">
+            <dt>{{ 'busca_carrinho.cart_footer.subtotal' | t }}</dt>
+            <dd>{{ cart.items_subtotal_price | money }}</dd>
+          </div>
+
+          {%- for discount in cart.cart_level_discount_applications -%}
+            <div class="main-cart-summary__row main-cart-summary__row--discount">
+              <dt>
+                {%- render 'icon', name: 'tag', size: 14 -%}
+                <span>{{ discount.title | escape }}</span>
+              </dt>
+              <dd>-{{ discount.total_allocated_amount | money }}</dd>
+            </div>
+          {%- endfor -%}
+
+          <div class="main-cart-summary__row main-cart-summary__row--total">
+            <dt>{{ 'busca_carrinho.cart_footer.total' | t }}</dt>
+            <dd>{{ cart.total_price | money }}</dd>
+          </div>
+        </dl>
+
+        <p class="main-cart-summary__taxes">
+          {%- if cart.taxes_included -%}
+            {{ 'busca_carrinho.cart_footer.taxes_included' | t }} {% render 'cart-frete-linha' %}
+          {%- else -%}
+            {{ 'busca_carrinho.cart_footer.taxes_excluded' | t }}
+          {%- endif -%}
+          {%- if section.settings.show_shipping_policy and shop.shipping_policy.body != blank %}
+            <a href="{{ shop.shipping_policy.url }}" class="link main-cart-summary__policy">{{ 'busca_carrinho.cart_footer.shipping_policy' | t }}</a>
+          {%- endif -%}
+        </p>
+
+        <button type="submit" form="CartForm" name="checkout" class="button button--primary button--full button--large main-cart-summary__checkout">
+          {%- render 'icon', name: 'lock', size: 18 -%}
+          <span>{{ 'fundacao.cart.checkout' | t }}</span>
+        </button>
+
+        {%- if section.settings.show_additional_checkout and additional_checkout_buttons -%}
+          <div class="main-cart-summary__additional">
+            {{ content_for_additional_checkout_buttons }}
+          </div>
+        {%- endif -%}
+
+        <p class="main-cart-summary__secure">
+          {%- render 'icon', name: 'shield-check', size: 16 -%}
+          <span>{{ 'busca_carrinho.cart_footer.secure' | t }}</span>
+        </p>
+      </section>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Resumo do carrinho",
+  "class": "section-main-cart-footer",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["cart"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_additional_checkout",
+      "label": "Mostrar botões de pagamento acelerado",
+      "info": "Aparecem só os meios de pagamento acelerado ativos na loja.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_policy",
+      "label": "Mostrar link da política de envio",
+      "info": "Aparece só quando a política de envio está preenchida em Configurações > Políticas.",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Resumo do carrinho"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,19 @@
+{%- comment -%}
+  Área conta: imagem lateral das telas de login, cadastro, nova senha e ativação.
+  Parâmetros:
+  - image: imagem escolhida no editor (image_picker). Sem imagem, mostra o placeholder
+    da Shopify só no computador (no celular o bloco some, via CSS).
+
+  A imagem é decorativa: o alt vem do texto alternativo cadastrado na própria imagem
+  (vazio quando não houver). Fica na primeira dobra, por isso loading eager.
+{%- endcomment -%}
+{%- if image != blank -%}
+  {%- assign media_alt = image.alt | default: '' -%}
+  <div class="conta-auth__media">
+    {{ image | image_url: width: 1440 | image_tag: widths: '375, 550, 750, 900, 1080, 1440', sizes: '(min-width: 990px) 50vw, 100vw', loading: 'eager', alt: media_alt, class: 'conta-auth__image' }}
+  </div>
+{%- else -%}
+  <div class="conta-auth__media conta-auth__media--placeholder" aria-hidden="true">
+    {{ 'lifestyle-1' | placeholder_svg_tag: 'conta-auth__image placeholder-svg' }}
+  </div>
+{%- endif -%}

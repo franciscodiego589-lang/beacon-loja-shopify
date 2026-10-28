@@ -1,0 +1,13 @@
+{%- comment -%}
+  Seção técnica, só para a Section Rendering API (?sections=cart-drawer).
+  Não entra em templates nem em grupos: o layout renderiza o snippet diretamente.
+  O JS lê #CartDrawerContent da resposta e troca o conteúdo da gaveta aberta.
+{%- endcomment -%}
+{% render 'cart-drawer' %}
+
+{% schema %}
+{
+  "name": "Gaveta do carrinho",
+  "settings": []
+}
+{% endschema %}

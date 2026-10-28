@@ -1,0 +1,106 @@
+{{ 'home-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'section-seals-strip.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Faixa de selos da linha (ex.: "60 cápsulas por pote", "Qualidade Beacon Labs"),
+  cada bloco com imagem ou texto. Celular: rolagem por toque. Computador: grade fixa,
+  sem rolagem, como na maquete ("Linha Pure"). Sem blocos preenchidos, nada aparece.
+  Liquid Glass (spec 8.5): a faixa é um painel de vidro de conteúdo (.glass-layer
+  .glass--panel) sobre a névoa; os selos são preenchimento (.glass-fill), nunca vidro sobre
+  vidro.
+{%- endcomment -%}
+
+{%- liquid
+  assign seals_count = 0
+  for block in section.blocks
+    if block.type == 'seal'
+      assign seals_filled = false
+      if block.settings.image != blank
+        assign seals_filled = true
+      endif
+      if block.settings.text != blank
+        assign seals_filled = true
+      endif
+      if seals_filled
+        assign seals_count = seals_count | plus: 1
+      endif
+    endif
+  endfor
+  assign seals_heading_id = 'SealsStrip-' | append: section.id
+-%}
+
+{%- if seals_count > 0 -%}
+  <div class="seals-strip glass-layer glass--panel">
+    <div class="page-width seals-strip__inner">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="seals-strip__heading eyebrow" id="{{ seals_heading_id }}">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+      {%- comment -%}
+        tabindex="0": o trilho rola na horizontal só por toque e não tem nada focável dentro; com
+        o foco, o teclado rola pelas setas. O <ul> continua lista (os <li> precisam dela), com o
+        nome do título da seção.
+      {%- endcomment -%}
+      <ul class="seals-strip__track home-carousel-track" role="list" tabindex="0"{% if section.settings.heading != blank %} aria-labelledby="{{ seals_heading_id }}"{% endif %}>
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'seal' and block.settings.image != blank -%}
+            <li class="seals-strip__item glass-fill" {{ block.shopify_attributes }}>
+              {{ block.settings.image | image_url: width: 320 | image_tag: widths: '160, 220, 320', sizes: '160px', loading: 'lazy', alt: block.settings.text | default: '', class: 'seals-strip__image' }}
+            </li>
+          {%- elsif block.type == 'seal' and block.settings.text != blank -%}
+            <li class="seals-strip__item seals-strip__item--text glass-fill" {{ block.shopify_attributes }}>
+              <span>{{ block.settings.text | escape }}</span>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Faixa de selos",
+  "tag": "section",
+  "class": "section-seals-strip",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título curto",
+      "default": "Linha Pure"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "seal",
+      "name": "Selo",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem",
+          "info": "Com imagem preenchida, o texto abaixo vira só o texto alternativo."
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texto"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Faixa de selos",
+      "blocks": [
+        { "type": "seal" },
+        { "type": "seal" },
+        { "type": "seal" },
+        { "type": "seal" },
+        { "type": "seal" }
+      ]
+    }
+  ]
+}
+{% endschema %}

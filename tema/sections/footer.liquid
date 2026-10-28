@@ -1,0 +1,452 @@
+{{ 'section-footer.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Rodapé do redesenho v3 (alvo: bloco "Rodapé" de alvo.css e de home.html).
+  - Campo claro no próprio <footer> (.lg-field--claro, cor do fundo das fotos) e conteúdo sólido.
+    As cores vêm dos tokens do tema (tinta e texto de apoio); a seção não tem ajuste de cor.
+  - Topo: newsletter à esquerda (título, rótulos visíveis, campos em cápsula, nota de
+    consentimento e botão "Cadastrar") e até 4 colunas de menu à direita, sempre abertas.
+    "Redes sociais" entra na última coluna de menu, depois dos links.
+  - Base: logo decorativo à esquerda e, à direita, cada uma em sua linha: frase institucional,
+    linha legal, pagamento e selo (desligados por padrão), direitos reservados e menu de políticas.
+  - O título da newsletter passa pelo snippet v3-nome-visivel (a saída já vem escapada) para que
+    "e-mail." não se parta na quebra de linha.
+  - Botão flutuante de atendimento: só aparece com link preenchido e não tem desfoque (o desfoque
+    real fica na barra fixa de compra, nas gavetas e na busca). Apps de chat entram por
+    incorporação de app (app embed), que desenha o próprio botão.
+{%- endcomment -%}
+
+{%- liquid
+  assign has_social = false
+  if settings.social_instagram_link != blank or settings.social_youtube_link != blank or settings.social_facebook_link != blank or settings.social_tiktok_link != blank
+    assign has_social = true
+  endif
+  assign show_social = false
+  if section.settings.show_social and has_social
+    assign show_social = true
+  endif
+
+  assign last_menu_index = 0
+  for block in section.blocks
+    if block.type == 'menu' and block.settings.menu.links.size > 0
+      assign last_menu_index = forloop.index
+    endif
+  endfor
+
+  assign privacy_url = section.settings.privacy_url | default: shop.privacy_policy.url
+  assign terms_url = section.settings.terms_url | default: shop.terms_of_service.url
+
+  # Logo decorativo com 40 px de altura; a largura segue a proporção do arquivo (231,3 x 91,29 no
+  # logo padrão), a mesma fonte do cabeçalho.
+  if settings.logo != blank
+    assign logo_ratio = settings.logo.aspect_ratio
+  else
+    assign logo_ratio = 231.3 | divided_by: 91.29
+  endif
+  assign logo_w = logo_ratio | times: 40 | round
+  assign logo_sizes = logo_w | append: 'px'
+
+  assign chat_url = section.settings.chat_link | strip
+  assign chat_new_tab = false
+  if chat_url != blank
+    assign chat_scheme = chat_url | slice: 0, 4 | downcase
+    if chat_scheme == 'http'
+      assign chat_new_tab = true
+    endif
+  endif
+  assign chat_label = section.settings.chat_label
+  if chat_label == blank
+    assign chat_label = 'fundacao.footer.chat_label_default' | t
+  endif
+
+  assign show_trust = false
+  if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0
+    assign show_trust = true
+  endif
+  if section.settings.show_secure_badge
+    assign show_trust = true
+  endif
+
+  assign current_year = 'now' | date: '%Y'
+-%}
+
+{%- capture footer_social -%}
+  <div class="site-footer__social">
+    <h2 class="site-footer__social-heading">{{ 'fundacao.footer.social_heading' | t }}</h2>
+    {% render 'social-links', class: 'site-footer__social-list' %}
+  </div>
+{%- endcapture -%}
+
+<footer class="site-footer lg-field--claro{% if chat_url != blank %} site-footer--has-chat{% endif %}" data-section-id="{{ section.id }}">
+  <div class="site-footer__inner page-width">
+    <div class="site-footer__top{% unless section.settings.show_newsletter %} site-footer__top--no-newsletter{% endunless %}">
+      {%- if section.settings.show_newsletter -%}
+        <div class="site-footer__newsletter">
+          {%- if section.settings.newsletter_heading != blank -%}
+            {%- capture newsletter_heading_html -%}
+              {%- render 'v3-nome-visivel', titulo: section.settings.newsletter_heading, modo: 'html' -%}
+            {%- endcapture -%}
+            <h2 class="site-footer__newsletter-heading">{{ newsletter_heading_html | strip }}</h2>
+          {%- endif -%}
+          {%- if section.settings.newsletter_text != blank -%}
+            <p class="site-footer__newsletter-text">{{ section.settings.newsletter_text | escape }}</p>
+          {%- endif -%}
+
+          {%- assign newsletter_form_id = 'FooterNewsletter-' | append: section.id -%}
+          {%- form 'customer', id: newsletter_form_id, class: 'newsletter-form' -%}
+            <input type="hidden" name="contact[tags]" value="newsletter">
+
+            {%- if section.settings.newsletter_show_name -%}
+              <label for="FooterNewsletterName-{{ section.id }}" class="newsletter-form__label">{{ 'fundacao.footer.newsletter_name_label' | t }}</label>
+              <input
+                type="text"
+                id="FooterNewsletterName-{{ section.id }}"
+                class="newsletter-form__input"
+                name="contact[first_name]"
+                autocomplete="given-name"
+                maxlength="80"
+              >
+            {%- endif -%}
+
+            <label for="FooterNewsletterEmail-{{ section.id }}" class="newsletter-form__label">{{ 'fundacao.footer.newsletter_email_label' | t }}</label>
+            <input
+              type="email"
+              id="FooterNewsletterEmail-{{ section.id }}"
+              class="newsletter-form__input"
+              name="contact[email]"
+              required
+              autocomplete="email"
+              autocapitalize="off"
+              spellcheck="false"
+              placeholder="{{ 'fundacao.footer.newsletter_email_example' | t }}"
+              {% if form.errors %}
+                aria-invalid="true"
+                aria-describedby="FooterNewsletterError-{{ section.id }}"
+              {% elsif form.posted_successfully? %}
+                aria-describedby="FooterNewsletterSuccess-{{ section.id }}"
+              {% endif %}
+            >
+
+            {%- if section.settings.newsletter_show_consent -%}
+              <p class="newsletter-form__consent">
+                {%- if privacy_url != blank and terms_url != blank -%}
+                  {%- liquid
+                    assign privacy_url_attr = privacy_url | escape
+                    assign terms_url_attr = terms_url | escape
+                  -%}
+                  {{- 'fundacao.footer.newsletter_consent_links_html' | t: privacy_url: privacy_url_attr, terms_url: terms_url_attr -}}
+                {%- else -%}
+                  {{- 'fundacao.footer.newsletter_consent' | t -}}
+                {%- endif -%}
+              </p>
+            {%- endif -%}
+
+            <button type="submit" class="button button--primary newsletter-form__submit" name="commit">
+              {{- 'fundacao.footer.newsletter_submit' | t -}}
+            </button>
+
+            {%- comment -%}
+              A mensagem já vem pronta na página que volta do envio, e uma região viva presente
+              no carregamento nem sempre é anunciada. Por isso ela recebe o foco ao carregar
+              (tabindex="-1" + autofocus, sem JavaScript), no mesmo padrão de
+              snippets/conta-form-errors.liquid e sections/contact-form.liquid.
+            {%- endcomment -%}
+            {%- if form.errors -%}
+              <div id="FooterNewsletterError-{{ section.id }}" class="form-message form-message--error newsletter-form__message" role="alert" tabindex="-1" autofocus>
+                {{ form.errors | default_errors }}
+              </div>
+            {%- elsif form.posted_successfully? -%}
+              <p id="FooterNewsletterSuccess-{{ section.id }}" class="form-message form-message--success newsletter-form__message" role="status" tabindex="-1" autofocus>
+                {{ 'fundacao.footer.newsletter_success' | t }}
+              </p>
+            {%- endif -%}
+          {%- endform -%}
+        </div>
+      {%- endif -%}
+
+      <div class="site-footer__columns">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'menu' -%}
+              {%- assign footer_menu = block.settings.menu -%}
+              {%- if footer_menu.links.size > 0 -%}
+                {%- assign footer_heading = block.settings.heading | default: footer_menu.title -%}
+                <div class="site-footer__column" {{ block.shopify_attributes }}>
+                  <h2 class="footer-menu__heading">{{ footer_heading | escape }}</h2>
+                  <ul class="footer-menu__list" role="list">
+                    {%- for link in footer_menu.links -%}
+                      <li class="footer-menu__item">
+                        <a href="{{ link.url }}" class="footer-menu__link"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                  {%- if show_social and forloop.index == last_menu_index -%}
+                    {{ footer_social }}
+                  {%- endif -%}
+                </div>
+              {%- elsif request.design_mode -%}
+                <div class="site-footer__column site-footer__column--empty" {{ block.shopify_attributes }}>
+                  <p class="footer-menu__placeholder">{{ 'fundacao.footer.menu_placeholder' | t }}</p>
+                </div>
+              {%- endif -%}
+            {%- when '@app' -%}
+              <div class="site-footer__app" {{ block.shopify_attributes }}>
+                {% render block %}
+              </div>
+          {%- endcase -%}
+        {%- endfor -%}
+
+        {%- if show_social and last_menu_index == 0 -%}
+          <div class="site-footer__column site-footer__column--social">
+            {{ footer_social }}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="site-footer__bottom">
+      {%- if settings.logo != blank -%}
+        {{ settings.logo | image_url: width: 480 | image_tag: width: logo_w, height: 40, widths: '160, 320, 480', sizes: logo_sizes, alt: '', loading: 'lazy', class: 'site-footer__logo' }}
+      {%- else -%}
+        <img
+          src="{{ 'logo-beacon-labs.svg' | asset_url }}"
+          alt=""
+          width="{{ logo_w }}"
+          height="40"
+          loading="lazy"
+          class="site-footer__logo"
+        >
+      {%- endif -%}
+
+      <div class="site-footer__legal">
+        {%- if section.settings.brand_text != blank -%}
+          <p class="site-footer__brand-text">{{ section.settings.brand_text | escape | newline_to_br }}</p>
+        {%- endif -%}
+        {%- if section.settings.legal_text != blank -%}
+          <p class="site-footer__legal-text" translate="no">{{ section.settings.legal_text | escape }}</p>
+        {%- endif -%}
+
+        {%- if show_trust -%}
+          <div class="site-footer__trust">
+            {%- if section.settings.show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+              <h2 class="visually-hidden">{{ 'fundacao.footer.payment_label' | t }}</h2>
+              <ul class="payment-icons" role="list">
+                {%- for type in shop.enabled_payment_types -%}
+                  <li class="payment-icons__item">{{ type | payment_type_svg_tag: class: 'payment-icons__icon' }}</li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+            {%- if section.settings.show_secure_badge -%}
+              <span class="site-footer__secure">
+                {% render 'icon', name: 'lock', size: 16 %}
+                {{ 'fundacao.footer.secure' | t }}
+              </span>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.show_copyright -%}
+          <p class="site-footer__copyright">© {{ current_year }} <span translate="no">{{ shop.name | escape }}</span>. {{ 'fundacao.footer.rights_reserved' | t }}</p>
+        {%- endif -%}
+        {%- assign legal_menu = section.settings.legal_menu -%}
+        {%- if legal_menu.links.size > 0 -%}
+          <nav class="site-footer__policies" aria-label="{{ 'fundacao.footer.policies_label' | t }}">
+            <ul class="site-footer__policies-list" role="list">
+              {%- for link in legal_menu.links -%}
+                <li><a href="{{ link.url }}" class="site-footer__policy-link">{{ link.title | escape }}</a></li>
+              {%- endfor -%}
+            </ul>
+          </nav>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+
+  {%- if chat_url != blank -%}
+    {%- if chat_new_tab -%}
+      {%- comment -%} chat_label é texto do editor: escapado antes do filtro t (regra S3). O t não escapa de novo um texto já escapado (medido em 02/10/2026), então o aria-label sai com o escape uma vez só. {%- endcomment -%}
+      {%- assign chat_label_safe = chat_label | escape -%}
+      {%- assign chat_aria = 'fundacao.general.external_link' | t: name: chat_label_safe -%}
+      <a href="{{ chat_url | escape }}" class="chat-button glass glass--dark glass--interactive" target="_blank" rel="noopener noreferrer" aria-label="{{ chat_aria }}">
+        {% render 'icon', name: 'chat', size: 28 %}
+      </a>
+    {%- else -%}
+      <a href="{{ chat_url | escape }}" class="chat-button glass glass--dark glass--interactive" aria-label="{{ chat_label | escape }}">
+        {% render 'icon', name: 'chat', size: 28 %}
+      </a>
+    {%- endif -%}
+  {%- endif -%}
+</footer>
+
+{% schema %}
+{
+  "name": "Rodapé",
+  "class": "section-footer",
+  "enabled_on": {
+    "groups": ["footer"]
+  },
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_newsletter",
+      "label": "Mostrar cadastro de e-mail",
+      "info": "Os e-mails entram como clientes que aceitam marketing, com a tag newsletter.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "newsletter_heading",
+      "label": "Título",
+      "default": "Novidades e ofertas no seu e-mail."
+    },
+    {
+      "type": "text",
+      "id": "newsletter_text",
+      "label": "Texto de apoio (opcional)"
+    },
+    {
+      "type": "checkbox",
+      "id": "newsletter_show_name",
+      "label": "Mostrar campo Nome",
+      "info": "Confira na loja se o nome chega ao cadastro do cliente. A documentação da Shopify garante só o e-mail neste formulário.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "newsletter_show_consent",
+      "label": "Mostrar texto de consentimento",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "privacy_url",
+      "label": "Link da Política de Privacidade",
+      "info": "Vazio usa a política de privacidade cadastrada na loja."
+    },
+    {
+      "type": "url",
+      "id": "terms_url",
+      "label": "Link dos Termos de Uso",
+      "info": "Vazio usa os termos de serviço cadastrados na loja. Sem os dois links, o texto aparece sem link."
+    },
+    {
+      "type": "header",
+      "content": "Redes sociais"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_social",
+      "label": "Mostrar redes sociais",
+      "info": "Os endereços ficam em Configurações do tema > Redes sociais. Aparecem na última coluna de menu.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Parte de baixo"
+    },
+    {
+      "type": "textarea",
+      "id": "brand_text",
+      "label": "Frase institucional",
+      "default": "Beacon Labs é uma marca brasileira de suplementos alimentares em cápsulas."
+    },
+    {
+      "type": "text",
+      "id": "legal_text",
+      "label": "Texto legal",
+      "default": "Beacon Labs · CNPJ 64.764.725/0001-39"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_copyright",
+      "label": "Mostrar linha de direitos reservados",
+      "info": "Ano atual e nome da loja.",
+      "default": true
+    },
+    {
+      "type": "link_list",
+      "id": "legal_menu",
+      "label": "Menu de políticas (opcional)",
+      "info": "Links extras abaixo da linha legal."
+    },
+    {
+      "type": "header",
+      "content": "Pagamento e segurança"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Mostrar formas de pagamento",
+      "info": "Ícones gerados a partir dos meios de pagamento ativos na loja.",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_secure_badge",
+      "label": "Mostrar \"Ambiente seguro\"",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Botão de atendimento"
+    },
+    {
+      "type": "paragraph",
+      "content": "Botão flutuante no canto inferior direito. Só aparece com link. Apps de chat instalados pela incorporação de app desenham o próprio botão; nesse caso, deixe o link vazio."
+    },
+    {
+      "type": "url",
+      "id": "chat_link",
+      "label": "Link do atendimento"
+    },
+    {
+      "type": "text",
+      "id": "chat_label",
+      "label": "Nome acessível do botão",
+      "default": "Abrir atendimento"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Coluna de menu",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título da coluna",
+          "info": "Vazio usa o nome do menu."
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "info": "Coluna sem menu não aparece na loja."
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rodapé",
+      "blocks": [
+        {
+          "type": "menu",
+          "settings": {
+            "menu": "footer"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

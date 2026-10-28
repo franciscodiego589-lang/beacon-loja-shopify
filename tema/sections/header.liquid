@@ -1,0 +1,410 @@
+{{ 'section-header.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Cabeçalho do redesenho v3 (opção B com Liquid Glass; alvo.css, regras .barra; spec 2.3 e 8).
+  - O <header class="site-header"> é a própria cápsula de vidro: 68 px de altura (56 px até 760 px),
+    com recuo lateral, sobre o campo claro (#ECF3F9) que o section-header.css pinta no invólucro
+    da seção, igual ao do aviso e ao do topo das páginas, sem emenda. Vidro regular SEM
+    desfoque (.glass-layer .glass--regular): o cabeçalho não fixa e nunca passa sobre conteúdo,
+    então fica só a tinta e a luz do vidro (spec 8, item 3). O cabeçalho nunca fixa ao rolar.
+  - Barra única: logo, menu numa linha, "Super ofertas" em cápsula amarela junto das ações, lupa,
+    conta e sacola. O menu fica na barra só a partir da largura em que todos os itens do menu
+    real cabem sem tocar nas ações (ponto de quebra medido, escrito em section-header.css);
+    abaixo dela o botão Menu abre a gaveta (snippets/menu-drawer.liquid). Até 760 px ficam menu,
+    logo, lupa e sacola; "Super ofertas" e a conta saem da barra e vão para a gaveta.
+  - A busca é só a lupa, sem campo na barra. Ela abre o diálogo da busca preditiva
+    (snippets/predictive-search-modal.liquid); sem busca preditiva é um link para a página de busca.
+  - Sem JavaScript (html.no-js): o botão da lupa e o botão Menu não abrem nada. A lupa-botão some e
+    entra um link para a página de busca, com a mesma lupa (.header-action--search-nojs); abaixo de
+    1240 px o botão Menu some e o menu da barra (os mesmos links) aparece numa segunda linha dentro
+    da cápsula. Tudo isso é regra de section-header.css sob .no-js: com JavaScript nada muda e o
+    link extra fica com display: none.
+  - Logo com altura fixa de 52 px (44 px até 760 px) e largura máxima de 132 px (112 px até
+    760 px): um logo mais largo encolhe na altura em vez de empurrar o menu. Os ajustes de largura
+    do logo, nas configurações do tema, não mandam no cabeçalho (valem só na página de senha).
+  - Mega menu (.mega-menu__panel): vidro denso sem desfoque (D13), solto abaixo da cápsula e com
+    a largura dela; abre a partir do botão do item (--lg-materialize-origin, gravado pelo
+    liquid-glass.js a partir do .site-nav).
+  - Sem as classes e os atributos do cabeçalho fixo (lg-header, data-lg-sticky e data-lg-adapt):
+    o liquid-glass.js não liga mais rolagem, compactação nem logo negativo neste cabeçalho, e a
+    marcação traz só o logo positivo.
+  - Ajustes que saíram porque perderam o efeito: "Fixar cabeçalho" (nunca fixa), "Mostrar o botão
+    Menu também no computador" (o botão aparece só onde o menu não cabe), ícone de lista no
+    primeiro item, posição do item destacado, fundo da faixa de menu e o "Rastreie seu pedido"
+    da barra (o link continua na gaveta do menu).
+{%- endcomment -%}
+
+{%- liquid
+  assign menu = section.settings.menu
+  assign tracking_url = section.settings.tracking_url | default: routes.account_url
+
+  # Logo com altura fixa (52 px; 44 px até 760 px, em section-header.css). A largura segue a
+  # proporção do arquivo (231,3 x 91,29 no logo padrão), até o teto de 132 px (112 px no celular).
+  # O atributo sizes da imagem do editor declara a largura que ela de fato ocupa: a da altura de
+  # 52 px, no máximo 132 px, no computador, e a da altura de 44 px, no máximo 112 px, até 760 px.
+  # Antes declarava a largura sem teto (até 260 px num logo de 5:1) e o navegador baixava mais.
+  if settings.logo != blank
+    assign logo_ratio = settings.logo.aspect_ratio
+  else
+    assign logo_ratio = 231.3 | divided_by: 91.29
+  endif
+  assign logo_w = logo_ratio | times: 52 | round
+  assign logo_w_shown = logo_w | at_most: 132
+  assign logo_w_shown_mobile = logo_ratio | times: 44 | round | at_most: 112
+  assign logo_sizes = '(max-width: 760px) ' | append: logo_w_shown_mobile | append: 'px, ' | append: logo_w_shown | append: 'px'
+
+  assign has_menu = false
+  if menu.links.size > 0
+    assign has_menu = true
+  endif
+
+  assign show_highlight = false
+  if section.settings.show_highlight and section.settings.highlight_label != blank and section.settings.highlight_link != blank
+    assign show_highlight = true
+  endif
+
+  assign cart_label = 'fundacao.header.cart_count' | t: count: cart.item_count
+
+  assign header_classes = 'site-header glass-layer glass--regular'
+  unless has_menu
+    assign header_classes = header_classes | append: ' site-header--no-nav'
+  endunless
+-%}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    --header-bg: {{ section.settings.color_bg }};
+    --header-text: {{ section.settings.color_text }};
+    --header-nav-text: {{ section.settings.color_nav_text }};
+  }
+{% endstyle %}
+
+<header class="{{ header_classes }}" data-section-id="{{ section.id }}">
+  <div class="site-header__bar">
+    <div class="site-header__start">
+      <button
+        type="button"
+        class="header-action header-action--menu"
+        aria-haspopup="dialog"
+        aria-controls="MenuDrawerDialog"
+        aria-expanded="false"
+        data-menu-drawer-open
+      >
+        {% render 'icon', name: 'menu', size: 20, stroke: 1.6 %}
+        <span class="visually-hidden">{{ 'fundacao.header.menu' | t }}</span>
+      </button>
+
+      <a href="{{ routes.root_url }}" class="site-header__logo" translate="no">
+        {%- if settings.logo != blank -%}
+          {%- assign logo_alt = settings.logo.alt | default: shop.name -%}
+          {{ settings.logo | image_url: width: 480 | image_tag: width: logo_w, height: 52, widths: '160, 320, 480', sizes: logo_sizes, alt: logo_alt, loading: 'eager', class: 'site-header__logo-image' }}
+        {%- else -%}
+          <img
+            src="{{ 'logo-beacon-labs.svg' | asset_url }}"
+            alt="{{ shop.name | escape }}"
+            width="{{ logo_w }}"
+            height="52"
+            class="site-header__logo-image"
+          >
+        {%- endif -%}
+      </a>
+    </div>
+
+    {%- if has_menu -%}
+      <div class="site-nav">
+        <nav class="site-nav__inner" aria-label="{{ 'fundacao.header.main_nav_label' | t }}">
+          <mega-menu class="mega-menu">
+            <ul class="site-nav__list" role="list">
+              {%- for link in menu.links -%}
+                {%- assign panel_id = 'MegaMenu-' | append: section.id | append: '-' | append: forloop.index -%}
+                <li class="site-nav__item{% if link.links != blank %} site-nav__item--has-panel{% endif %}" data-mega-menu-item>
+                  {%- if link.links != blank -%}
+                    <button
+                      type="button"
+                      class="site-nav__link site-nav__toggle{% if link.active or link.child_active %} site-nav__link--active{% endif %}"
+                      aria-expanded="false"
+                      aria-controls="{{ panel_id }}"
+                      data-mega-menu-toggle
+                    >
+                      <span>{{ link.title | escape }}</span>
+                      {% render 'icon', name: 'chevron-down', size: 14, stroke: 2, class: 'site-nav__chevron' %}
+                    </button>
+
+                    {%- liquid
+                      assign link_key = link.title | downcase | strip
+                      capture mega_promos
+                        for block in section.blocks
+                          if block.type == 'mega_promo'
+                            assign block_key = block.settings.menu_item | downcase | strip
+                            if block_key == link_key
+                              render 'mega-menu-promo', block: block, fallback_url: link.url
+                            endif
+                          endif
+                        endfor
+                      endcapture
+                    -%}
+
+                    <div class="mega-menu__panel glass glass--dense lg-materialize" id="{{ panel_id }}" hidden data-mega-menu-panel>
+                      <div class="mega-menu__inner page-width">
+                        <div class="mega-menu__links">
+                          <div class="mega-menu__header">
+                            <p class="mega-menu__title">{{ link.title | escape }}</p>
+                            <a href="{{ link.url }}" class="mega-menu__view-all">
+                              {{- 'fundacao.header.view_all' | t -}}
+                              <span class="visually-hidden"> {{ 'fundacao.header.view_all_suffix' | t: title: link.title }}</span>
+                            </a>
+                          </div>
+                          <ul class="mega-menu__list" role="list">
+                            {%- for child in link.links -%}
+                              <li class="mega-menu__item">
+                                <a href="{{ child.url }}" class="mega-menu__link"{% if child.current %} aria-current="page"{% endif %}>{{ child.title | escape }}</a>
+                                {%- if child.links != blank -%}
+                                  <ul class="mega-menu__sublist" role="list">
+                                    {%- for grandchild in child.links -%}
+                                      <li class="mega-menu__subitem">
+                                        <a href="{{ grandchild.url }}" class="mega-menu__sublink"{% if grandchild.current %} aria-current="page"{% endif %}>{{ grandchild.title | escape }}</a>
+                                      </li>
+                                    {%- endfor -%}
+                                  </ul>
+                                {%- endif -%}
+                              </li>
+                            {%- endfor -%}
+                          </ul>
+                        </div>
+                        {%- if mega_promos != blank -%}
+                          <div class="mega-menu__promos">
+                            {{ mega_promos }}
+                          </div>
+                        {%- endif -%}
+                      </div>
+                    </div>
+                  {%- else -%}
+                    <a href="{{ link.url }}" class="site-nav__link{% if link.active %} site-nav__link--active{% endif %}"{% if link.current %} aria-current="page"{% endif %}>
+                      <span>{{ link.title | escape }}</span>
+                    </a>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </mega-menu>
+        </nav>
+      </div>
+    {%- endif -%}
+
+    <nav class="site-header__actions" aria-label="{{ 'fundacao.header.actions_label' | t }}">
+      {%- if show_highlight -%}
+        {%- comment -%} Fica fora do .site-nav: o item destacado vai junto das ações. A classe site-nav__link--highlight é o gancho dos testes. {%- endcomment -%}
+        <a href="{{ section.settings.highlight_link }}" class="header-highlight site-nav__link--highlight">
+          {% render 'icon', name: 'tag', size: 15, stroke: 1.6 %}
+          <span>{{ section.settings.highlight_label | escape }}</span>
+        </a>
+      {%- endif -%}
+
+      {%- if section.settings.show_search -%}
+        {%- if settings.predictive_search_enabled -%}
+          <button type="button" class="header-action header-action--search" aria-haspopup="dialog" aria-controls="PredictiveSearchDialog" aria-label="{{ 'fundacao.search.label' | t }}" data-predictive-search-open>
+            {% render 'icon', name: 'search', size: 20, stroke: 1.6 %}
+          </button>
+          {%- comment -%} Só aparece sem JavaScript (html.no-js, em section-header.css), quando o botão acima não abre o diálogo da busca. {%- endcomment -%}
+          <a href="{{ routes.search_url }}" class="header-action header-action--search-nojs" aria-label="{{ 'fundacao.search.label' | t }}">
+            {% render 'icon', name: 'search', size: 20, stroke: 1.6 %}
+          </a>
+        {%- else -%}
+          <a href="{{ routes.search_url }}" class="header-action header-action--search" aria-label="{{ 'fundacao.search.label' | t }}">
+            {% render 'icon', name: 'search', size: 20, stroke: 1.6 %}
+          </a>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+        <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="header-action header-action--account">
+          {% render 'icon', name: 'user', size: 20, stroke: 1.6 %}
+          <span class="visually-hidden">
+            {%- if customer -%}
+              {{ 'fundacao.header.greeting_customer' | t: name: customer.first_name }} · {{ 'fundacao.header.my_account' | t }}
+            {%- else -%}
+              {{ 'fundacao.header.login' | t }}
+            {%- endif -%}
+          </span>
+        </a>
+      {%- endif -%}
+
+      <a
+        href="{{ routes.cart_url }}"
+        id="HeaderCart"
+        class="header-action header-action--cart"
+        aria-label="{{ cart_label }}"
+        {% if settings.cart_type == 'drawer' %}
+          aria-haspopup="dialog"
+          aria-controls="CartDrawerDialog"
+          data-cart-drawer-open
+        {% endif %}
+      >
+        {% render 'icon', name: 'bag', size: 20, stroke: 1.6 %}
+        <span class="cart-count" aria-hidden="true" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>
+          {{- cart.item_count -}}
+        </span>
+      </a>
+    </nav>
+  </div>
+
+  {% render 'menu-drawer',
+    menu: menu,
+    show_highlight: show_highlight,
+    highlight_label: section.settings.highlight_label,
+    highlight_link: section.settings.highlight_link,
+    show_tracking: section.settings.show_tracking,
+    tracking_url: tracking_url,
+    show_account: section.settings.show_account
+  %}
+</header>
+
+{% schema %}
+{
+  "name": "Cabeçalho",
+  "class": "section-header",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Cores"
+    },
+    {
+      "type": "color",
+      "id": "color_bg",
+      "label": "Fundo do cabeçalho",
+      "info": "Tinta do vidro da barra do cabeçalho. Use cor clara: o logo padrão é a versão positiva (BEACON em tinta).",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "color",
+      "id": "color_text",
+      "label": "Texto e ícones do cabeçalho",
+      "default": "#081C2D"
+    },
+    {
+      "type": "color",
+      "id": "color_nav_text",
+      "label": "Texto do menu",
+      "default": "#081C2D"
+    },
+    {
+      "type": "header",
+      "content": "Menu"
+    },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu principal",
+      "info": "Itens com submenu abrem o mega menu. O menu fica na barra quando cabe inteiro; abaixo dessa largura ele vai para a gaveta do botão Menu, onde os submenus viram acordeão.",
+      "default": "main-menu"
+    },
+    {
+      "type": "header",
+      "content": "Item destacado"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_highlight",
+      "label": "Mostrar item destacado",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "highlight_label",
+      "label": "Texto",
+      "info": "Texto curto: até 14 caracteres, contando os espaços (12 se for tudo em maiúsculas). Mais que isso pode empurrar o menu para fora do lugar.",
+      "default": "Super ofertas"
+    },
+    {
+      "type": "url",
+      "id": "highlight_link",
+      "label": "Link",
+      "info": "Sem link, o item destacado não aparece."
+    },
+    {
+      "type": "header",
+      "content": "Busca e atalhos"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Mostrar busca",
+      "info": "A busca é o ícone de lupa na barra.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tracking",
+      "label": "Mostrar \"Rastreie seu pedido\" na gaveta do menu",
+      "info": "O link só aparece na gaveta do menu, que abre abaixo de 1240 px de largura. A partir de 1240 px o menu fica na barra e o link não aparece.",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "tracking_url",
+      "label": "Link de rastreamento",
+      "info": "Sem link, leva para a página da conta do cliente."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Mostrar acesso à conta",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "mega_promo",
+      "name": "Destaque do mega menu",
+      "settings": [
+        {
+          "type": "text",
+          "id": "menu_item",
+          "label": "Item do menu",
+          "info": "Digite o nome exato do item do menu principal onde o destaque aparece (ex.: Produtos)."
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem"
+        },
+        {
+          "type": "text",
+          "id": "eyebrow",
+          "label": "Etiqueta"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texto"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Texto do botão",
+          "default": "Comprar"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cabeçalho"
+    }
+  ]
+}
+{% endschema %}

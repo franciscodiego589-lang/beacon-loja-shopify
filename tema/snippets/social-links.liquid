@@ -1,0 +1,41 @@
+{%- comment -%}
+  Lista de redes sociais (ajustes globais "Redes sociais").
+  Só aparecem links preenchidos e que começam com http (https:// recomendado).
+  Abrem em nova aba com rel="noopener noreferrer".
+  Parâmetros:
+  - class: classe extra da lista (opcional)
+  - size: tamanho do ícone (padrão 22)
+{%- endcomment -%}
+{%- liquid
+  assign social_size = size | default: 22
+  assign social_networks = 'instagram,youtube,facebook,tiktok' | split: ','
+-%}
+<ul class="social-links{% if class != blank %} {{ class }}{% endif %}" role="list">
+  {%- for network in social_networks -%}
+    {%- liquid
+      case network
+        when 'instagram'
+          assign social_url = settings.social_instagram_link
+          assign social_name = 'Instagram'
+        when 'youtube'
+          assign social_url = settings.social_youtube_link
+          assign social_name = 'YouTube'
+        when 'facebook'
+          assign social_url = settings.social_facebook_link
+          assign social_name = 'Facebook'
+        when 'tiktok'
+          assign social_url = settings.social_tiktok_link
+          assign social_name = 'TikTok'
+      endcase
+      assign social_url = social_url | strip
+      assign social_scheme = social_url | slice: 0, 4 | downcase
+    -%}
+    {%- if social_url != blank and social_scheme == 'http' -%}
+      <li class="social-links__item">
+        <a href="{{ social_url | escape }}" class="social-links__link" target="_blank" rel="noopener noreferrer" aria-label="{{ 'fundacao.general.external_link' | t: name: social_name }}">
+          {% render 'icon', name: network, size: social_size %}
+        </a>
+      </li>
+    {%- endif -%}
+  {%- endfor -%}
+</ul>

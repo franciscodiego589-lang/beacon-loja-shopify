@@ -1,0 +1,82 @@
+{{ 'section-seo-text.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Texto de SEO ao final da página (título + parágrafos), com "Ler mais" em
+  <details>/<summary> (sem JavaScript). Reutilizável em outras páginas. Sem
+  título e sem texto, a seção não renderiza nada.
+  Liquid Glass (spec 7.3): com o ajuste "Superfície" em painel (padrão), a seção é um painel
+  de vidro de conteúdo (.glass-layer .glass--panel), como a faixa "SEO e FAQ" da maquete.
+{%- endcomment -%}
+
+{%- liquid
+  assign st_has_content = false
+  if section.settings.heading != blank or section.settings.text != blank or section.settings.text_extra != blank
+    assign st_has_content = true
+  endif
+-%}
+
+{%- if st_has_content -%}
+  <div class="seo-text section{% if section.settings.surface != 'none' %} glass-layer glass--panel{% endif %}">
+    <div class="page-width seo-text__inner">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="seo-text__heading">{{ section.settings.heading | escape }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <div class="seo-text__intro rte">{{ section.settings.text }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.text_extra != blank -%}
+        <details class="seo-text__details">
+          <summary class="seo-text__summary">
+            <span class="seo-text__summary-more">{{ 'home.seo_text.read_more' | t }}</span>
+            <span class="seo-text__summary-less">{{ 'home.seo_text.read_less' | t }}</span>
+            {%- render 'icon', name: 'chevron-down', size: 16, class: 'seo-text__chevron' -%}
+          </summary>
+          <div class="seo-text__extra rte">{{ section.settings.text_extra }}</div>
+        </details>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Texto de SEO",
+  "tag": "section",
+  "class": "section-seo-text",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto (sempre visível)"
+    },
+    {
+      "type": "richtext",
+      "id": "text_extra",
+      "label": "Texto extra (atrás de \"Ler mais\")"
+    },
+    {
+      "type": "select",
+      "id": "surface",
+      "label": "Superfície",
+      "info": "\"Painel de vidro\" põe o texto num painel de vidro de conteúdo, como na maquete.",
+      "options": [
+        { "value": "panel", "label": "Painel de vidro" },
+        { "value": "none", "label": "Sem painel (névoa)" }
+      ],
+      "default": "panel"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Texto de SEO"
+    }
+  ]
+}
+{% endschema %}

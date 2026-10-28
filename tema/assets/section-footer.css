@@ -1,0 +1,450 @@
+/*
+  Rodapé (estrutura em sections/footer.liquid). Alvo: bloco "Rodapé" de alvo.css.
+  Fundo claro pela classe .lg-field--claro, posta no próprio <footer>. Conteúdo sólido: títulos e
+  texto principal em --color-ink; links, notas e linha legal em --color-text-muted. Só tokens do tema.
+
+  - computador (a partir de 1220 px): newsletter de até 420 px ao lado de 4 colunas de menu.
+  - de 761 a 1219 px: ao lado da newsletter as colunas ficariam com menos de 150 px; por isso a
+    newsletter vai para cima e as 4 colunas ocupam a largura toda embaixo.
+  - celular (até 760 px): uma coluna; menus em 2 colunas com links de 44 px; parte de baixo em coluna.
+  - botão de atendimento: círculo de 56 px; a barra fixa de compra o sobe por --chat-offset.
+
+  Vão até o rodapé (emenda 21 a, etapa 8c): 104 px (68 px até 760 px), em toda página, seja qual for a
+  última seção. O <main> e o rodapé são itens separados do <body> em coluna flexível, e item de flex
+  nunca funde margem com o vizinho: a margem de baixo da última seção (--section-gap, nas seções que
+  usam margin-block) somava com a margem de cima do rodapé e dava 208 px (136 px no celular). Agora o
+  espaço do rodapé mora dentro do <main>, no ::after da .main-content, onde a margem dele funde com a
+  margem de baixo da última seção (vale a maior das duas) e com as seções vazias que vêm depois dela
+  (altura 0, como a barra fixa de compra do produto e as seções de SEO e perguntas ainda sem texto na
+  coleção). Seção que termina em padding, sem margem de baixo, continua com os mesmos 104 px.
+*/
+
+/* O espaço de cima do rodapé (--section-gap) é a margem deste elemento vazio, no fim do <main>. */
+.main-content::after {
+  content: "";
+  display: block;
+  margin-top: var(--section-gap);
+}
+
+.site-footer {
+  margin-top: 0;
+  color: var(--color-ink);
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+.site-footer__inner {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+
+/* Espaço para o botão de atendimento não cobrir as linhas legais, que ficam à direita. */
+.site-footer--has-chat .site-footer__inner {
+  padding-bottom: 88px;
+}
+
+/* ---------- Topo: newsletter e colunas de menu ---------- */
+
+.site-footer__top {
+  display: grid;
+  grid-template-columns: minmax(0, 420px) minmax(0, 1fr);
+  gap: 80px;
+  padding-bottom: 48px;
+}
+
+.site-footer__top--no-newsletter {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* ---------- Newsletter ---------- */
+
+.site-footer__newsletter {
+  max-width: 420px;
+}
+
+.site-footer__newsletter-heading {
+  margin: 0;
+  color: var(--color-ink);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  /* Como no alvo, a quebra é a natural; "e-mail." fica inteiro por .v3-junto (regra global, base.css). */
+  text-wrap: wrap;
+}
+
+.site-footer__newsletter-text {
+  margin-top: 8px;
+  color: var(--color-text-muted);
+}
+
+.newsletter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 20px;
+}
+
+.newsletter-form__label {
+  margin-top: 6px;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.newsletter-form__input {
+  width: 100%;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 20px;
+  border: 1px solid var(--color-input-border);
+  border-radius: 980px;
+  background: rgba(255, 255, 255, 0.90);
+  color: var(--color-ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.newsletter-form__input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.newsletter-form__input[aria-invalid="true"] {
+  border-width: 2px;
+  border-color: var(--color-offer);
+}
+
+.newsletter-form__input:-webkit-autofill {
+  -webkit-text-fill-color: var(--color-ink);
+  transition: background-color 9999s ease-out 0s;
+}
+
+.newsletter-form__consent {
+  margin: 6px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  text-wrap: balance;
+}
+
+.newsletter-form__consent a,
+.newsletter-form__consent-link {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.newsletter-form__consent a:hover,
+.newsletter-form__consent-link:hover {
+  color: var(--color-ink);
+}
+
+/* Botão "Cadastrar": .button .button--primary da fundação, na largura do texto. A letra de 15 px e o
+   recuo de 18 px do celular vêm do próprio .button (base.css), não mais de uma cópia aqui. */
+.newsletter-form__submit {
+  align-self: flex-start;
+  margin-top: 6px;
+}
+
+.newsletter-form__message {
+  margin: 6px 0 0;
+}
+
+/* A mensagem recebe o foco ao carregar (autofocus): contorno visível mesmo com o foco vindo do
+   carregamento, que o :focus:not(:focus-visible) de base.css esconderia. */
+.newsletter-form__message:focus {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+/* ---------- Colunas de menu (listas sempre abertas) ---------- */
+
+.site-footer__columns {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px;
+}
+
+.site-footer__column {
+  min-width: 0;
+}
+
+.site-footer__app {
+  grid-column: 1 / -1;
+}
+
+.footer-menu__heading {
+  margin: 0 0 12px;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: inherit;
+  text-wrap: balance;
+}
+
+.footer-menu__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-menu__item {
+  margin: 0 0 9px;
+}
+
+.footer-menu__link {
+  display: inline-block;
+  padding: 2px 0;
+  color: var(--color-text-muted);
+}
+
+.footer-menu__link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-menu__link[aria-current="page"] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* Só aparece no editor do tema, para a coluna sem menu. */
+.footer-menu__placeholder {
+  margin: 0;
+  padding: 16px;
+  border: 1px dashed var(--color-input-border);
+  border-radius: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Redes sociais (coluna própria ou depois dos links da última coluna) ---------- */
+
+.site-footer__social {
+  margin-top: 24px;
+}
+
+.site-footer__column--social .site-footer__social {
+  margin-top: 0;
+}
+
+.site-footer__social-heading {
+  margin: 0 0 4px;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: inherit;
+  text-wrap: balance;
+}
+
+/* Alvo de 44 px com o ícone de 22 px no meio: a margem negativa alinha o ícone ao texto. */
+.site-footer__social-list {
+  margin-left: -11px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Parte de baixo: logo à esquerda, linhas legais à direita ---------- */
+
+.site-footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 28px;
+  border-top: 1px solid var(--color-line);
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.site-footer__logo {
+  flex: none;
+  width: auto;
+  height: 40px;
+}
+
+.site-footer__legal {
+  min-width: 0;
+  text-align: right;
+  line-height: 1.5;
+}
+
+.site-footer__trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 16px;
+  margin: 4px 0;
+}
+
+.site-footer__secure {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.site-footer__policies-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.site-footer__policy-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  color: inherit;
+}
+
+.site-footer__policy-link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Botão de atendimento (sem desfoque; só aparece com link) ---------- */
+
+/* Sem --chat-offset (barra fixa escondida) o max() devolve os 16 px de sempre; com a barra
+   visível, o botão fica 16 px acima dela. Fundo, borda de luz, sombra e estados vêm de
+   .glass .glass--dark .glass--interactive (liquid-glass.css); a posição troca sem animar. */
+.chat-button {
+  --glass-press-scale: 0.96;
+
+  position: fixed;
+  right: 16px;
+  bottom: max(16px, calc(var(--chat-offset, -200px) + var(--lg-sticky-inset, 8px) + 16px));
+  z-index: var(--lg-z-chat, 35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+.site-footer .chat-button:hover {
+  text-decoration: none;
+}
+
+.chat-button.glass--dark:not(.is-over-dark) {
+  color: var(--lg-on-dark, #FFFFFF);
+}
+
+.chat-button.is-over-dark {
+  color: var(--lg-text, var(--color-ink));
+}
+
+@media (hover: hover) {
+  .chat-button:hover:not(:active) {
+    transform: scale(1.04);
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .chat-button {
+    right: 21px;
+    bottom: max(18px, calc(var(--chat-offset, -200px) + var(--lg-sticky-inset, 16px) + 16px));
+  }
+}
+
+/* ---------- De 761 a 1219 px: newsletter em cima, 4 colunas embaixo ---------- */
+
+@media screen and (max-width: 1219px) {
+  .site-footer__top {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+}
+
+/* ---------- Celular ---------- */
+
+@media screen and (max-width: 760px) {
+  .site-footer__inner {
+    padding-top: 48px;
+  }
+
+  .site-footer__newsletter-heading {
+    font-size: 24px;
+  }
+
+  .site-footer__columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 20px;
+  }
+
+  .footer-menu__heading {
+    margin-bottom: 4px;
+  }
+
+  .footer-menu__item {
+    margin-bottom: 0;
+  }
+
+  .footer-menu__link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0;
+  }
+
+  .site-footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .site-footer__legal {
+    text-align: left;
+  }
+
+  .site-footer__trust,
+  .site-footer__policies-list {
+    justify-content: flex-start;
+  }
+
+  .site-footer__policy-link {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-button:hover:not(:active) {
+    transform: none;
+  }
+}
+
+/* Contraste aumentado: texto de apoio na cor da tinta e divisória no tom do texto. */
+@media (prefers-contrast: more) {
+  .footer-menu__link,
+  .newsletter-form__consent,
+  .newsletter-form__input::placeholder,
+  .site-footer__newsletter-text,
+  .site-footer__social-list,
+  .site-footer__bottom {
+    color: var(--color-ink);
+  }
+
+  .site-footer__bottom {
+    border-top-color: currentColor;
+  }
+}
+
+@media (forced-colors: active) {
+  .newsletter-form__input,
+  .site-footer__bottom {
+    border-color: CanvasText;
+  }
+
+  .chat-button {
+    border: 1px solid ButtonText;
+  }
+}

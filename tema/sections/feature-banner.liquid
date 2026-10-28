@@ -1,0 +1,115 @@
+{{ 'section-feature-banner.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Destaque de linha/categoria: imagem de um lado, selo + título + texto + botão do
+  outro, num cartão de fundo claro (como "Conheça toda a linha Beacon Labs" na
+  maquete). Sem imagem, título e botão, a seção não renderiza nada.
+  Liquid Glass (spec 8.5): campo farol na seção (arte assets/campo-farol.svg só na página
+  inicial, da 3ª seção em diante; fora disso, a cor de base, que é a da névoa);
+  cartão em vidro de conteúdo (.glass .glass--card) com raio 32 (24 no celular) e a foto
+  encostada nele; selo em preenchimento (.glass-fill).
+{%- endcomment -%}
+
+{%- liquid
+  assign fb_button_link = section.settings.button_link | default: routes.all_products_collection_url
+  assign fb_has_button = false
+  if section.settings.button_label != blank and fb_button_link != blank
+    assign fb_has_button = true
+  endif
+
+  assign fb_has_content = false
+  if section.settings.image != blank or section.settings.heading != blank or fb_has_button
+    assign fb_has_content = true
+  endif
+
+  assign fb_alt = section.settings.image.alt | default: section.settings.heading | default: shop.name
+
+  # Arte do campo (spec 7.1, .lg-field--art): só na página inicial e da 3ª seção em diante.
+  # Medido no Chromium em 28/09/2026: fora da primeira dobra a arte nunca virou o elemento de
+  # LCP; numa seção de campo que entra na primeira dobra (1ª a 3ª seção de página curta), virou.
+  assign fb_field_art = ''
+  if template.name == 'index' and section.index > 2
+    assign fb_field_art = ' lg-field--art'
+  endif
+-%}
+
+{%- if fb_has_content -%}
+  <div class="feature-banner section lg-field--farol{{ fb_field_art }}">
+    <div class="page-width">
+      <div class="feature-banner__card glass glass--card">
+        <div class="feature-banner__media">
+          {%- if section.settings.image != blank -%}
+            {{ section.settings.image | image_url: width: 1640 | image_tag: widths: '480, 640, 800, 1040, 1200, 1408, 1640', sizes: '(min-width: 1440px) 704px, (min-width: 1280px) calc(55vw - 88px), (min-width: 990px) calc(100vw - 160px), (min-width: 750px) calc(100vw - 64px), calc(100vw - 32px)', loading: 'lazy', alt: fb_alt, class: 'feature-banner__image' }}
+          {%- else -%}
+            {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg feature-banner__placeholder' }}
+          {%- endif -%}
+        </div>
+        <div class="feature-banner__content">
+          {%- if section.settings.eyebrow != blank -%}
+            <span class="badge glass-fill feature-banner__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 class="feature-banner__heading">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if section.settings.text != blank -%}
+            <p class="feature-banner__text text-muted">{{ section.settings.text | escape }}</p>
+          {%- endif -%}
+          {%- if fb_has_button -%}
+            <a href="{{ fb_button_link }}" class="button button--primary feature-banner__button">
+              {{- section.settings.button_label | escape -}}
+              {%- render 'icon', name: 'arrow-right', size: 18 -%}
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Destaque de linha",
+  "tag": "section",
+  "class": "section-feature-banner",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagem"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título",
+      "default": "Linha completa"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Conheça toda a linha Beacon Labs"
+    },
+    {
+      "type": "text",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto do botão",
+      "default": "Ver todos os produtos"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Link do botão"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Destaque de linha"
+    }
+  ]
+}
+{% endschema %}

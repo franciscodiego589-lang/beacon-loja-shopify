@@ -1,0 +1,342 @@
+/*
+  Beacon Labs · Topo da home: carrossel de banners (sections/vitrine-topo.liquid), redesenho v3, 02/10/2026.
+  Visual e comportamento da maquete docs/superpowers/redesign-v3/capa/carrossel-3-banners.html
+  (capa-carrossel.css para o carrossel, capa-gpt.css para o texto por cima da capa).
+
+  - Campo claro (.lg-field--claro) contínuo com o grupo do cabeçalho; o carrossel vai de ponta a ponta até 1440 px.
+  - Rolagem com encaixe, nenhuma troca automática; a altura do trilho segue o banner da vez (vitrine-topo.js).
+  - Setas: .icon-button de base.css (vidro fino, SEM desfoque), só do computador; pontos de 28 px de toque
+    (44 px no celular, regra global de toque), bolinha de 8 px e cápsula ink de 22 px no atual.
+  - Margem de baixo menor que --section-gap de propósito: a faixa "Compra e entrega" vem logo abaixo e é a
+    continuação do topo; o vão grande (--section-gap) fica depois dela (emenda 15, medido no relatório).
+  - Texto da capa por cima da foto no computador: véu branco a 0,90 sobre o terço livre da imagem, de modo que
+    o texto de apoio #566472 passe de 4,5:1 até sobre o pior pixel possível (0,90 x branco puro: 4,84:1; emenda 13).
+    Até 1200 px o texto sai de cima da foto e fica no campo claro, acima dela (medido: o bloco de texto
+    tem de 355 a 389 px de altura e a imagem só tem 360 px de altura em 1080 px; a partir de 1201 px sobram 18 px ou mais).
+*/
+
+.vitrine-topo {
+  padding-block: 18px 6px;
+  margin-bottom: 36px;
+}
+
+.vitrine-topo__inner {
+  display: block;
+  max-width: var(--page-max-width, 1440px);
+  margin-inline: auto;
+}
+
+.vitrine-topo__palco {
+  position: relative;
+}
+
+.vitrine-topo__trilho {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  transition: height 0.3s ease;
+}
+
+.vitrine-topo__trilho::-webkit-scrollbar {
+  display: none;
+}
+
+.vitrine-topo__trilho:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: -3px;
+}
+
+.vitrine-topo__slide {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+
+.vitrine-topo__link {
+  display: block;
+}
+
+.vitrine-topo__slide picture {
+  display: block;
+}
+
+.vitrine-topo__slide img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Setas (só computador): vidro fino do .icon-button, sem desfoque. */
+.vitrine-topo__seta {
+  position: absolute;
+  top: calc(50% - 22px);
+  z-index: 2;
+}
+
+.vitrine-topo__seta[hidden],
+.vitrine-topo__pontos[hidden] {
+  display: none;
+}
+
+/* Mais branco que o vidro fino de base: a seta precisa aparecer sobre a foto clara (folhas, pedra). */
+.vitrine-topo .vitrine-topo__seta {
+  background-color: rgba(255, 255, 255, 0.82);
+}
+
+.vitrine-topo__seta--ant {
+  left: 16px;
+}
+
+.vitrine-topo__seta--prox {
+  right: 16px;
+}
+
+.vitrine-topo__seta[aria-disabled="true"] {
+  cursor: default;
+}
+
+.vitrine-topo__pontos {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.vitrine-topo__ponto {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* Bolinha inativa #6F8798 (3,3:1 sobre o campo claro); atual em cápsula ink. */
+.vitrine-topo__ponto::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6F8798;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.vitrine-topo__ponto[aria-current="true"]::before {
+  width: 22px;
+  border-radius: 4px;
+  background: var(--color-ink);
+}
+
+.vitrine-topo__ponto:focus-visible {
+  outline: 3px solid var(--color-ink);
+  outline-offset: -3px;
+  border-radius: 8px;
+}
+
+/* ---- Capa com texto (banner "capa") ---- */
+.vitrine-topo__capa {
+  position: relative;
+}
+
+.vitrine-topo__capa-texto {
+  position: absolute;
+  z-index: 1;
+  left: 4%;
+  top: 50%;
+  width: 29%;
+  min-width: 360px;
+  transform: translateY(-50%);
+}
+
+/* Véu: retângulo arredondado a 0,90 sobre o terço livre da foto, com borda suave (sombra branca). */
+.vitrine-topo__capa-texto::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: -20px -12px -20px -32px;
+  border-radius: 36px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 28px 8px rgba(255, 255, 255, 0.5);
+}
+
+.vitrine-topo__selo {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  margin: 0;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.vitrine-topo__titulo {
+  margin: 14px 0 0;
+  color: var(--color-ink);
+  font-family: var(--font-heading-family);
+  font-size: clamp(40px, 3.7vw, 64px);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.vitrine-topo__texto {
+  margin: 14px 0 0;
+  color: var(--color-text-muted);
+  font-size: clamp(17px, 1.35vw, 21px);
+  line-height: 1.38;
+  letter-spacing: -0.012em;
+  text-wrap: pretty;
+}
+
+.vitrine-topo__fatos {
+  display: grid;
+  gap: 6px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.vitrine-topo__fatos li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.vitrine-topo__fatos svg {
+  flex: none;
+}
+
+.vitrine-topo__botoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* Tela média e celular: o texto sai de cima da foto e fica acima dela, no campo claro. */
+@media screen and (max-width: 1200px) {
+  .vitrine-topo__capa {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .vitrine-topo__capa-texto {
+    position: static;
+    width: auto;
+    min-width: 0;
+    padding: 28px var(--page-gutter) 22px;
+    transform: none;
+  }
+
+  .vitrine-topo__capa-texto::before {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .vitrine-topo__seta {
+    display: none;
+  }
+
+  /* Toque de 44 px no celular (a bolinha continua de 8 px). */
+  .vitrine-topo__ponto {
+    width: 44px;
+    height: 44px;
+  }
+
+  .vitrine-topo__pontos {
+    gap: 0;
+    margin-top: 0;
+  }
+
+  .vitrine-topo__titulo {
+    font-size: 40px;
+  }
+
+  .vitrine-topo__texto {
+    font-size: 17px;
+  }
+
+  .vitrine-topo__fatos li {
+    font-size: 15px;
+  }
+}
+
+/* Banner promocional (bloco "promo"): marcação em snippets/v3-promo.liquid e estilos em assets/component-promo.css
+   (movidos para lá em 03/10/2026, junto com a seção sections/faixa-promos.liquid). Aqui fica só o container de
+   medida do slide: os tamanhos do banner são em cqw da largura do slide. */
+.vitrine-topo__slide--promo {
+  container-type: inline-size;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vitrine-topo__trilho {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
+
+/* Capas de imagem com cantos de vidro (06/10/2026, pedido do dono: "não quero cantos quadrados, tudo em modelo
+   liquid apple glass"). Mesmos cantos do banner promocional (2,444cqw no computador, 7,407cqw no celular) e borda
+   de vidro: aro claro por dentro e fio fino de contorno, por cima da imagem, sem tampar o clique. */
+.vitrine-topo__slide {
+  container-type: inline-size;
+}
+
+.vitrine-topo__link {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2.444cqw;
+  isolation: isolate;
+}
+
+.vitrine-topo__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--lg-rim-light-inset), inset 0 0 0 1px rgba(255, 255, 255, 0.55), var(--lg-hairline);
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media screen and (max-width: 760px) {
+  .vitrine-topo__link {
+    border-radius: 7.407cqw;
+  }
+}
+
+/* Banner de imagem sem versão de celular (06/10/2026, pedido do dono: a capa do farol "fica horrível" no celular).
+   Até 760 px a imagem 3:1 some e entra o banner promocional em HTML do próprio bloco (snippets/v3-promo.liquid),
+   4:5 como as capas de celular; o slide é container de medida, então os cqw do banner valem aqui. No computador
+   continua a imagem com a borda de vidro. */
+.vitrine-topo__cel-html {
+  display: none;
+}
+
+@media screen and (max-width: 760px) {
+  .vitrine-topo__slide--cel-html .vitrine-topo__imagem-pc {
+    display: none;
+  }
+
+  .vitrine-topo__slide--cel-html .vitrine-topo__cel-html {
+    display: block;
+  }
+}

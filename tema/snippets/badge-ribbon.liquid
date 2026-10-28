@@ -1,0 +1,31 @@
+{%- comment -%}
+  Etiqueta (selo) sobre a foto do produto.
+  Parâmetros:
+  - label: texto da etiqueta (obrigatório; sem texto, nada é renderizado).
+    Pode vir de metafield ou de tradução; a saída usa escape_once.
+  - tone: 'new' (vidro fino, sem desfoque; "Novo"), 'offer' (pílula amarela com texto azul-marinho;
+          "Oferta"), 'best' (pílula amarela, padrão), 'discount' (pílula amarela com o % de
+          desconto), 'soldout' (pílula neutra de esgotado)
+  - class: classe extra (opcional)
+
+  Redesenho v3 (spec 2.4, alvo.css linhas 179 e 180): "Novo" é vidro funcional fino (classes
+  .glass .glass--thin de assets/liquid-glass.css, sem .glass--blur: sem desfoque, G4); "Oferta",
+  best e discount são preenchimento sólido amarelo; esgotado é preenchimento neutro. O formato é
+  o de assets/component-badge-ribbon.css.
+{%- endcomment -%}
+{%- liquid
+  assign ribbon_tone = 'best'
+  case tone
+    when 'offer', 'new', 'best', 'discount', 'soldout'
+      assign ribbon_tone = tone
+  endcase
+  assign ribbon_material = ''
+  if ribbon_tone == 'new'
+    assign ribbon_material = ' glass glass--thin'
+  endif
+-%}
+{%- if label != blank -%}
+  <span class="badge-ribbon badge-ribbon--{{ ribbon_tone }}{{ ribbon_material }}{% if class != blank %} {{ class }}{% endif %}">
+    {{- label | escape_once -}}
+  </span>
+{%- endif -%}

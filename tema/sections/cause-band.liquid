@@ -1,0 +1,165 @@
+{{ 'section-cause-band.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Faixa "Nossa causa": fundo azul-marinho, texto de um lado e números de impacto
+  (blocos) do outro, como na maquete. Nunca invente o número de impacto: ele deve
+  vir preenchido pela loja com o dado real. Sem título e sem blocos, a seção não
+  renderiza nada.
+  Liquid Glass (spec 8.5 e D26): a faixa é o campo noite (.lg-field--noite; a arte dos raios,
+  assets/campo-noite.svg, só na página inicial, da 3ª seção em diante), que também é o
+  gatilho do cabeçalho escuro e do chat claro (liquid-glass.js observa os campos noite dentro
+  de <main>). Cards de número em vidro escuro de conteúdo (.glass .glass--dark-card); botão
+  no secundário escuro (.lg-button--glass-dark); selo em acento.
+{%- endcomment -%}
+
+{%- liquid
+  assign cb_stat_count = 0
+  for block in section.blocks
+    if block.type == 'stat' and block.settings.number != blank
+      assign cb_stat_count = cb_stat_count | plus: 1
+    endif
+  endfor
+
+  assign cb_has_button = false
+  if section.settings.button_label != blank and section.settings.button_link != blank
+    assign cb_has_button = true
+  endif
+
+  assign cb_has_content = false
+  if section.settings.heading != blank or cb_stat_count > 0
+    assign cb_has_content = true
+  endif
+
+  # Arte do campo (spec 7.1, .lg-field--art): só na página inicial e da 3ª seção em diante.
+  # Medido no Chromium em 28/09/2026: fora da primeira dobra a arte nunca virou o elemento de
+  # LCP; numa seção de campo que entra na primeira dobra (1ª a 3ª seção de página curta), virou.
+  assign cb_field_art = ''
+  if template.name == 'index' and section.index > 2
+    assign cb_field_art = ' lg-field--art'
+  endif
+-%}
+
+{%- if cb_has_content -%}
+  <div class="cause-band lg-field--noite{{ cb_field_art }}">
+    <div class="page-width cause-band__inner">
+      <div class="cause-band__text">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="badge badge--accent cause-band__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+        {%- if section.settings.heading != blank -%}
+          <h2 class="cause-band__heading">{{ section.settings.heading | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <p class="cause-band__body">{{ section.settings.text | escape }}</p>
+        {%- endif -%}
+        {%- if cb_has_button -%}
+          <a href="{{ section.settings.button_link }}" class="button lg-button--glass-dark cause-band__button">
+            {{- section.settings.button_label | escape -}}
+            {%- render 'icon', name: 'arrow-right', size: 18 -%}
+          </a>
+        {%- endif -%}
+      </div>
+
+      {%- if cb_stat_count > 0 -%}
+        <ul class="cause-band__stats" role="list">
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'stat' and block.settings.number != blank -%}
+              <li class="cause-band__stat glass glass--dark-card" {{ block.shopify_attributes }}>
+                {%- if block.settings.icon != 'none' -%}
+                  <span class="cause-band__stat-icon">{% render 'icon', name: block.settings.icon, size: 28 %}</span>
+                {%- endif -%}
+                <span class="cause-band__stat-body">
+                  <span class="cause-band__stat-number">{{ block.settings.number | escape }}</span>
+                  {%- if block.settings.label != blank -%}
+                    <span class="cause-band__stat-label">{{ block.settings.label | escape }}</span>
+                  {%- endif -%}
+                </span>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Nossa causa",
+  "tag": "section",
+  "class": "section-cause-band",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título",
+      "default": "Nossa causa"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto do botão",
+      "default": "Ver relatório de impacto"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Link do botão"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Número de impacto",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            { "value": "none", "label": "Sem ícone" },
+            { "value": "waves", "label": "Ondas" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "map-pin", "label": "Localização" },
+            { "value": "refresh", "label": "Reciclagem" },
+            { "value": "sparkles", "label": "Brilho" }
+          ],
+          "default": "waves"
+        },
+        {
+          "type": "text",
+          "id": "number",
+          "label": "Número",
+          "info": "Use o dado real medido pela loja."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "O que este número mede"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Nossa causa",
+      "blocks": [
+        { "type": "stat" },
+        { "type": "stat" }
+      ]
+    }
+  ]
+}
+{% endschema %}

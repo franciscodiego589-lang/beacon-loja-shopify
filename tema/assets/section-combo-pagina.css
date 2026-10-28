@@ -1,0 +1,450 @@
+/*
+  Beacon Labs · Página de combo (section-combo-pagina.css), etapa M0, 03/10/2026.
+  Estilo de sections/combo-itens.liquid e sections/combo-conteudo.liquid (templates/product.combo.json).
+
+  Padrão do tema v3: conteúdo é sólido, no tom claro #ECF3F9 (--lg-field-claro), sem vidro nem desfoque
+  (vidro só na navegação e nos controles); texto na tinta #081C2D e apoio #566472 (5,42:1 sobre
+  #ECF3F9 e 6,07:1 sobre o branco); filete #CBD7E1/--color-line decorativo; vão entre seções
+  --section-gap (104 px; 68 px até 760 px); raios --radius-tile e --radius-card. Celular primeiro: uma
+  coluna, cartão do item na horizontal (foto de 112 px à esquerda). Áreas de toque de 44 px nos links.
+  As listas com visto (.dp-checks) e com bolinha (.dp-list) vêm de component-produto-dossie.css.
+*/
+
+.combo-secao {
+  margin-top: var(--section-gap);
+}
+
+.combo-secao__cabeca {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 24px;
+}
+
+.combo-secao__titulo {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+@media screen and (min-width: 761px) {
+  .combo-secao__titulo {
+    font-size: 32px;
+  }
+}
+
+.combo-secao__apoio {
+  margin: 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* ---------- O que vem no combo ---------- */
+
+.combo-itens__lista {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 761px) {
+  .combo-itens__lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media screen and (min-width: 1081px) {
+  .combo-itens__lista {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+.combo-item {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  border-radius: var(--radius-tile, 20px);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  color: var(--color-ink, #081C2D);
+}
+
+@media screen and (min-width: 1081px) {
+  .combo-item {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 20px;
+  }
+}
+
+.combo-item__foto {
+  display: block;
+  border-radius: var(--radius-tile, 20px);
+  overflow: hidden;
+}
+
+.combo-item__img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+.combo-item__corpo {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.combo-item__nome {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.combo-item__rotulo {
+  margin: 4px 0 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.combo-item__doses {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.combo-item__doses strong {
+  font-weight: 600;
+}
+
+.combo-item__potes {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.combo-item__preco {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: baseline;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.combo-item__preco span {
+  color: var(--color-text-muted, #566472);
+}
+
+.combo-item__preco strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.combo-item__link,
+.combo-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  width: fit-content;
+  color: var(--color-ink, #081C2D);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.combo-item__link:hover,
+.combo-link:hover {
+  text-decoration-thickness: 2px;
+}
+
+.combo-item__link:focus-visible,
+.combo-link:focus-visible,
+.combo-dossies__link:focus-visible {
+  outline: var(--lg-focus-width, 3px) solid var(--lg-focus-outer, #081C2D);
+  outline-offset: var(--lg-focus-offset, 2px);
+}
+
+/* ---------- Economia ---------- */
+
+.combo-economia {
+  margin-top: 24px;
+  padding: 24px 20px;
+  border: 1px solid var(--color-line, #CBD7E1);
+  border-radius: var(--lg-radius-card, 28px);
+  background-color: #FFFFFF;
+  color: var(--color-ink, #081C2D);
+}
+
+@media screen and (min-width: 761px) {
+  .combo-economia {
+    padding: 32px;
+  }
+}
+
+.combo-economia__titulo {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.combo-economia__grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+}
+
+@media screen and (min-width: 1081px) {
+  .combo-economia__grade {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.combo-economia__item {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  border-radius: var(--radius-tile, 20px);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.combo-economia__item dt {
+  color: var(--color-text-muted, #566472);
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.combo-economia__item dd {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.combo-economia__item dd span {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.combo-economia__riscado {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* Destaque: tinta com texto branco (17,29:1); o apoio do rótulo fica em branco com 0,8 (mais de 7:1). */
+.combo-economia__item--destaque {
+  background-color: var(--color-ink, #081C2D);
+}
+
+.combo-economia__item--destaque dt,
+.combo-economia__item--destaque dd {
+  color: #FFFFFF;
+}
+
+.combo-economia__item--destaque dt {
+  opacity: 0.85;
+}
+
+.combo-economia__nota {
+  margin: 16px 0 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* ---------- Para que serve ---------- */
+
+.combo-serve {
+  padding: 24px 20px;
+  border-radius: var(--radius-tile, 20px);
+}
+
+@media screen and (min-width: 761px) {
+  .combo-serve {
+    padding: 36px 40px;
+  }
+}
+
+.combo-serve__texto {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--color-ink, #081C2D);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+/* ---------- Benefícios de cada produto ---------- */
+
+.combo-beneficios {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 761px) {
+  .combo-beneficios {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+.combo-beneficio {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radius-tile, 20px);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  color: var(--color-ink, #081C2D);
+}
+
+.combo-beneficio__nome {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Cartões de texto (por que juntos, advertências) ---------- */
+
+.combo-cartao {
+  padding: 20px;
+}
+
+@media screen and (min-width: 761px) {
+  .combo-cartao {
+    padding: 28px 32px;
+  }
+}
+
+/* ---------- Como tomar ---------- */
+
+.combo-modo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.combo-modo__item {
+  display: grid;
+  gap: 6px;
+  padding: 18px 0;
+  border-top: 1px solid var(--color-line, #D7E1E8);
+}
+
+.combo-modo__item:last-child {
+  border-bottom: 1px solid var(--color-line, #D7E1E8);
+}
+
+@media screen and (min-width: 761px) {
+  .combo-modo__item {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
+.combo-modo__nome {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.combo-modo__texto {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* ---------- Atalhos do dossiê ---------- */
+
+.combo-dossies {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.combo-dossies li {
+  border-top: 1px solid var(--color-line, #D7E1E8);
+}
+
+.combo-dossies li:last-child {
+  border-bottom: 1px solid var(--color-line, #D7E1E8);
+}
+
+.combo-dossies__link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 16px;
+  min-height: 56px;
+  padding: 12px 0;
+  color: var(--color-ink, #081C2D);
+  text-decoration: none;
+}
+
+.combo-dossies__nome {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.combo-dossies__acao {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+.combo-dossies__link:hover .combo-dossies__acao {
+  text-decoration-thickness: 2px;
+}

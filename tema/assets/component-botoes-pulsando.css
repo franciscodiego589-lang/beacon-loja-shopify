@@ -1,0 +1,124 @@
+/*
+  Beacon Labs · todos os botões pulsando (pedido do dono em 03/10/2026: "coloque todos os botões para
+  ficarem pulsando"). Vale para todo .button do tema (comprar, adicionar, finalizar compra, ver
+  mais...) e para os botões do carrinho (trocar para o kit e adicionar o combo).
+  - O pulso usa a propriedade scale, separada de transform: soma com o "apertar" do botão base
+    (.button:active, transform: scale(0.97), em base.css) e com o pulo do botão de compra.
+  - Botão de largura total pulsa menos (1,5 %), para não passar da borda da tela no celular.
+  - Todos os botões pulsam sem parar (o dono, em 03/10/2026: "os botões não são para parar de
+    pulsar"); antes paravam depois de 8 pulsos.
+  - Botões de compra (adicionar ao carrinho, barra fixa de compra, busca, sugestões, finalizar
+    compra, adicionar o combo e trocar para o kit): pulsam sem parar, a pedido do dono ("todos os
+    botões de comprar agora quero que fique pulsando", 03/10/2026). Aviso registrado: movimento sem
+    fim vai contra a WCAG 2.2.2 (pausar, parar, ocultar); a decisão é do dono.
+  - Nada pulsa com "reduzir movimento" ligado no aparelho. Não mexe em sombra nem no contorno de foco.
+*/
+@keyframes bp-pulsa {
+  0%,
+  100% {
+    scale: 1;
+  }
+
+  50% {
+    scale: var(--bp-escala, 1.04);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .button:not(:disabled):not([aria-disabled="true"]),
+  .cart-troca-kit__botao,
+  .cart-combo__botao {
+    animation: bp-pulsa 1.6s ease-in-out 1.2s infinite;
+  }
+
+  .button--full {
+    --bp-escala: 1.015;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .button.main-product__add:not(:disabled),
+  .button.sticky-atc__add:not(:disabled),
+  .button.product-card__add:not(:disabled):not(.product-card__sold-out),
+  .button.predictive-search-product__add:not(:disabled),
+  .button.cart-recommendations__add:not(:disabled),
+  .button.cart-drawer__checkout:not(:disabled),
+  .button.main-cart-summary__checkout:not(:disabled),
+  .cart-combo__botao,
+  .cart-troca-kit__botao {
+    animation-iteration-count: infinite;
+  }
+}
+
+/* Anel pulsante sobre o botão desenhado nas imagens dos banners (snippets/banner-pulso.liquid). */
+.faixa-promos__imagem,
+.vitrine-topo__link {
+  position: relative;
+}
+
+.banner-pulso {
+  position: absolute;
+  left: var(--bp-x);
+  top: var(--bp-y);
+  width: var(--bp-w);
+  height: var(--bp-h);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.banner-pulso--cel {
+  display: none;
+}
+
+@media screen and (max-width: 760px) {
+  .banner-pulso--pc {
+    display: none;
+  }
+
+  .banner-pulso--cel {
+    display: block;
+  }
+}
+
+@keyframes bp-anel {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.85), 0 0 0 0 rgba(46, 170, 60, 0.7);
+  }
+
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0), 0 0 0 16px rgba(46, 170, 60, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0), 0 0 0 0 rgba(46, 170, 60, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .banner-pulso {
+    animation: bp-anel 1.6s ease-out infinite;
+  }
+}
+
+/* Botões de compra em verde (pedido do dono em 03/10/2026: "cor dos botões de compras de verde").
+   Verde #15803D com texto branco (5,02:1); com o mouse, #166534 (7,13:1). Vale para adicionar ao
+   carrinho, barra fixa de compra, busca, sugestões e cards, finalizar compra, adicionar o combo e
+   trocar para o kit. Os botões do tema usam as variáveis --button-* (base.css); o secundário de vidro
+   perde o reflexo e a borda clara para ficar verde sólido. */
+.button.main-product__add,
+.button.sticky-atc__add,
+.button.product-card__add:not(.product-card__sold-out),
+.button.predictive-search-product__add,
+.button.cart-recommendations__add,
+.button.cart-drawer__checkout,
+.button.main-cart-summary__checkout {
+  --button-bg: #15803D;
+  --button-text: #FFFFFF;
+  --button-bg-hover: #166534;
+  --button-text-hover: #FFFFFF;
+  --button-border: #15803D;
+  --button-sheen: none;
+}
+
+/* Os botões de combo e de troca para o kit ganham o verde no próprio arquivo de cada um
+   (component-cart-combos.css e component-cart-troca-kit.css), que carrega depois deste. */

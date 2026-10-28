@@ -1,0 +1,269 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "galeria": {
+          "type": "galeria",
+          "settings": {
+            "show_discount": true,
+            "show_selo": true,
+            "show_capsules": true,
+            "enable_zoom": true
+          }
+        },
+        "titulo": {
+          "type": "titulo",
+          "settings": {
+            "uppercase": false,
+            "show_rating": true
+          }
+        },
+        "kit_selector": {
+          "type": "kit_selector",
+          "settings": {
+            "legend": "",
+            "show_legend": true,
+            "highlight_enabled": false,
+            "highlight_units": 3,
+            "highlight_label": "Mais vendido"
+          }
+        },
+        "botoes_compra": {
+          "type": "botoes_compra",
+          "settings": {
+            "show_dynamic_checkout": false,
+            "show_notify": true
+          }
+        },
+        "parcelamento_pix": {
+          "type": "parcelamento_pix",
+          "settings": {
+            "show_installments": false,
+            "pix_percent": 0
+          }
+        },
+        "selos_confianca": {
+          "type": "selos_confianca",
+          "settings": {
+            "icon_1": "lock",
+            "label_1": "Compra segura",
+            "info_1": "O pagamento é feito no checkout da Shopify, com conexão criptografada.",
+            "icon_2": "badge-check",
+            "label_2": "Desistência em 7 dias",
+            "info_2": "Você pode desistir da compra em até 7 dias corridos depois de receber o produto (Código de Defesa do Consumidor, art. 49). Veja a página de trocas e devoluções.",
+            "icon_3": "eye-off",
+            "label_3": "Privacidade protegida",
+            "info_3": ""
+          }
+        },
+        "cashback": {
+          "type": "cashback",
+          "settings": {
+            "enabled": false,
+            "percent": 0
+          }
+        },
+        "atributos": {
+          "type": "atributos",
+          "settings": {
+            "icon_1": "capsule",
+            "icon_2": "sun",
+            "icon_3": "calendar",
+            "icon_4": "badge-check"
+          }
+        },
+        "dossie": {
+          "type": "dossie",
+          "settings": {}
+        },
+        "entrega": {
+          "type": "entrega",
+          "settings": {
+            "business_days": true,
+            "custom_text": ""
+          }
+        },
+        "chips": {
+          "type": "chips",
+          "settings": {
+            "link_collections": true,
+            "icon_1": "capsule",
+            "icon_2": "sun",
+            "icon_3": "tag"
+          }
+        },
+        "o_que_e": {
+          "type": "o_que_e",
+          "settings": {
+            "anchor_description": "descricao",
+            "anchor_faq": "faq"
+          }
+        },
+        "depoimento_destaque": {
+          "type": "depoimento_destaque",
+          "settings": {
+            "text_1": "",
+            "author_1": "",
+            "text_2": "",
+            "author_2": "",
+            "text_3": "",
+            "author_3": "",
+            "show_verified": false
+          }
+        },
+        "combo_oferta": {
+          "type": "combo_oferta",
+          "settings": {
+            "banner_text": "",
+            "heading": "Compre junto.",
+            "max_items": 2,
+            "use_complementary": true,
+            "show_free_shipping": false
+          }
+        }
+      },
+      "block_order": [
+        "galeria",
+        "titulo",
+        "kit_selector",
+        "botoes_compra",
+        "parcelamento_pix",
+        "selos_confianca",
+        "cashback",
+        "atributos",
+        "dossie",
+        "entrega",
+        "chips",
+        "o_que_e",
+        "depoimento_destaque",
+        "combo_oferta"
+      ],
+      "settings": {
+        "show_breadcrumbs": true,
+        "show_vantagens": true,
+        "coupon_code": "BEMVINDO10",
+        "show_desconto_potes": true
+      }
+    },
+    "beneficios_embutido": {
+      "type": "produto-beneficios-pagina",
+      "settings": {
+        "embutido": true
+      }
+    },
+    "dossie_embutido": {
+      "type": "produto-dossie-pagina",
+      "settings": {
+        "embutido": true
+      }
+    },
+    "product_comparison": {
+      "type": "product-comparison",
+      "settings": {
+        "column_label": "Atributos",
+        "label_capsulas_pote": "cápsulas por pote",
+        "label_capsulas_dia": "cápsulas ao dia",
+        "label_gluten": "Não contém glúten",
+        "label_yes": "Sim"
+      }
+    },
+    "product_rich_content": {
+      "type": "product-rich-content",
+      "blocks": {
+        "conteudo": {
+          "type": "conteudo",
+          "settings": {
+            "heading": "O que é"
+          }
+        },
+        "como_tomar": {
+          "type": "como_tomar",
+          "settings": {
+            "heading": "Como tomar",
+            "image": "shopify://shop_images/produto-comum-capsulas-close-1254x1254.png"
+          }
+        },
+        "quem_pode_usar": {
+          "type": "quem_pode_usar",
+          "settings": {
+            "heading": "Quem pode usar"
+          }
+        },
+        "por_que_escolher": {
+          "type": "por_que_escolher",
+          "settings": {
+            "heading": "Por que escolher"
+          }
+        }
+      },
+      "block_order": [
+        "conteudo",
+        "como_tomar",
+        "quem_pode_usar",
+        "por_que_escolher"
+      ],
+      "settings": {
+        "anchor": "descricao",
+        "append_name": true
+      }
+    },
+    "product_faq": {
+      "type": "product-faq",
+      "settings": {
+        "heading": "Perguntas frequentes sobre",
+        "append_name": true,
+        "anchor": "faq"
+      }
+    },
+    "customer_reactions": {
+      "type": "customer-reactions",
+      "settings": {
+        "heading": "Reações dos clientes"
+      }
+    },
+    "product_reviews": {
+      "type": "product-reviews",
+      "settings": {
+        "heading": "Avaliações e perguntas de clientes",
+        "anchor": "avaliacoes"
+      }
+    },
+    "related_products": {
+      "type": "related-products",
+      "settings": {
+        "heading": "Compre também",
+        "view_all_label": "Ver todos",
+        "products_to_show": 4
+      }
+    },
+    "sticky_atc": {
+      "type": "sticky-atc",
+      "settings": {
+        "reserve_chat_space": true,
+        "show_installments": false
+      }
+    }
+  },
+  "order": [
+    "main",
+    "beneficios_embutido",
+    "dossie_embutido",
+    "product_comparison",
+    "product_rich_content",
+    "product_faq",
+    "customer_reactions",
+    "product_reviews",
+    "related_products",
+    "sticky_atc"
+  ]
+}

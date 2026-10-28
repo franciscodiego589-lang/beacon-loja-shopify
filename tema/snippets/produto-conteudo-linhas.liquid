@@ -1,0 +1,48 @@
+{%- comment -%}
+  Área produto. Imprime um texto de beacon.conteudo (o campo "texto" de um item) com uma linha
+  por quebra de linha do metafield, sem mudar nenhuma palavra. Usado por
+  sections/product-rich-content.liquid (maquete de 29/09/2026). Linha vazia é pulada.
+
+  Parâmetros:
+  - texto: o texto do item (obrigatório; vazio não imprime nada)
+  - format: 'paragraphs' (padrão, um <p> por linha), 'list' (<ul>, um item por linha) ou
+    'facts' (<ul> de dados: o que vem antes do primeiro ": " fica em destaque, como em
+    "Porção: 1 g (2 cápsulas)"; a linha sem ": " sai inteira)
+{%- endcomment -%}
+{%- if texto != blank -%}
+  {%- assign cl_lines = texto | newline_to_br | split: '<br />' -%}
+  {%- case format -%}
+    {%- when 'list' -%}
+      <ul class="rich-content__list">
+        {%- for cl_line in cl_lines -%}
+          {%- assign cl_text = cl_line | strip -%}
+          {%- if cl_text != blank -%}
+            <li>{{ cl_text | escape }}</li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- when 'facts' -%}
+      <ul class="rich-content__facts-list" role="list">
+        {%- for cl_line in cl_lines -%}
+          {%- assign cl_text = cl_line | strip -%}
+          {%- if cl_text != blank -%}
+            {%- assign cl_parts = cl_text | split: ': ' -%}
+            {%- if cl_parts.size > 1 -%}
+              {%- assign cl_label = cl_parts.first -%}
+              {%- assign cl_value = cl_text | remove_first: cl_label | remove_first: ': ' -%}
+              <li><span class="rich-content__facts-label">{{ cl_label | escape }}:</span> {{ cl_value | escape }}</li>
+            {%- else -%}
+              <li>{{ cl_text | escape }}</li>
+            {%- endif -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      {%- for cl_line in cl_lines -%}
+        {%- assign cl_text = cl_line | strip -%}
+        {%- if cl_text != blank -%}
+          <p>{{ cl_text | escape }}</p>
+        {%- endif -%}
+      {%- endfor -%}
+  {%- endcase -%}
+{%- endif -%}

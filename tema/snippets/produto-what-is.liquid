@@ -1,0 +1,37 @@
+{%- comment -%}
+  Área produto. Bloco "o_que_e" da seção main-product: pergunta "O que é" com links para a
+  descrição e para as perguntas frequentes, cada um só quando o metafield correspondente tem
+  conteúdo. Extraído de sections/main-product.liquid (auditoria de arquitetura, 28/09/2026).
+  Parâmetros:
+  - product: o produto (metafields beacon.conteudo, como_tomar, tabela_nutricional e faq)
+  - block: o bloco "o_que_e" (âncoras anchor_description e anchor_faq)
+  - name: nome curto do produto (snippets/produto-nome-curto; opcional, sem ele usa o título)
+{%- endcomment -%}
+{%- liquid
+  assign has_description = false
+  if product.metafields.beacon.conteudo.value != blank or product.metafields.beacon.como_tomar.value != blank or product.metafields.beacon.tabela_nutricional.value != blank
+    assign has_description = true
+  endif
+  assign has_faq = false
+  if product.metafields.beacon.faq.value != blank
+    assign has_faq = true
+  endif
+  assign anchor_description = block.settings.anchor_description | default: 'descricao' | handle
+  assign anchor_faq = block.settings.anchor_faq | default: 'faq' | handle
+  assign what_is_name = name | default: product.title
+-%}
+{%- if has_description or has_faq -%}
+  <div class="main-product__block what-is" {{ block.shopify_attributes }}>
+    <p class="what-is__question">{{ 'produto.what_is.question' | t: title: what_is_name }}</p>
+    <p class="what-is__links">
+      {%- if has_description -%}
+        <a class="what-is__link lg-focus-dual" href="#{{ anchor_description }}">{{ 'produto.what_is.read_more' | t }}</a>
+      {%- endif -%}
+      {%- if has_faq -%}
+        <a class="what-is__link lg-focus-dual" href="#{{ anchor_faq }}">{{ 'produto.what_is.faq' | t }}</a>
+      {%- endif -%}
+    </p>
+  </div>
+{%- elsif request.design_mode -%}
+  <p class="main-product__block main-product__editor-note" {{ block.shopify_attributes }}>{{ 'produto.editor.empty' | t: field: 'beacon.conteudo / beacon.faq' }}</p>
+{%- endif -%}

@@ -1,0 +1,195 @@
+{{ 'section-benefit-grid.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Grade "Navegue por benefício": cada bloco é um link com ícone (ou imagem) e título.
+  5 colunas no computador, 2 no celular, como na maquete. Sem blocos preenchidos,
+  a seção não renderiza nada.
+  Liquid Glass (spec 8.5): campo farol na seção (arte assets/campo-farol.svg só na página
+  inicial, da 3ª seção em diante; fora disso, a cor de base, que é a da névoa) e
+  cada cartão em vidro de conteúdo (.glass .glass--card); o cartão que é link ganha os
+  estados de conteúdo (.glass--interactive: alfa 0,78, sombra de hover, elevação de −2 px).
+{%- endcomment -%}
+
+{%- liquid
+  assign benefit_count = 0
+  for block in section.blocks
+    if block.type == 'item' and block.settings.title != blank
+      assign benefit_count = benefit_count | plus: 1
+    endif
+  endfor
+  assign benefit_heading_id = 'BenefitGrid-' | append: section.id
+
+  assign benefit_has_view_all = false
+  if section.settings.view_all_label != blank and section.settings.view_all_link != blank
+    assign benefit_has_view_all = true
+  endif
+
+  # Arte do campo (spec 7.1, .lg-field--art): só na página inicial e da 3ª seção em diante.
+  # Medido no Chromium em 28/09/2026: fora da primeira dobra a arte nunca virou o elemento de
+  # LCP; numa seção de campo que entra na primeira dobra (1ª a 3ª seção de página curta), virou.
+  assign benefit_field_art = ''
+  if template.name == 'index' and section.index > 2
+    assign benefit_field_art = ' lg-field--art'
+  endif
+-%}
+
+{%- if benefit_count > 0 -%}
+  <div class="benefit-grid section lg-field--farol{{ benefit_field_art }}">
+    <div class="page-width">
+      {%- if section.settings.heading != blank or benefit_has_view_all -%}
+        <div class="section-heading">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="section-heading__title" id="{{ benefit_heading_id }}">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if benefit_has_view_all -%}
+            <a href="{{ section.settings.view_all_link }}" class="link section-heading__link lg-hit hidden-mobile">{{ section.settings.view_all_label | escape }}</a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <ul class="benefit-grid__list" role="list"{% if section.settings.heading != blank %} aria-labelledby="{{ benefit_heading_id }}"{% endif %}>
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'item' and block.settings.title != blank -%}
+            {%- liquid
+              # Apple v2 (01/10/2026): sem imagem própria, o cartão mostra a foto principal do
+              # primeiro produto da coleção do link (/collections/<handle>). Fora isso, o ícone.
+              assign bg_photo = nil
+              if block.settings.image == blank and block.settings.link != blank
+                assign bg_link = block.settings.link | downcase
+                if bg_link contains '/collections/'
+                  assign bg_handle = bg_link | split: '/collections/' | last | split: '?' | first | split: '/' | first
+                  assign bg_col = collections[bg_handle]
+                  if bg_col.products.size > 0
+                    assign bg_photo = bg_col.products.first.featured_image
+                  endif
+                endif
+              endif
+            -%}
+            {%- capture benefit_inner -%}
+              {%- if block.settings.image != blank -%}
+                <span class="benefit-grid__media">
+                  {{ block.settings.image | image_url: width: 160 | image_tag: widths: '80, 112, 160', sizes: '56px', loading: 'lazy', alt: '', class: 'benefit-grid__image' }}
+                </span>
+              {%- elsif bg_photo != blank -%}
+                <span class="benefit-grid__media benefit-grid__media--photo">
+                  {{ bg_photo | image_url: width: 160 | image_tag: widths: '80, 112, 160', sizes: '56px', loading: 'lazy', alt: '', class: 'benefit-grid__image' }}
+                </span>
+              {%- else -%}
+                <span class="benefit-grid__media benefit-grid__media--icon">
+                  {% render 'icon', name: block.settings.icon, size: 26, stroke: 1.8 %}
+                </span>
+              {%- endif -%}
+              <span class="benefit-grid__title">{{ block.settings.title | escape }}</span>
+            {%- endcapture -%}
+            <li class="benefit-grid__item" {{ block.shopify_attributes }}>
+              {%- comment -%} Sem link escolhido, o cartão não vira link (nada de href="#" morto). {%- endcomment -%}
+              {%- if block.settings.link != blank -%}
+                <a href="{{ block.settings.link }}" class="benefit-grid__link glass glass--card glass--interactive">{{ benefit_inner }}</a>
+              {%- else -%}
+                <span class="benefit-grid__link benefit-grid__link--static glass glass--card">{{ benefit_inner }}</span>
+              {%- endif -%}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+
+      {%- if benefit_has_view_all -%}
+        <a href="{{ section.settings.view_all_link }}" class="button button--secondary button--full benefit-grid__view-all hidden-desktop">
+          {{- section.settings.view_all_label | escape -}}
+        </a>
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Grade de benefícios",
+  "tag": "section",
+  "class": "section-benefit-grid",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Navegue por categoria"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Texto do link \"ver todos\"",
+      "default": "Ver todas as categorias"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Link do \"ver todos\""
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Categoria",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "info": "Usado quando não há imagem.",
+          "options": [
+            { "value": "zap", "label": "Energia" },
+            { "value": "shield-plus", "label": "Imunidade" },
+            { "value": "bulb", "label": "Foco" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "joint", "label": "Articulações" },
+            { "value": "sparkles", "label": "Pele e cabelo" },
+            { "value": "gut", "label": "Intestino" },
+            { "value": "moon", "label": "Sono" },
+            { "value": "leaf", "label": "Nutrição" },
+            { "value": "dumbbell", "label": "Desempenho" },
+            { "value": "sun", "label": "Disposição" },
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "capsule-h", "label": "Cápsula deitada" },
+            { "value": "jar", "label": "Pote" }
+          ],
+          "default": "zap"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem (opcional)",
+          "info": "Substitui o ícone quando preenchida."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Grade de benefícios",
+      "blocks": [
+        { "type": "item", "settings": { "title": "Energia", "icon": "zap" } },
+        { "type": "item", "settings": { "title": "Imunidade", "icon": "shield-plus" } },
+        { "type": "item", "settings": { "title": "Foco e concentração", "icon": "bulb" } },
+        { "type": "item", "settings": { "title": "Coração", "icon": "heart" } },
+        { "type": "item", "settings": { "title": "Articulações", "icon": "joint" } },
+        { "type": "item", "settings": { "title": "Pele, cabelos e unhas", "icon": "sparkles" } },
+        { "type": "item", "settings": { "title": "Saúde intestinal", "icon": "gut" } },
+        { "type": "item", "settings": { "title": "Sono", "icon": "moon" } },
+        { "type": "item", "settings": { "title": "Nutrição completa", "icon": "leaf" } },
+        { "type": "item", "settings": { "title": "Desempenho", "icon": "dumbbell" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

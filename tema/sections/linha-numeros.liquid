@@ -1,0 +1,148 @@
+{{ 'section-linha-numeros.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Linha de números da home (redesenho v3, tarefa 4b, parte 2; alvo.css linhas 203 a 207, 374 e 423 a 431;
+  home.html linhas 199 a 204). Página branca, sem bloco claro: até quatro números grandes em colunas separadas
+  por fio fino, cada um com uma legenda (quatro colunas no computador, duas no celular).
+
+  Blocos numero (até 4): valor (text), legenda (text) e a caixa "Número automático". Com a caixa ligada e uma
+  coleção escolhida, o número é a contagem de produtos da coleção (collection.products_count) e o valor digitado
+  não é usado; sem coleção (ou com a caixa desligada), vale o valor digitado. Quem não tem valor nem contagem não
+  aparece. O número de colunas segue a quantidade de números exibidos (de 1 a 4), por uma variável de CSS que
+  só recebe um número escrito aqui.
+
+  Região: o título acessível vem do ajuste "region_label" (text, com | escape), em aria-label. Sem ele, a faixa
+  não vira região nomeada.
+
+  Segurança (S1 a S5): ajustes text com | escape; contagem da coleção é número; nenhum ajuste html ou liquid;
+  nenhum <script>; nenhuma chave de tradução com _html. Aviso do editor: só aparece com request.design_mode.
+{%- endcomment -%}
+
+{%- liquid
+  assign ln_itens = 0
+  for block in section.blocks
+    assign ln_valor = block.settings.value
+    if block.settings.valor_automatico and block.settings.collection != blank
+      assign ln_valor = block.settings.collection.products_count
+    endif
+    if ln_valor != blank
+      assign ln_itens = ln_itens | plus: 1
+    endif
+  endfor
+  assign ln_colunas = ln_itens | at_most: 4 | at_least: 1
+-%}
+
+{%- if ln_itens > 0 -%}
+  <div class="linha-numeros page-width"{% if section.settings.region_label != blank %} role="region" aria-label="{{ section.settings.region_label | escape }}"{% endif %}>
+    <ul class="linha-numeros__grade" role="list" style="--linha-numeros-colunas: {{ ln_colunas }}">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign ln_valor = block.settings.value
+          if block.settings.valor_automatico and block.settings.collection != blank
+            assign ln_valor = block.settings.collection.products_count
+          endif
+        -%}
+        {%- if ln_valor != blank -%}
+          <li class="linha-numeros__item" {{ block.shopify_attributes }}>
+            <span class="linha-numeros__valor">{{ ln_valor | escape }}</span>
+            {% if block.settings.label != blank %}<span class="linha-numeros__legenda">{{ block.settings.label | escape }}</span>{% endif %}
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="linha-numeros page-width">
+    <p class="linha-numeros__aviso">
+      <span class="visually-hidden">{{ 'home.general.editor_only' | t }}</span>
+      {{ 'home.linha_numeros.editor_empty' | t }}
+    </p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Linha de números",
+  "tag": "section",
+  "class": "section-linha-numeros",
+  "max_blocks": 4,
+  "settings": [
+    {
+      "type": "text",
+      "id": "region_label",
+      "label": "Título da região (leitor de tela)",
+      "info": "Não aparece na página: é o nome da faixa para quem usa leitor de tela.",
+      "default": "Linha Pure em números"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "numero",
+      "name": "Número",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "checkbox",
+          "id": "valor_automatico",
+          "label": "Número automático",
+          "info": "Ligada, o número é a quantidade de produtos da coleção escolhida abaixo e o valor digitado não é usado.",
+          "default": false
+        },
+        {
+          "type": "collection",
+          "id": "collection",
+          "label": "Coleção da contagem",
+          "info": "Só vale com o número automático ligado."
+        },
+        {
+          "type": "text",
+          "id": "value",
+          "label": "Valor",
+          "info": "Usado quando o número automático está desligado ou quando não há coleção escolhida."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Legenda"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Linha de números",
+      "blocks": [
+        {
+          "type": "numero",
+          "settings": {
+            "valor_automatico": true,
+            "collection": "capsulas",
+            "label": "produtos na linha Pure"
+          }
+        },
+        {
+          "type": "numero",
+          "settings": {
+            "value": "60",
+            "label": "cápsulas por pote"
+          }
+        },
+        {
+          "type": "numero",
+          "settings": {
+            "value": "2",
+            "label": "cápsulas ao dia"
+          }
+        },
+        {
+          "type": "numero",
+          "settings": {
+            "value": "30",
+            "label": "dias por pote"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

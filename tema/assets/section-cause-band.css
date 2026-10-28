@@ -1,0 +1,169 @@
+/*
+  Beacon Labs · seção Nossa causa (sections/cause-band.liquid)
+  Fundo azul-marinho (--color-ink), como na maquete. Números de impacto em
+  cartões azul-petróleo escuro (#082848, --color-footer-surface).
+
+  Liquid Glass (spec 7.1, 8.5 e D26): o fundo passa a ser o campo noite (.lg-field--noite
+  na marcação, #081C2D, cor do BEACON da logo; a arte dos raios entra com .lg-field--art
+  quando assets/campo-noite.svg existir). Os cards de número são vidro escuro de conteúdo
+  (.glass .glass--dark-card, ink a 0,60; reserva #082848 na transparência reduzida), raio 24
+  (20 no celular). Contraste no pior ponto do campo (raio-2 #474522, spec 6.5): título
+  branco 9,803:1, corpo #BFD7E6 6,572:1; nos cards, branco 14,757:1 e #BFD7E6 9,893:1.
+  Botão: secundário escuro (.lg-button--glass-dark), texto branco. Foco branco nesta faixa
+  (--focus-outline e o contorno do anel duplo), porque o ink daria 1,022:1 sobre o noite.
+*/
+
+.cause-band {
+  --lg-focus-outer: var(--lg-on-dark, #FFFFFF);
+
+  padding: 44px 0;
+  color: var(--color-on-dark);
+}
+
+.cause-band__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.cause-band__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.cause-band__heading {
+  margin: 0;
+  color: var(--color-on-dark);
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.cause-band__body {
+  margin: 0;
+  color: var(--color-on-dark-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* Secundário escuro (spec 8.3): ink a 0,60 com fio branco a 0,30 e texto branco; hover a
+   0,80 e pressionado a 0,90 com escala 0,97 (liquid-glass.css, .lg-button--glass-dark). As
+   variáveis --button-* repetem o material para os estados do .button de base.css. */
+.cause-band__button {
+  --button-bg: var(--glass-dark-card-bg, transparent);
+  --button-text: var(--color-on-dark);
+  --button-border: rgba(255, 255, 255, 0.3);
+  --button-bg-hover: rgba(var(--color-ink-rgb), 0.8);
+  --button-text-hover: var(--color-on-dark);
+  --button-border-hover: rgba(255, 255, 255, 0.3);
+  --button-shadow: var(--lg-rim-dark-inset, 0 0 #0000);
+  --button-shadow-hover: var(--lg-rim-dark-inset, 0 0 #0000);
+  --button-shadow-press: var(--lg-rim-dark-inset, 0 0 #0000);
+  --button-sheen: none;
+  margin-top: 6px;
+}
+
+.cause-band__stats {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.cause-band__stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 144px;
+  padding: 16px;
+  border-radius: var(--lg-radius-box, var(--radius-card));
+}
+
+.cause-band__stat-icon {
+  color: var(--color-accent);
+}
+
+.cause-band__stat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cause-band__stat-number {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 30px;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+.cause-band__stat-label {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-on-dark-muted);
+}
+
+@media screen and (min-width: 990px) {
+  .cause-band {
+    padding: 72px 0;
+  }
+
+  .cause-band__inner {
+    gap: 40px;
+  }
+
+  .cause-band__text {
+    max-width: 580px;
+    gap: 18px;
+  }
+
+  .cause-band__heading {
+    font-size: 36px;
+  }
+
+  .cause-band__body {
+    font-size: 16px;
+  }
+
+  .cause-band__stats {
+    gap: 20px;
+  }
+
+  .cause-band__stat {
+    min-height: 200px;
+    padding: 28px;
+  }
+
+  /* 44 px a partir de ~1375 px; menor antes disso, para "12.500" caber no cartão. */
+  .cause-band__stat-number {
+    font-size: clamp(32px, 3.2vw, 44px);
+  }
+
+  .cause-band__stat-label {
+    font-size: 14px;
+  }
+}
+
+/* Texto e números lado a lado só a partir de 1200 px. Entre 990 e 1199 px, o texto fixo de
+   580 px deixava os cartões com 75 a 180 px e o número (44 px) estourava o cartão. */
+@media screen and (min-width: 1200px) {
+  .cause-band__inner {
+    flex-direction: row;
+    align-items: center;
+    gap: 80px;
+  }
+
+  .cause-band__text {
+    flex: 0 1 580px;
+    min-width: 0;
+  }
+
+  .cause-band__stats {
+    flex: 1 1 360px;
+    min-width: 0;
+  }
+}

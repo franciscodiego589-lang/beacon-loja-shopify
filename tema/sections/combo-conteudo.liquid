@@ -1,0 +1,261 @@
+{{ 'component-produto-dossie.css' | asset_url | stylesheet_tag }}
+{{ 'section-combo-pagina.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Página de combo (etapa M0, 03/10/2026). Texto do conjunto, benefícios de cada produto, "Por que
+  juntos", modo de uso, advertências e atalhos para o dossiê. Vem depois de sections/combo-itens.liquid
+  em templates/product.combo.json. O tema não escreve nenhum texto de saúde: tudo vem de dados.
+
+  De onde vem cada parte (parte sem dado não aparece):
+  - "Para que serve este combo": beacon.combo_porque do combo (config-loja/combos-porque.json é a fonte
+    única; o texto só explica o conjunto pela rotina e pelo papel de cada item, sem efeito do conjunto).
+  - "Benefícios de cada produto": de cada avulso (beacon.combo_itens), o bloco "Benefícios" de
+    beacon.conteudo, o mesmo texto que a página do produto mostra (config-loja/beneficios-site.json). Se o
+    avulso não tem esse bloco, usa os títulos de beacon.detalhes.beneficios, que a página ?view=beneficios
+    dele já mostra. Link "Benefícios completos" para {{ item.url }}?view=beneficios.
+  - "Por que juntos": as alegações literais da descrição do combo, entre "Por que juntos" e "Advertências"
+    (lidas da descrição, sem reescrever). Sem esse trecho, a parte não aparece.
+  - "Como tomar": beacon.dossie.modo_de_uso de cada avulso, ao pé da letra. Nada de horário nem de
+    combinação inventados.
+  - "Advertências": união das beacon.dossie.advertencias dos avulsos, ao pé da letra, sem repetir a mesma
+    frase (a comparação ignora ponto final e caixa; a primeira aparição fica; a ordem é a dos itens).
+  - "Composição e tabela nutricional": link para o dossiê técnico (?view=dossie) de cada avulso; o tema não
+    monta tabela nova somando produtos.
+  Conteúdo é sólido (bloco claro #ECF3F9), sem vidro.
+{%- endcomment -%}
+{%- liquid
+  assign itens = product.metafields.beacon.combo_itens.value
+  assign porque = product.metafields.beacon.combo_porque.value
+
+  # "Por que juntos": trecho da descrição do combo, itens da lista literais.
+  assign juntos = ''
+  assign pj_partes = product.description | split: '<strong>Por que juntos</strong>'
+  if pj_partes.size > 1
+    assign juntos = pj_partes[1] | split: '<strong>Advertências</strong>' | first
+  endif
+  assign juntos_itens = juntos | split: '<li>'
+
+  # Advertências: união literal, sem frase idêntica repetida.
+  # A comparação ignora ponto e caixa ("...crianças." e "...crianças" são a mesma frase); o texto mostrado
+  # é o da primeira aparição, ao pé da letra.
+  assign advertencias = '' | split: ','
+  assign adv_chaves = '' | split: ','
+  for item in itens
+    assign adv_item = item.metafields.beacon.dossie.value.advertencias.value
+    for adv in adv_item
+      assign adv_chave = adv | strip | downcase | remove: '.'
+      unless adv_chaves contains adv_chave or adv_chave == blank
+        assign um_chave = adv_chave | split: '§§§'
+        assign um_texto = adv | split: '§§§'
+        assign adv_chaves = adv_chaves | concat: um_chave
+        assign advertencias = advertencias | concat: um_texto
+      endunless
+    endfor
+  endfor
+
+  assign n_itens = 0
+  assign tem_modo = false
+  assign tem_dossie = false
+  for item in itens
+    if item != blank
+      assign n_itens = n_itens | plus: 1
+      assign dos = item.metafields.beacon.dossie.value
+      if dos != blank
+        assign tem_dossie = true
+      endif
+      if dos.modo_de_uso.value != blank
+        assign tem_modo = true
+      endif
+    endif
+  endfor
+-%}
+{%- if n_itens > 0 -%}
+  <div class="combo-conteudo">
+    {%- if porque != blank -%}
+      <section class="combo-secao" id="combo-serve" aria-labelledby="ComboServeTitulo-{{ section.id }}">
+        <div class="page-width">
+          <div class="combo-secao__cabeca">
+            <h2 class="combo-secao__titulo" id="ComboServeTitulo-{{ section.id }}">{{ 'produto.combo_pagina.serve_titulo' | t }}</h2>
+          </div>
+          <div class="combo-serve lg-field--claro">
+            <p class="combo-serve__texto">{{ porque | escape | newline_to_br }}</p>
+          </div>
+        </div>
+      </section>
+    {%- endif -%}
+
+    <section class="combo-secao" id="combo-beneficios" aria-labelledby="ComboBeneficiosTitulo-{{ section.id }}">
+      <div class="page-width">
+        <div class="combo-secao__cabeca">
+          <h2 class="combo-secao__titulo" id="ComboBeneficiosTitulo-{{ section.id }}">{{ 'produto.combo_pagina.beneficios_titulo' | t }}</h2>
+        </div>
+        <ul class="combo-beneficios" role="list">
+          {%- for item in itens -%}
+            {%- if item != blank -%}
+              {%- liquid
+                capture i_nome_html
+                  render 'v3-nome-visivel', produto: item, modo: 'html'
+                endcapture
+                assign i_nome_html = i_nome_html | strip
+                capture i_nome_texto
+                  render 'v3-nome-visivel', produto: item, modo: 'texto'
+                endcapture
+                assign i_nome_texto = i_nome_texto | strip
+
+                assign i_conteudo = item.metafields.beacon.conteudo.value
+                assign i_texto_beneficios = ''
+                for bloco in i_conteudo
+                  if bloco.titulo == 'Benefícios'
+                    assign i_texto_beneficios = bloco.texto
+                  endif
+                endfor
+                assign i_linhas = i_texto_beneficios | newline_to_br | split: '<br />'
+                assign i_detalhes = item.metafields.beacon.detalhes.value
+                assign i_titulos = i_detalhes.beneficios | map: 'titulo'
+                assign i_tem = false
+                if i_texto_beneficios != blank or i_titulos.size > 0
+                  assign i_tem = true
+                endif
+              -%}
+              {%- if i_tem -%}
+                <li class="combo-beneficio">
+                  <h3 class="combo-beneficio__nome">{{ i_nome_html }}</h3>
+                  <ul class="dp-checks dp-checks--sm" role="list">
+                    {%- if i_texto_beneficios != blank -%}
+                      {%- for linha in i_linhas -%}
+                        {%- assign t_linha = linha | strip -%}
+                        {%- if t_linha != blank -%}<li>{{ t_linha | escape }}</li>{%- endif -%}
+                      {%- endfor -%}
+                    {%- else -%}
+                      {%- for t_titulo in i_titulos -%}
+                        {%- if t_titulo != blank -%}<li>{{ t_titulo | escape }}</li>{%- endif -%}
+                      {%- endfor -%}
+                    {%- endif -%}
+                  </ul>
+                  <a class="combo-link" href="{{ item.url }}?view=beneficios" aria-label="{{ 'produto.combo_pagina.beneficios_completos_de' | t: nome: i_nome_texto }}">
+                    <span>{{ 'produto.combo_pagina.beneficios_completos' | t }}</span>
+                    {%- render 'icon', name: 'arrow-right', size: 16 -%}
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+    </section>
+
+    {%- if juntos_itens.size > 1 -%}
+      <section class="combo-secao" id="combo-juntos" aria-labelledby="ComboJuntosTitulo-{{ section.id }}">
+        <div class="page-width">
+          <div class="combo-secao__cabeca">
+            <h2 class="combo-secao__titulo" id="ComboJuntosTitulo-{{ section.id }}">{{ 'produto.combo_pagina.juntos_titulo' | t }}</h2>
+          </div>
+          <div class="dp-card combo-cartao">
+            <ul class="dp-checks" role="list">
+              {%- for pedaco in juntos_itens offset: 1 -%}
+                {%- assign j_texto = pedaco | split: '</li>' | first | strip_html | strip -%}
+                {%- if j_texto != blank -%}<li>{{ j_texto | escape_once }}</li>{%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {%- endif -%}
+
+    {%- if tem_modo -%}
+      <section class="combo-secao" id="combo-como-tomar" aria-labelledby="ComboTomarTitulo-{{ section.id }}">
+        <div class="page-width">
+          <div class="combo-secao__cabeca">
+            <h2 class="combo-secao__titulo" id="ComboTomarTitulo-{{ section.id }}">{{ 'produto.combo_pagina.como_tomar_titulo' | t }}</h2>
+          </div>
+          <ul class="combo-modo" role="list">
+            {%- for item in itens -%}
+              {%- if item != blank -%}
+                {%- assign i_modo = item.metafields.beacon.dossie.value.modo_de_uso.value -%}
+                {%- if i_modo != blank -%}
+                  {%- capture i_nome_html -%}{% render 'v3-nome-visivel', produto: item, modo: 'html' %}{%- endcapture -%}
+                  <li class="combo-modo__item">
+                    <h3 class="combo-modo__nome">{{ i_nome_html | strip }}</h3>
+                    <p class="combo-modo__texto">{{ i_modo | escape | newline_to_br }}</p>
+                  </li>
+                {%- endif -%}
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      </section>
+    {%- endif -%}
+
+    {%- if advertencias.size > 0 -%}
+      <section class="combo-secao" id="combo-advertencias" aria-labelledby="ComboAdvertenciasTitulo-{{ section.id }}">
+        <div class="page-width">
+          <div class="combo-secao__cabeca">
+            <h2 class="combo-secao__titulo" id="ComboAdvertenciasTitulo-{{ section.id }}">{{ 'produto.combo_pagina.advertencias_titulo' | t }}</h2>
+          </div>
+          <div class="dp-card combo-cartao">
+            <ul class="dp-list dp-list--warn" role="list">
+              {%- for advertencia in advertencias -%}
+                {%- if advertencia != blank -%}<li>{{ advertencia | escape }}</li>{%- endif -%}
+              {%- endfor -%}
+            </ul>
+          </div>
+        </div>
+      </section>
+    {%- endif -%}
+
+    {%- if tem_dossie -%}
+      <section class="combo-secao" id="combo-composicao" aria-labelledby="ComboComposicaoTitulo-{{ section.id }}">
+        <div class="page-width">
+          <div class="combo-secao__cabeca">
+            <h2 class="combo-secao__titulo" id="ComboComposicaoTitulo-{{ section.id }}">{{ 'produto.combo_pagina.composicao_titulo' | t }}</h2>
+            <p class="combo-secao__apoio">{{ 'produto.combo_pagina.composicao_texto' | t }}</p>
+          </div>
+          <ul class="combo-dossies" role="list">
+            {%- for item in itens -%}
+              {%- if item != blank and item.metafields.beacon.dossie.value != blank -%}
+                {%- liquid
+                  capture i_nome_html
+                    render 'v3-nome-visivel', produto: item, modo: 'html'
+                  endcapture
+                  assign i_nome_html = i_nome_html | strip
+                  capture i_nome_texto
+                    render 'v3-nome-visivel', produto: item, modo: 'texto'
+                  endcapture
+                  assign i_nome_texto = i_nome_texto | strip
+                -%}
+                <li>
+                  <a class="combo-dossies__link" href="{{ item.url }}?view=dossie" aria-label="{{ 'produto.combo_pagina.dossie_tecnico_de' | t: nome: i_nome_texto }}">
+                    <span class="combo-dossies__nome">{{ i_nome_html }}</span>
+                    <span class="combo-dossies__acao">{{ 'produto.combo_pagina.dossie_tecnico' | t }}{% render 'icon', name: 'arrow-right', size: 16 %}</span>
+                  </a>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      </section>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Combo: conteúdo",
+  "tag": "div",
+  "class": "section-combo-conteudo",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Mostra, em ordem: para que serve o combo (beacon.combo_porque), benefícios de cada produto, por que juntos (da descrição do combo), como tomar, advertências e atalhos do dossiê técnico. Parte sem dado não aparece. O tema não escreve texto de saúde."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Combo: conteúdo"
+    }
+  ]
+}
+{% endschema %}

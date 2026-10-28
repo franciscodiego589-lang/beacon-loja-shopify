@@ -1,0 +1,102 @@
+/*
+  Beacon Labs · seção Linha de números da home (sections/linha-numeros.liquid), redesenho v3, tarefa 4b, parte 2 (02/10/2026).
+  Alvo: alvo.css linhas 203 a 207 (faixa e número), 374 (até 1080 px) e 423 a 431 (celular); home.html linhas 199 a 204.
+
+  Página branca, sem bloco claro e sem vidro. Até quatro números em colunas separadas por fio fino (--color-line):
+  número de 72 px, peso 600, linha de 1 e espaçamento -0,035 em (56 px até 1080 px; 52 px até 760 px); legenda de
+  17 px em --color-text-muted (15 px até 760 px). Quatro colunas no computador, duas no celular (até 760 px).
+  Contraste da legenda sobre a página branca: #566472 dá 6,07:1.
+
+  Espaço entre seções (emenda 15): margin-block: var(--section-gap) no próprio bloco da seção (104 px; 68 px até
+  760 px), sem padding de seção somado. As margens de seções vizinhas se fundem.
+
+  Desvio do alvo, por robustez: o número de colunas segue a quantidade de números exibidos (--linha-numeros-colunas,
+  de 1 a 4, escrito pela seção), para três números não deixarem uma coluna vazia à direita. Com quatro números, igual
+  ao alvo. Até 760 px as colunas são sempre duas.
+*/
+
+.linha-numeros {
+  margin-block: var(--section-gap, 64px);
+}
+
+.linha-numeros__grade {
+  display: grid;
+  grid-template-columns: repeat(var(--linha-numeros-colunas, 4), minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.linha-numeros__item {
+  min-width: 0;
+  padding: 8px 28px;
+  border-left: 1px solid var(--color-line);
+  color: var(--color-text);
+}
+
+.linha-numeros__item:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.linha-numeros__valor {
+  display: block;
+  font-family: var(--font-heading-family);
+  font-size: 72px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.035em;
+}
+
+.linha-numeros__legenda {
+  display: block;
+  margin-top: 10px;
+  color: var(--color-text-muted);
+  font-size: 17px;
+}
+
+/* ---------- Aviso do editor (só com request.design_mode) ---------- */
+
+.linha-numeros__aviso {
+  margin: 0;
+  padding: 16px 20px;
+  border: 1px dashed var(--color-input-border);
+  border-radius: var(--radius-card);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Tela média (até 1080 px) ---------- */
+
+@media screen and (max-width: 1080px) {
+  .linha-numeros__valor {
+    font-size: 56px;
+  }
+}
+
+/* ---------- Celular (até 760 px): duas colunas ---------- */
+
+@media screen and (max-width: 760px) {
+  .linha-numeros__grade {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 0;
+  }
+
+  .linha-numeros__item {
+    padding: 0 0 0 20px;
+  }
+
+  .linha-numeros__item:nth-child(odd) {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .linha-numeros__valor {
+    font-size: 52px;
+  }
+
+  .linha-numeros__legenda {
+    font-size: 15px;
+  }
+}

@@ -1,0 +1,54 @@
+{%- comment -%}
+  Nome visível do produto (redesenho v3, emenda 1 e Ruling 24 da revisão de 02/10/2026): o título
+  antes de " – ", com a dose ("Pure Taurina 1000mg – 60 cápsulas" vira "Pure Taurina 1000mg").
+  Título sem " – " usa o título inteiro; o nome nunca fica vazio. É a fonte única da regra.
+
+  Parâmetros:
+  - produto: o produto (ou)
+  - titulo: um texto de título, quando não há objeto de produto
+  - modo: 'html' (padrão) devolve o nome JÁ escapado, com cada palavra que tem hífen dentro de
+          <span class="v3-junto"> (white-space: nowrap), para "Beta-Alanina" e "L-Cisteína" não se
+          partirem na quebra de linha, sem caractere invisível. Vai direto entre tags, nunca em
+          atributo. 'texto' devolve só o texto escapado, para alt, aria-label e title.
+          'tamanho' devolve só o número de caracteres do nome (sem escape, é um número), para
+          o título da página do produto ficar menor no celular quando o nome é longo.
+
+  Segurança (S1): a saída já sai escapada (cada palavra passa por escape antes de ser montada), então
+  quem usa NÃO aplica | escape de novo (duplicaria o "&amp;"). Uso:
+    capture nome_visivel
+      render 'v3-nome-visivel', produto: product, modo: 'html'
+    endcapture
+    ... {{ nome_visivel | strip }}
+
+  O estilo de .v3-junto (white-space: nowrap) fica em assets/base.css, nas utilitárias do redesenho v3,
+  uma vez só e global: nenhum CSS de seção repete a regra.
+
+  Uso em atributo ou em filtro (alt, aria-label, t: title:): modo 'texto'. A saída já vem escapada.
+  O filtro t não escapa de novo (medido na prévia em 02/10/2026), mas o alt do image_tag escapa:
+  para o alt, aplique | escape_once ao texto antes de passar ao image_tag.
+{%- endcomment -%}
+{%- liquid
+  assign nv_titulo = titulo | default: produto.title
+  assign nv_nome = nv_titulo | split: ' – ' | first | strip
+  if nv_nome == blank
+    assign nv_nome = nv_titulo | strip
+  endif
+  if modo == 'texto'
+    echo nv_nome | escape
+  elsif modo == 'tamanho'
+    echo nv_nome | size
+  else
+    assign nv_palavras = nv_nome | split: ' '
+    for nv_palavra in nv_palavras
+      if forloop.index > 1
+        echo ' '
+      endif
+      assign nv_esc = nv_palavra | escape
+      if nv_palavra contains '-'
+        echo '<span class="v3-junto">' | append: nv_esc | append: '</span>'
+      else
+        echo nv_esc
+      endif
+    endfor
+  endif
+-%}

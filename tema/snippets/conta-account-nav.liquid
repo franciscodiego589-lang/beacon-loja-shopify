@@ -1,0 +1,39 @@
+{%- comment -%}
+  Área conta: navegação entre as páginas da conta (pedidos, endereços, sair).
+  Parâmetros:
+  - current: 'orders' ou 'addresses' (item destacado)
+  - subpage: true quando a página é filha do item (ex.: detalhe do pedido). O item fica
+    destacado, mas sem aria-current="page", porque não é a própria página.
+  Liquid Glass (spec 8.4): pílulas de 44 px em vidro funcional fino sem desfoque (.glass
+  .glass--thin .glass--interactive); o item destacado é preenchimento ink (.lg-fill--ink).
+{%- endcomment -%}
+<nav class="conta-nav" aria-label="{{ 'conta.account.nav_label' | t }}">
+  <ul class="conta-nav__list" role="list">
+    <li class="conta-nav__item">
+      <a
+        class="conta-nav__link{% if current == 'orders' %} conta-nav__link--active lg-fill--ink{% else %} glass glass--thin glass--interactive{% endif %}"
+        href="{{ routes.account_url }}"
+        {% if current == 'orders' and subpage != true %}aria-current="page"{% endif %}
+      >
+        {%- render 'icon', name: 'bag', size: 18 -%}
+        <span>{{ 'conta.account.nav_orders' | t }}</span>
+      </a>
+    </li>
+    <li class="conta-nav__item">
+      <a
+        class="conta-nav__link{% if current == 'addresses' %} conta-nav__link--active lg-fill--ink{% else %} glass glass--thin glass--interactive{% endif %}"
+        href="{{ routes.account_addresses_url }}"
+        {% if current == 'addresses' and subpage != true %}aria-current="page"{% endif %}
+      >
+        {%- render 'icon', name: 'map-pin', size: 18 -%}
+        <span>{{ 'conta.account.nav_addresses' | t }}</span>
+      </a>
+    </li>
+    <li class="conta-nav__item">
+      <a class="conta-nav__link conta-nav__link--logout glass glass--thin glass--interactive" href="{{ routes.account_logout_url }}">
+        {%- render 'icon', name: 'arrow-right', size: 18 -%}
+        <span>{{ 'conta.account.logout' | t }}</span>
+      </a>
+    </li>
+  </ul>
+</nav>

@@ -1,0 +1,64 @@
+{%- comment -%}
+  Estrutura da busca preditiva (modal). Renderizada uma vez no layout.
+  O conteúdo dos resultados vem da seção 'predictive-search' (área de busca), carregada pelo
+  search.api.js em routes.predictive_search_url com section_id=predictive-search, e inserido
+  em [data-predictive-search-results]. O formulário funciona sem JS (vai para a página de busca).
+
+  Gatilho no cabeçalho: [data-predictive-search-open], a lupa (.header-action--search), que é um
+  botão. Sem JavaScript esse botão não faz nada: o cabeçalho traz também um link para a página de
+  busca (.header-action--search-nojs), que só aparece com html.no-js.
+
+  Liquid Glass (spec 8.1): o <dialog> é vidro funcional espesso (.glass .glass--thick, branco
+  a 0,90 com desfoque e 0,96 na reserva sem desfoque, D28), flutuante sob o cabeçalho, com
+  escurecimento de 0,55. Desde 01/10/2026 (Apple v2) o vidro do <dialog> tem desfoque
+  (.glass--blur), porque há conteúdo da página por trás.
+  Abre pela lupa do cabeçalho (.header-action--search), em qualquer largura. Forma, entrada e
+  cores em component-predictive-search.css.
+{%- endcomment -%}
+<predictive-search
+  id="PredictiveSearch"
+  class="predictive-search"
+  data-section-id="predictive-search"
+  data-url="{{ routes.predictive_search_url }}"
+  data-search-url="{{ routes.search_url }}"
+  data-limit="6"
+  data-resources="product,collection,article,page"
+>
+  <dialog id="PredictiveSearchDialog" class="predictive-search__dialog glass glass--thick glass--blur" aria-labelledby="PredictiveSearchTitle">
+    <div class="predictive-search__inner">
+      <h2 id="PredictiveSearchTitle" class="visually-hidden">{{ 'fundacao.search.dialog_title' | t }}</h2>
+      <form action="{{ routes.search_url }}" method="get" role="search" class="predictive-search__form" data-predictive-search-form>
+        <label for="PredictiveSearchInput" class="visually-hidden">{{ 'fundacao.search.label' | t }}</label>
+        <span class="predictive-search__icon" aria-hidden="true">{% render 'icon', name: 'search', size: 20 %}</span>
+        <input
+          type="search"
+          id="PredictiveSearchInput"
+          class="predictive-search__input"
+          name="q"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'fundacao.search.placeholder' | t }}"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          enterkeyhint="search"
+          aria-controls="PredictiveSearchResults"
+          aria-describedby="PredictiveSearchStatus"
+          data-predictive-search-input
+        >
+        <input type="hidden" name="options[prefix]" value="last">
+        <button type="reset" class="predictive-search__reset" aria-label="{{ 'fundacao.search.clear' | t }}" data-predictive-search-reset hidden>
+          {% render 'icon', name: 'close', size: 18 %}
+        </button>
+        <button type="submit" class="predictive-search__submit" aria-label="{{ 'fundacao.search.submit' | t }}">
+          {% render 'icon', name: 'arrow-right', size: 20 %}
+        </button>
+      </form>
+      <button type="button" class="predictive-search__close" aria-label="{{ 'fundacao.search.close' | t }}" data-predictive-search-close>
+        {% render 'icon', name: 'close', size: 22 %}
+      </button>
+      <div id="PredictiveSearchResults" class="predictive-search__results" data-predictive-search-results></div>
+      <p id="PredictiveSearchStatus" class="visually-hidden" role="status" aria-live="polite" data-predictive-search-status></p>
+    </div>
+  </dialog>
+</predictive-search>

@@ -1,0 +1,85 @@
+{%- comment -%}
+  Oferta de troca para o kit maior numa linha do carrinho (pedido do dono em 03/10/2026: "no
+  checkout de pagamento adicione variações de produtos para vender mais"). No plano Basic a Shopify
+  não aceita produto nas etapas do checkout (shopify.dev, "About checkout app extensions", lido em
+  03/10/2026), então a oferta fica no carrinho, o último passo que o tema controla.
+
+  Linha de "1 pote" oferece "3 potes"; linha de "3 potes" oferece "6 potes"; "6 potes" não oferece
+  nada. Preço e economia saem das variantes cadastradas (nada digitado aqui). O número de potes é o
+  primeiro número do nome da variante. Sem JavaScript, o link abre o produto já no kit; com
+  JavaScript (assets/cart-troca-kit.js), troca a linha no próprio carrinho.
+
+  Uso: {% render 'cart-troca-kit', item: item %}
+{%- endcomment -%}
+{%- liquid
+  assign ctk_atual = item.variant.title | split: ' ' | first | plus: 0
+  assign ctk_meta = 0
+  if ctk_atual == 1
+    assign ctk_meta = 3
+  elsif ctk_atual == 3
+    assign ctk_meta = 6
+  endif
+  assign ctk_alvo = nil
+  if ctk_meta > 0
+    for v in item.product.variants
+      assign ctk_n = v.title | split: ' ' | first | plus: 0
+      if ctk_n == ctk_meta and v.available
+        assign ctk_alvo = v
+        break
+      endif
+    endfor
+  endif
+  if ctk_alvo
+    # Em centavos, multiplicando antes de dividir para não perder centavo:
+    # avulso = preço atual x potes do kit / potes atuais; por pote arredondado ao centavo.
+    assign ctk_avulso = item.variant.price | times: ctk_meta | divided_by: ctk_atual
+    assign ctk_economia = ctk_avulso | minus: ctk_alvo.price
+    assign ctk_meio = ctk_meta | divided_by: 2
+    assign ctk_por_pote = ctk_alvo.price | plus: ctk_meio | divided_by: ctk_meta
+    # Por dia: cada pote rende 30 dias (2 cápsulas ao dia, 60 cápsulas; rótulo e cadastro).
+    assign ctk_dias = ctk_meta | times: 30
+    assign ctk_meio_dia = ctk_dias | divided_by: 2
+    assign ctk_por_dia = ctk_alvo.price | plus: ctk_meio_dia | divided_by: ctk_dias
+  endif
+-%}
+{%- if ctk_alvo and ctk_economia > 0 -%}
+  {%- liquid
+    capture ctk_nome
+      render 'v3-nome-visivel', produto: item.product, modo: 'texto'
+    endcapture
+    assign ctk_nome = ctk_nome | strip
+    # Espaço que não quebra entre "R$" e o número (no celular o valor quebrava a linha).
+    assign ctk_eco_txt = ctk_economia | money | replace: ' ', ' '
+    assign ctk_pote_txt = ctk_por_pote | money | replace: ' ', ' '
+    assign ctk_dia_txt = ctk_por_dia | money | replace: ' ', ' '
+    # Frete grátis: o mesmo limite da barra (settings.free_shipping_threshold, em centavos). Avisa só
+    # quando o carrinho está abaixo do limite hoje e passa dele com a troca.
+    assign ctk_limite = settings.free_shipping_threshold | plus: 0
+    assign ctk_frete = false
+    if ctk_limite > 0 and cart.total_price < ctk_limite
+      assign ctk_novo_total = ctk_alvo.price | times: item.quantity | plus: cart.total_price | minus: item.final_line_price
+      if ctk_novo_total >= ctk_limite
+        assign ctk_frete = true
+      endif
+    endif
+  -%}
+  {{ 'component-cart-troca-kit.css' | asset_url | stylesheet_tag }}
+  <div class="cart-troca-kit">
+    <p class="cart-troca-kit__texto">
+      <strong>{{ 'busca_carrinho.cart.troca_kit_titulo' | t: potes: ctk_meta, economia: ctk_eco_txt }}</strong>
+      <span class="cart-troca-kit__sub">{{ 'busca_carrinho.cart.troca_kit_por_pote' | t: preco: ctk_pote_txt, dia: ctk_dia_txt }}{% if ctk_frete %} <span class="cart-troca-kit__frete">{{ 'busca_carrinho.cart.troca_kit_frete' | t }}</span>{% endif %}</span>
+    </p>
+    <a
+      class="cart-troca-kit__botao"
+      href="{{ item.product.url }}?variant={{ ctk_alvo.id }}"
+      data-troca-kit
+      data-key="{{ item.key }}"
+      data-variante="{{ ctk_alvo.id }}"
+      data-variante-atual="{{ item.variant.id }}"
+      data-qtd="{{ item.quantity }}"
+      aria-label="{{ 'busca_carrinho.cart.troca_kit_aria' | t: potes: ctk_meta, produto: ctk_nome }}"
+    >{{ 'busca_carrinho.cart.troca_kit_botao' | t }}</a>
+    <p class="cart-troca-kit__erro" role="alert" hidden></p>
+  </div>
+  <script src="{{ 'cart-troca-kit.js' | asset_url }}" type="module"></script>
+{%- endif -%}

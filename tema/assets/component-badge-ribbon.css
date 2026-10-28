@@ -1,0 +1,85 @@
+/*
+  Beacon Labs · etiqueta sobre foto de produto (component-badge-ribbon.css)
+  Estrutura em snippets/badge-ribbon.liquid.
+
+  Redesenho v3 (spec 2.4; alvo.css linhas 179 e 180, 464): cápsula de 26 px (24 px até 760 px),
+  texto de 12 px (11 px) no peso do título, sem caixa-alta.
+  - new ("Novo"): vidro funcional fino. O material vem das classes .glass .glass--thin que o
+    snippet põe no elemento (assets/liquid-glass.css): tinta branca a 0,60, luz na silhueta,
+    fio externo e sombra fina, SEM desfoque (nada de .glass--blur: etiqueta, setas e fichas ficam
+    sem desfoque, emenda G4). Aqui só a medida e a cor do texto: fundo, borda e sombra do vidro
+    não são tocados (as regras de preenchimento valem só fora de .glass).
+  - offer ("Oferta"), best e discount: preenchimento sólido amarelo (--color-accent para a oferta,
+    --color-badge-bg para as outras, os dois #E9AD05) com texto azul-marinho; linha de luz de 1 px
+    em cima e sombra fina.
+  - soldout: preenchimento neutro, texto branco.
+  A fita OFERTA em seta, azul-petróleo, saiu: a oferta é a pílula amarela do alvo. Outras telas que
+  usam o snippet (a galeria do produto) herdam a pílula.
+  Contraste (conta pela fórmula WCAG 2.x): tinta no amarelo 8,60:1; tinta no vidro fino sobre o
+  campo claro 16,51:1; branco no cinza de esgotado (#566472) 6,07:1.
+*/
+
+.badge-ribbon {
+  --etq-bg: var(--color-badge-bg);
+  --etq-fg: var(--color-badge-text);
+
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  height: 26px;
+  padding: 0 11px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  color: var(--etq-fg);
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 12px;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+
+/* Preenchimento sólido. Fora do vidro: a mesma altura com borda transparente. */
+.badge-ribbon:not(.glass) {
+  border: 1px solid transparent;
+  background: var(--etq-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), var(--lg-shadow-thin, 0 0 #0000);
+}
+
+.badge-ribbon--offer {
+  --etq-bg: var(--color-accent);
+  --etq-fg: var(--color-ink);
+}
+
+/* Vidro fino: o texto é a tinta (17,29:1 no branco); o resto é do .glass. */
+.badge-ribbon--new {
+  --etq-fg: var(--color-ink);
+}
+
+/* Esgotado: preenchimento #566472 (ajuste color_text_muted, lido na raiz: dentro de vidro
+   espesso o texto secundário vira #34495A, mas a etiqueta continua no tom do ajuste). */
+.badge-ribbon--soldout {
+  --etq-bg: var(--lg-text-muted, var(--color-text-muted));
+  --etq-fg: var(--color-on-dark);
+}
+
+@media screen and (max-width: 760px) {
+  .badge-ribbon {
+    height: 24px;
+    padding: 0 9px;
+    font-size: 11px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .badge-ribbon:not(.glass) {
+    box-shadow: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .badge-ribbon {
+    border: 1px solid CanvasText;
+  }
+}

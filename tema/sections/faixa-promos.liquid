@@ -1,0 +1,361 @@
+{{ 'section-faixa-promos.css' | asset_url | stylesheet_tag }}
+{{ 'component-promo.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Faixa de banners promocionais entre as prateleiras da home (03/10/2026, pedido do dono: rolando a página
+  "só aparecem os produtos"). Cada bloco "promo" é o mesmo banner do carrossel do topo (snippets/v3-promo.liquid,
+  assets/component-promo.css), com os mesmos ajustes. Dois ajustes da seção:
+  - "Tamanho" (padrão: grande). Grande: o MESMO banner do carrossel do topo (3:1 no computador, 4:5 até 760 px,
+    potes grandes), na MESMA largura do banner do topo (largura inteira da janela até --page-max-width, como o carrossel; a
+    faixa de tamanho cartão usa a largura do conteúdo da página) (pedido do dono, 03/10/2026:
+    "banners grandes em destaque no meio dos produtos"). Cartão: variante pequena (perto de 2:1 no computador).
+  - "Colunas" (padrão: 1): 1 banner por linha, ou 2 lado a lado no computador (indicado só com o tamanho cartão).
+  Preço sempre verdadeiro: o texto de apoio aceita o marcador [preco], trocado na saída pelo menor preço entre
+  os produtos escolhidos no bloco (ver o snippet). Fotos dos potes com loading lazy: a faixa nunca está na
+  primeira tela. Sem nenhum bloco com conteúdo, a seção não escreve nada (no editor, mostra um aviso).
+  Bloco "imagem" (Banner de imagem, 03/10/2026, pedido do dono): banner de imagem inteira entre as prateleiras,
+  gerado no ChatGPT e conferido letra por letra. Mesma largura e mesmos cantos do banner promocional grande
+  (cantos em cqw da largura da célula: 2,444 no computador e 7,407 até 760 px); 3:1 no computador e 4:5 no celular,
+  porque as próprias imagens têm essas proporções. A imagem vem do seletor de imagem do bloco (vence a arte); sem
+  ela vale a "arte guardada no tema" (assets/faixa-<arte>-v1-<largura>.jpg, larguras 720, 1080, 1440 e 2172, e
+  assets/faixa-<arte>-cel-v1-<largura>.jpg, larguras 600, 900 e 1122), no mesmo molde de sections/vitrine-topo.liquid:
+  <picture> com <source> de celular até 760 px. Carrega sempre com loading lazy (a faixa nunca está na primeira tela).
+  O texto alternativo é o texto inteiro de dentro da imagem. Arte sem versão de celular (lançamento e trocas, 03/10/2026)
+  fica escondida até 760 px (classe --so-pc), pela regra do dono de nunca mostrar no celular o banner largo reduzido.
+  Segurança (S1 a S5): textos com | escape (no snippet); link só de ajuste do tipo url; nenhum ajuste html ou
+  liquid; nenhum <script>; nenhuma chave de tradução com _html.
+{%- endcomment -%}
+
+{%- liquid
+  assign fp_colunas = section.settings.colunas | default: '1'
+  assign fp_tamanho = section.settings.tamanho | default: 'grande'
+  assign fp_total = 0
+  for block in section.blocks
+    if block.type == 'imagem'
+      if block.settings.image != blank or block.settings.arte != blank
+        assign fp_total = fp_total | plus: 1
+      endif
+    elsif block.settings.titulo != blank or block.settings.produto_1 != blank
+      assign fp_total = fp_total | plus: 1
+    endif
+  endfor
+  assign fp_variante = ''
+  assign fp_sizes = '(max-width: 760px) 44vw, (min-width: 1440px) 413px, 29vw'
+  assign fp_sizes_imagem = '(min-width: 1440px) 1440px, 100vw'
+  if fp_tamanho == 'cartao'
+    assign fp_variante = 'faixa'
+    if fp_colunas == '2'
+      assign fp_sizes = '(max-width: 760px) 44vw, 22vw'
+    endif
+  endif
+-%}
+
+{%- if fp_total > 0 -%}
+  <div class="faixa-promos faixa-promos--{{ fp_tamanho | handleize }} faixa-promos--colunas-{{ fp_colunas | handleize }}">
+    <div class="faixa-promos__grade">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'imagem' -%}
+          {%- liquid
+            assign fp_arte = block.settings.arte | default: 'kits'
+            assign fp_base = ''
+            assign fp_base_cel = ''
+            if block.settings.image == blank
+              case fp_arte
+                when 'vitamina-c'
+                  assign fp_base = 'vitrine-vitamina-c-v2'
+                  assign fp_base_cel = 'vitrine-vitamina-c-cel-v2'
+                when 'kits'
+                  assign fp_base = 'faixa-kits-v1'
+                  assign fp_base_cel = 'faixa-kits-cel-v1'
+                when 'frete'
+                  assign fp_base = 'faixa-frete-v2'
+                  assign fp_base_cel = 'faixa-frete-cel-v2'
+                when 'qualidade'
+                  assign fp_base = 'faixa-qualidade-v1'
+                  assign fp_base_cel = 'faixa-qualidade-cel-v1'
+                when 'preco-dia'
+                  assign fp_base = 'faixa-preco-dia-v2'
+                  assign fp_base_cel = 'faixa-preco-dia-cel-v2'
+                when 'lancamento'
+                  assign fp_base = 'faixa-lancamento-v1'
+                  assign fp_base_cel = 'faixa-lancamento-cel-v1'
+                when 'trocas'
+                  assign fp_base = 'faixa-trocas-v2'
+                  assign fp_base_cel = 'faixa-trocas-cel-v2'
+                when 'gotas-nova'
+                  assign fp_base = 'faixa-gotas-nova-v1'
+                  assign fp_base_cel = 'faixa-gotas-nova-cel-v1'
+                when 'gotas-a'
+                  assign fp_base = 'faixa-gotas-a-v1'
+                when 'gotas-b'
+                  assign fp_base = 'faixa-gotas-b-v1'
+                when 'gotas-c'
+                  assign fp_base = 'faixa-gotas-c-v1'
+              endcase
+              if fp_base == blank
+                continue
+              endif
+            endif
+          -%}
+          {%- capture fp_imagem -%}
+            <picture>
+              {%- if block.settings.image_mobile != blank -%}
+                <source media="(max-width: 760px)" srcset="{{ block.settings.image_mobile | image_url: width: 600 }} 600w, {{ block.settings.image_mobile | image_url: width: 900 }} 900w, {{ block.settings.image_mobile | image_url: width: 1122 }} 1122w, {{ block.settings.image_mobile | image_url: width: 1680 }} 1680w, {{ block.settings.image_mobile | image_url: width: 2244 }} 2244w" sizes="100vw" width="{{ block.settings.image_mobile.width }}" height="{{ block.settings.image_mobile.height }}">
+              {%- elsif block.settings.image == blank and fp_base_cel != blank -%}
+                <source media="(max-width: 760px)" srcset="{{ fp_base_cel | append: '-600.jpg' | asset_url }} 600w, {{ fp_base_cel | append: '-900.jpg' | asset_url }} 900w, {{ fp_base_cel | append: '-1122.jpg' | asset_url }} 1122w" sizes="100vw" width="1122" height="1402">
+              {%- endif -%}
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 4344 | image_tag: widths: '720, 1080, 1440, 2172, 2880, 4344', sizes: fp_sizes_imagem, alt: block.settings.alt, loading: 'lazy' }}
+              {%- else -%}
+                <img
+                  src="{{ fp_base | append: '-1440.jpg' | asset_url }}"
+                  srcset="{{ fp_base | append: '-720.jpg' | asset_url }} 720w, {{ fp_base | append: '-1080.jpg' | asset_url }} 1080w, {{ fp_base | append: '-1440.jpg' | asset_url }} 1440w, {{ fp_base | append: '-2172.jpg' | asset_url }} 2172w"
+                  sizes="{{ fp_sizes_imagem }}"
+                  width="2172"
+                  height="724"
+                  alt="{{ block.settings.alt | escape }}"
+                  loading="lazy"
+                >
+              {%- endif -%}
+            </picture>
+          {%- endcapture -%}
+          {%- liquid
+            assign fp_so_pc = false
+            if block.settings.image_mobile == blank and fp_base_cel == blank
+              assign fp_so_pc = true
+            endif
+          -%}
+          <div class="faixa-promos__cel faixa-promos__cel--imagem{% if fp_so_pc %} faixa-promos__cel--so-pc{% endif %}" {{ block.shopify_attributes }}>
+            {%- if block.settings.link != blank -%}
+              <a class="faixa-promos__imagem" href="{{ block.settings.link }}">{{ fp_imagem }}{%- if block.settings.image == blank -%}{% render 'banner-pulso', base: fp_base, base_cel: fp_base_cel %}{%- endif -%}</a>
+            {%- else -%}
+              <div class="faixa-promos__imagem">{{ fp_imagem }}</div>
+            {%- endif -%}
+          </div>
+        {%- else -%}
+          {%- if block.settings.titulo == blank and block.settings.produto_1 == blank -%}
+            {%- continue -%}
+          {%- endif -%}
+          <div class="faixa-promos__cel" {{ block.shopify_attributes }}>
+            {%- render 'v3-promo', bloco: block, prioridade: false, sizes: fp_sizes, variante: fp_variante -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="page-width"><p>Faixa de banners: acrescente um banner promocional para a faixa aparecer.</p></div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Faixa de banners",
+  "tag": "section",
+  "class": "section-faixa-promos",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "select",
+      "id": "colunas",
+      "label": "Colunas",
+      "info": "1: cada banner ocupa a linha inteira. 2: dois banners lado a lado no computador (um embaixo do outro no celular); use com o tamanho cartão.",
+      "options": [
+        { "value": "1", "label": "1 coluna" },
+        { "value": "2", "label": "2 colunas" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "select",
+      "id": "tamanho",
+      "label": "Tamanho do banner",
+      "info": "Grande: igual aos banners do carrossel do topo (3:1 no computador). Cartão: menor, para duas colunas.",
+      "options": [
+        { "value": "grande", "label": "Grande (igual ao topo)" },
+        { "value": "cartao", "label": "Cartão (menor)" }
+      ],
+      "default": "grande"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "promo",
+      "name": "Banner promocional",
+      "settings": [
+        {
+          "type": "select",
+          "id": "tema",
+          "label": "Cor do banner",
+          "options": [
+            { "value": "vermelho", "label": "Vermelho (texto branco)" },
+            { "value": "claro", "label": "Claro (texto azul-marinho)" },
+            { "value": "branco", "label": "Branco com borda (texto azul-marinho)" },
+            { "value": "amarelo", "label": "Amarelo (texto azul-marinho)" },
+            { "value": "marinho", "label": "Azul-marinho (texto branco)" }
+          ],
+          "default": "vermelho"
+        },
+        {
+          "type": "text",
+          "id": "selo",
+          "label": "Selo"
+        },
+        {
+          "type": "checkbox",
+          "id": "selo_no_celular",
+          "label": "Mostrar o selo no celular",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "titulo",
+          "label": "Título"
+        },
+        {
+          "type": "text",
+          "id": "titulo_destaque",
+          "label": "Título em destaque",
+          "info": "Segunda linha do título, na cor de destaque."
+        },
+        {
+          "type": "text",
+          "id": "titulo_celular",
+          "label": "Título para celular",
+          "info": "Opcional. Vazio: o celular usa o título e o destaque do computador."
+        },
+        {
+          "type": "text",
+          "id": "destaque_celular",
+          "label": "Destaque do título para celular",
+          "info": "Opcional. Segunda linha do título do celular, na cor de destaque. Só vale com o título para celular."
+        },
+        {
+          "type": "checkbox",
+          "id": "titulo_menor",
+          "label": "Título menor no computador",
+          "info": "Use quando o título for longo e passar da altura do banner.",
+          "default": false
+        },
+        {
+          "type": "textarea",
+          "id": "apoio",
+          "label": "Texto de apoio",
+          "info": "Aceita o marcador [preco]: na loja vira o menor preço entre os produtos escolhidos abaixo, como R$ 29,90."
+        },
+        {
+          "type": "textarea",
+          "id": "apoio_celular",
+          "label": "Texto de apoio para celular",
+          "info": "Opcional. Vazio: o celular usa o texto de apoio do computador."
+        },
+        {
+          "type": "text",
+          "id": "item_1",
+          "label": "Item 1",
+          "info": "Opcional. Com algum item preenchido, o computador mostra os itens (com sinal de certo) no lugar do texto de apoio; o celular mostra o texto de apoio para celular."
+        },
+        {
+          "type": "text",
+          "id": "item_2",
+          "label": "Item 2"
+        },
+        {
+          "type": "text",
+          "id": "item_3",
+          "label": "Item 3"
+        },
+        {
+          "type": "text",
+          "id": "botao_rotulo",
+          "label": "Texto do botão"
+        },
+        {
+          "type": "url",
+          "id": "botao_link",
+          "label": "Link do botão"
+        },
+        {
+          "type": "product",
+          "id": "produto_1",
+          "label": "Produto 1",
+          "info": "Aparece a foto principal, inteira."
+        },
+        {
+          "type": "product",
+          "id": "produto_2",
+          "label": "Produto 2"
+        },
+        {
+          "type": "product",
+          "id": "produto_3",
+          "label": "Produto 3 (opcional)"
+        },
+        {
+          "type": "checkbox",
+          "id": "primeiro_menor",
+          "label": "Primeiro pote menor",
+          "info": "Deixa o primeiro pote menor, para destacar o segundo.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "imagem",
+      "name": "Banner de imagem",
+      "settings": [
+        {
+          "type": "select",
+          "id": "arte",
+          "label": "Arte guardada no tema",
+          "info": "Vale quando nenhuma imagem é escolhida abaixo. Escolhendo uma imagem abaixo, ela vence a arte.",
+          "options": [
+            { "value": "vitamina-c", "label": "Vitamina C: uma nova opção" },
+            { "value": "kits", "label": "Kits: leve 6 potes, pague 15% menos" },
+            { "value": "frete", "label": "Frete grátis acima de R$ 179" },
+            { "value": "qualidade", "label": "Qualidade comprovada, laudo técnico" },
+            { "value": "preco-dia", "label": "Vitamina por menos de R$ 1 por dia" },
+            { "value": "lancamento", "label": "Lançamento: 10 novos na linha Pure" },
+            { "value": "trocas", "label": "Compre sem risco, devolução em 7 dias" },
+            { "value": "gotas-nova", "label": "Linha Pure em gotas (azul, computador e celular)" },
+            { "value": "gotas-a", "label": "Nova linha Pure em gotas (versão A)" },
+            { "value": "gotas-b", "label": "Nova linha Pure em gotas (versão B)" },
+            { "value": "gotas-c", "label": "Nova linha Pure em gotas (versão C)" }
+          ],
+          "default": "kits"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem do banner",
+          "info": "Formato 3:1 (2172 x 724 px), usada inteira. Sem imagem aqui, vale a arte guardada no tema, acima."
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Imagem para celular",
+          "info": "Vertical 4:5 (1122 x 1402 px), para telas de até 760 px. Sem ela, o celular mostra a imagem do computador."
+        },
+        {
+          "type": "textarea",
+          "id": "alt",
+          "label": "Texto alternativo",
+          "info": "O texto inteiro que aparece dentro da imagem."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link do banner"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Faixa de banners",
+      "blocks": [
+        { "type": "promo", "settings": { "tema": "marinho" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

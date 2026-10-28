@@ -1,0 +1,460 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-page-hero.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Destaque da página: selo, título, texto, até dois botões e imagem.
+  Três arranjos:
+  - split: texto e imagem lado a lado (blog, monte seu kit, prescritores);
+  - overlay: texto branco sobre a imagem com véu azul-marinho (quem somos);
+  - banner: título centralizado com a imagem abaixo (qualidade).
+  Título vazio usa o título da página, quando a seção está num template de página.
+  A imagem da seção 1 e 2 carrega sem atraso (a da seção 1 com prioridade alta);
+  a partir da 3ª posição, carregamento preguiçoso.
+  Sem título, texto, selo e imagem, a seção não renderiza nada.
+
+  Etapa 8e, leva C (03/10/2026): os arranjos "lado a lado" e "título centralizado" (com o fundo branco, cinza ou
+  azul claro) são o topo da coleção, da busca e da ajuda: campo claro (#ECF3F9) de ponta a ponta (.pb-topo,
+  paginas-blog.css), trilha única (snippet colecao-breadcrumb) em cima, linha pequena em #8A0503 (.v3-eyebrow),
+  título de 56 px (36 px até 760 px), texto de apoio de 17 px, botões como controles e a foto inteira, sem
+  corte (proporção do próprio arquivo), num bloco de raio --radius-tile. Sem imagem, a coluna da imagem não
+  existe (o desenho de lugar da Shopify, com bolsas e sapatos, só aparece no editor de temas). O arranjo "texto
+  sobre a imagem" e o fundo azul-marinho seguem como estavam (faixa escura, sem trilha). O ajuste "Espaçamento
+  vertical" só vale nesses dois casos; o topo usa o espaço do próprio topo.
+{%- endcomment -%}
+
+{%- liquid
+  assign hero_heading = section.settings.heading
+  if hero_heading == blank and page != blank
+    assign hero_heading = page.title
+  endif
+
+  assign hero_layout = section.settings.layout
+  assign hero_image = section.settings.image
+
+  assign hero_tag = 'h1'
+  if section.settings.heading_tag == 'h2'
+    assign hero_tag = 'h2'
+  endif
+
+  assign hero_loading = 'lazy'
+  assign hero_priority = 'auto'
+  unless section.index > 2
+    assign hero_loading = 'eager'
+  endunless
+  if section.index == 1
+    assign hero_priority = 'high'
+  endif
+
+  assign hero_scheme = section.settings.color_scheme
+  if hero_layout == 'overlay'
+    assign hero_scheme = 'ink'
+  endif
+
+  # Topo em campo claro (leva C): todo arranjo, menos o texto sobre a imagem e o fundo azul-marinho.
+  assign hero_topo = false
+  if hero_layout != 'overlay' and hero_scheme != 'ink'
+    assign hero_topo = true
+  endif
+
+  case hero_layout
+    when 'split'
+      if hero_topo
+        assign hero_sizes = '(min-width: 1248px) 576px, (min-width: 990px) calc((100vw - 96px) / 2), (min-width: 761px) calc(100vw - 48px), calc(100vw - 40px)'
+      else
+        assign hero_sizes = '(min-width: 1440px) 640px, (min-width: 990px) 50vw, 100vw'
+      endif
+      assign hero_widths = '375, 550, 750, 1000, 1280, 1500'
+    when 'banner'
+      if hero_topo
+        assign hero_sizes = '(min-width: 1248px) 1200px, (min-width: 761px) calc(100vw - 48px), calc(100vw - 40px)'
+      else
+        assign hero_sizes = '(min-width: 1440px) 1280px, (min-width: 990px) calc(100vw - 160px), calc(100vw - 32px)'
+      endif
+      assign hero_widths = '375, 750, 1000, 1280, 1600, 2000, 2560'
+    else
+      assign hero_sizes = '100vw'
+      assign hero_widths = '375, 750, 1000, 1280, 1600, 2000, 2560'
+  endcase
+
+  assign hero_has_content = false
+  if hero_heading != blank or section.settings.text != blank or section.settings.eyebrow != blank or hero_image != blank
+    assign hero_has_content = true
+  endif
+
+  assign hero_alt = hero_image.alt | default: hero_heading | default: shop.name
+  assign hero_overlay = section.settings.overlay_opacity | divided_by: 100.0
+-%}
+
+{%- if hero_has_content -%}
+  {% style %}
+    #shopify-section-{{ section.id }} {
+      --page-hero-overlay: {{ hero_overlay }};
+    }
+  {% endstyle %}
+
+  {%- if hero_topo -%}
+    {%- assign hero_sem_imagem = false -%}
+    {%- if hero_image == blank and request.design_mode == false -%}
+      {%- assign hero_sem_imagem = true -%}
+    {%- endif -%}
+    <div class="page-hero page-hero--{{ hero_layout }} page-hero--topo pb-topo page-hero--align-{{ section.settings.text_align }} page-hero--image-{{ section.settings.image_position }}{% if hero_sem_imagem %} page-hero--no-image{% endif %}">
+      <div class="page-width">
+        {%- if section.settings.show_breadcrumbs -%}
+          {% render 'paginas-blog-breadcrumbs', class: 'pb-topo__trilha' %}
+        {%- endif -%}
+
+        <div class="page-hero__inner">
+          <div class="page-hero__content">
+            {%- if section.settings.eyebrow != blank -%}
+              <span class="v3-eyebrow page-hero__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- endif -%}
+
+            {%- if hero_heading != blank -%}
+              <{{ hero_tag }} class="page-hero__heading pb-topo__titulo">{{ hero_heading | escape }}</{{ hero_tag }}>
+            {%- endif -%}
+
+            {%- if section.settings.text != blank -%}
+              <div class="page-hero__text pb-topo__texto rte">{{ section.settings.text }}</div>
+            {%- endif -%}
+
+            {%- if section.settings.button_label != blank or section.settings.button2_label != blank -%}
+              <div class="pb-actions page-hero__actions">
+                {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+                  <a href="{{ section.settings.button_link }}" class="button button--large button--{{ section.settings.button_style }}">
+                    {{- section.settings.button_label | escape -}}
+                  </a>
+                {%- endif -%}
+                {%- if section.settings.button2_label != blank and section.settings.button2_link != blank -%}
+                  <a href="{{ section.settings.button2_link }}" class="button button--large button--secondary">
+                    {{- section.settings.button2_label | escape -}}
+                  </a>
+                {%- endif -%}
+              </div>
+            {%- endif -%}
+          </div>
+
+          {%- unless hero_sem_imagem -%}
+            <div class="page-hero__media page-hero__media--foto{% if hero_image == blank %} page-hero__media--lugar{% endif %}">
+              {%- if hero_image != blank -%}
+                {{ hero_image | image_url: width: 2560 | image_tag: widths: hero_widths, sizes: hero_sizes, loading: hero_loading, fetchpriority: hero_priority, alt: hero_alt, class: 'page-hero__image' }}
+              {%- else -%}
+                {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg page-hero__placeholder' }}
+              {%- endif -%}
+            </div>
+          {%- endunless -%}
+        </div>
+      </div>
+    </div>
+  {%- else -%}
+    <div class="page-hero page-hero--{{ hero_layout }} page-hero--align-{{ section.settings.text_align }} page-hero--image-{{ section.settings.image_position }} page-hero--height-{{ section.settings.height }} pb-scheme--{{ hero_scheme }}{% render 'paginas-blog-surface', scheme: hero_scheme %} pb-pad--{{ section.settings.padding }}{% if hero_image == blank %} page-hero--no-image{% endif %}">
+      {%- if hero_layout == 'overlay' and hero_image != blank -%}
+        <div class="page-hero__background">
+          {{ hero_image | image_url: width: 2560 | image_tag: widths: hero_widths, sizes: hero_sizes, loading: hero_loading, fetchpriority: hero_priority, alt: hero_alt, class: 'page-hero__background-image' }}
+        </div>
+      {%- endif -%}
+
+      <div class="page-width page-hero__inner">
+        <div class="page-hero__content">
+          {%- if section.settings.eyebrow != blank -%}
+            <span class="chip page-hero__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+          {%- endif -%}
+
+          {%- if hero_heading != blank -%}
+            <{{ hero_tag }} class="page-hero__heading">{{ hero_heading | escape }}</{{ hero_tag }}>
+          {%- endif -%}
+
+          {%- if section.settings.text != blank -%}
+            <div class="page-hero__text rte">{{ section.settings.text }}</div>
+          {%- endif -%}
+
+          {%- if section.settings.button_label != blank or section.settings.button2_label != blank -%}
+            <div class="pb-actions page-hero__actions">
+              {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+                <a href="{{ section.settings.button_link }}" class="button button--large button--{{ section.settings.button_style }}">
+                  {{- section.settings.button_label | escape -}}
+                </a>
+              {%- endif -%}
+              {%- if section.settings.button2_label != blank and section.settings.button2_link != blank -%}
+                <a href="{{ section.settings.button2_link }}" class="button button--large button--secondary">
+                  {{- section.settings.button2_label | escape -}}
+                </a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        {%- if hero_layout != 'overlay' -%}
+          <div class="page-hero__media pb-media{% if section.settings.image_shape == 'asymmetric' %} pb-media--asymmetric{% endif %}">
+            {%- if hero_image != blank -%}
+              {{ hero_image | image_url: width: 2560 | image_tag: widths: hero_widths, sizes: hero_sizes, loading: hero_loading, fetchpriority: hero_priority, alt: hero_alt, class: 'page-hero__image' }}
+            {%- else -%}
+              {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg page-hero__placeholder' }}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Destaque da página",
+  "tag": "section",
+  "class": "section-page-hero",
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Arranjo",
+      "options": [
+        {
+          "value": "split",
+          "label": "Texto e imagem lado a lado"
+        },
+        {
+          "value": "overlay",
+          "label": "Texto sobre a imagem"
+        },
+        {
+          "value": "banner",
+          "label": "Título centralizado e imagem abaixo"
+        }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagem",
+      "info": "Preencha o texto alternativo da imagem na biblioteca de arquivos."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Posição da imagem (lado a lado)",
+      "options": [
+        {
+          "value": "right",
+          "label": "Direita"
+        },
+        {
+          "value": "left",
+          "label": "Esquerda"
+        }
+      ],
+      "default": "right"
+    },
+    {
+      "type": "select",
+      "id": "image_shape",
+      "label": "Cantos da imagem",
+      "options": [
+        {
+          "value": "rounded",
+          "label": "Arredondados"
+        },
+        {
+          "value": "asymmetric",
+          "label": "Assimétricos"
+        }
+      ],
+      "default": "rounded"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Véu sobre a imagem (texto sobre a imagem)",
+      "min": 20,
+      "max": 90,
+      "step": 10,
+      "unit": "%",
+      "default": 60
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Altura (texto sobre a imagem)",
+      "options": [
+        {
+          "value": "small",
+          "label": "Baixa"
+        },
+        {
+          "value": "medium",
+          "label": "Média"
+        },
+        {
+          "value": "large",
+          "label": "Alta"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "header",
+      "content": "Texto"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Mostrar trilha de navegação",
+      "info": "Vale para os arranjos com topo em campo claro (lado a lado e título centralizado).",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "info": "Vazio usa o título da página."
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Nível do título",
+      "info": "Use h1 quando esta for a primeira seção da página.",
+      "options": [
+        {
+          "value": "h1",
+          "label": "h1"
+        },
+        {
+          "value": "h2",
+          "label": "h2"
+        }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Alinhamento do texto",
+      "options": [
+        {
+          "value": "left",
+          "label": "Esquerda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Botões"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto do botão principal"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Link do botão principal"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Estilo do botão principal",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Azul"
+        },
+        {
+          "value": "accent",
+          "label": "Amarelo-limão"
+        },
+        {
+          "value": "dark",
+          "label": "Azul-marinho"
+        },
+        {
+          "value": "secondary",
+          "label": "Contorno"
+        }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "text",
+      "id": "button2_label",
+      "label": "Texto do botão secundário"
+    },
+    {
+      "type": "url",
+      "id": "button2_link",
+      "label": "Link do botão secundário"
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "info": "O arranjo com texto sobre a imagem usa sempre o fundo azul-marinho. Nos outros arranjos, o topo é sempre o campo claro (azul-marinho só se escolhido aqui), e Cinza-azulado claro e Azul claro valem como o campo claro.",
+      "options": [
+        {
+          "value": "default",
+          "label": "Branco"
+        },
+        {
+          "value": "surface",
+          "label": "Cinza-azulado claro"
+        },
+        {
+          "value": "surface-2",
+          "label": "Azul claro"
+        },
+        {
+          "value": "ink",
+          "label": "Azul-marinho"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "info": "Vale para o texto sobre a imagem e para o fundo azul-marinho. O topo em campo claro usa o espaço do próprio topo.",
+      "options": [
+        {
+          "value": "none",
+          "label": "Nenhum"
+        },
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        }
+      ],
+      "default": "small"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Destaque da página"
+    }
+  ]
+}
+{% endschema %}

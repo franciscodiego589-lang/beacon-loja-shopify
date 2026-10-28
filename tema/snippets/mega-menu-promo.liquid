@@ -1,0 +1,44 @@
+{%- comment -%}
+  Card de destaque dentro do painel do mega menu (bloco 'mega_promo' da seção header).
+  Parâmetros:
+  - block: bloco mega_promo
+  - fallback_url: link usado quando o bloco não tem link (o link do item do menu)
+  Sem imagem, título e texto, o card não aparece (nada de caixa só com o botão).
+{%- endcomment -%}
+{%- liquid
+  assign promo_url = block.settings.link | default: fallback_url
+  assign promo_image = block.settings.image
+  if promo_image != blank
+    assign promo_alt = promo_image.alt | default: block.settings.heading
+  endif
+
+  assign promo_has_content = false
+  if promo_image != blank or block.settings.heading != blank or block.settings.text != blank
+    assign promo_has_content = true
+  endif
+-%}
+{%- if promo_has_content -%}
+<a href="{{ promo_url }}" class="mega-promo" {{ block.shopify_attributes }}>
+  <span class="mega-promo__media">
+    {%- if promo_image != blank -%}
+      {{ promo_image | image_url: width: 640 | image_tag: widths: '320, 480, 640', sizes: '320px', loading: 'lazy', alt: promo_alt, class: 'mega-promo__image' }}
+    {%- else -%}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'mega-promo__placeholder' }}
+    {%- endif -%}
+  </span>
+  <span class="mega-promo__content">
+    {%- if block.settings.eyebrow != blank -%}
+      <span class="mega-promo__eyebrow">{{ block.settings.eyebrow | escape }}</span>
+    {%- endif -%}
+    {%- if block.settings.heading != blank -%}
+      <span class="mega-promo__heading">{{ block.settings.heading | escape }}</span>
+    {%- endif -%}
+    {%- if block.settings.text != blank -%}
+      <span class="mega-promo__text">{{ block.settings.text | escape }}</span>
+    {%- endif -%}
+    {%- if block.settings.button_label != blank -%}
+      <span class="mega-promo__button">{{ block.settings.button_label | escape }}</span>
+    {%- endif -%}
+  </span>
+</a>
+{%- endif -%}

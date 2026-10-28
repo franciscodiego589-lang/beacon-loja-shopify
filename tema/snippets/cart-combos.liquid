@@ -1,0 +1,137 @@
+{%- comment -%}
+  Cards de combo no carrinho, na gaveta e na página (pedido do dono em 03/10/2026: "adicionar
+  vários combos com cards chamativos" perto do pagamento). As etapas do checkout não aceitam produto
+  no plano Basic (shopify.dev, "About checkout app extensions", lido em 03/10/2026); o carrinho é o
+  último passo antes de pagar que o tema controla.
+
+  Cada combo põe no carrinho os potes avulsos (variação "1 pote") dos produtos dele, de uma vez. Com
+  2 ou mais potes avulsos, o desconto automático "Leve 2 potes ou mais: 5% off" entra sozinho no
+  checkout (criado em 03/10/2026, só nas variações de 1 pote); acima de R$ 250 em potes avulsos vale
+  o de 10%. Os dois não somam. Nenhum preço novo é criado aqui: o valor do card é a soma dos potes.
+
+  Produto que já está no carrinho não entra de novo: o card oferece só os que faltam ("Complete o
+  combo"). Combo com todos os produtos no carrinho não aparece. Primeiro os combos que têm algum
+  produto do carrinho, depois os outros, até o limite. Produto indisponível ou não publicado (o
+  all_products devolve vazio) tira o combo da lista.
+
+  A composição é a dos 5 combos em rascunho de 29/09/2026 (docs/superpowers/plans/2026-09-29-plano-de-acao.md).
+  Usa 13 buscas em all_products (o limite da Shopify é 20 por página).
+
+  Uso: {% render 'cart-combos', limit: 2 %}
+{%- endcomment -%}
+{%- liquid
+  assign cc_limit = limit | default: 2 | plus: 0
+  assign cc_lista = 'Combo Treino;pure-creatina-monohidratada-60-capsulas,pure-beta-alanina-1000mg-60-capsulas,pure-arginina-1000mg-60-capsulas,pure-cafeina-200mg-60-capsulas|Vitamina D3 + K2 + Magnésio;pure-vitamina-d3-2000ui-60-capsulas,pure-vitamina-k2-mk7-14906mcg-60-capsulas,pure-magnesio-bisglicinato-60-capsulas|Colágeno + Vitamina C + MSM + L-Cisteína;pure-colageno-hidrolisado-60-capsulas,pure-vitamina-c-1000mg-60-capsulas,pure-msm-900mg-60-capsulas,pure-l-cisteina-830mg-60-capsulas|Vitaminas C, D3 e B12;pure-vitamina-c-1000mg-60-capsulas,pure-vitamina-d3-2000ui-60-capsulas,pure-vitamina-b12-60-capsulas|Melatonina + Magnésio;pure-melatonina-021mg-60-capsulas,pure-magnesio-bisglicinato-60-capsulas' | split: '|'
+  assign cc_no_carrinho = cart.items | map: 'product_id'
+  assign cc_limite_frete = settings.free_shipping_threshold | plus: 0
+  assign cc_mostrados = 0
+  # Potes avulsos (variação "1 pote") que já estão no carrinho: o selo de 5% só aparece se o
+  # carrinho fica com 2 ou mais potes avulsos depois do combo (regra do desconto automático).
+  assign cc_avulsos = 0
+  for item in cart.items
+    assign cc_n_item = item.variant.title | split: ' ' | first | plus: 0
+    if cc_n_item == 1
+      assign cc_avulsos = cc_avulsos | plus: item.quantity
+    endif
+  endfor
+-%}
+{%- capture cc_cards -%}
+  {%- for cc_passada in (1..2) -%}
+    {%- for cc_def in cc_lista -%}
+      {%- if cc_mostrados >= cc_limit -%}{%- break -%}{%- endif -%}
+      {%- liquid
+        assign cc_partes = cc_def | split: ';'
+        assign cc_nome = cc_partes[0]
+        assign cc_handles = cc_partes[1] | split: ','
+        assign cc_ok = true
+        assign cc_tem = 0
+        assign cc_ids = ''
+        assign cc_faltam = 0
+        assign cc_soma = 0
+        for cc_h in cc_handles
+          assign cc_p = all_products[cc_h]
+          if cc_p == empty or cc_p.available == false
+            assign cc_ok = false
+            break
+          endif
+          if cc_no_carrinho contains cc_p.id
+            assign cc_tem = cc_tem | plus: 1
+            continue
+          endif
+          assign cc_v = nil
+          for v in cc_p.variants
+            assign cc_n = v.title | split: ' ' | first | plus: 0
+            if cc_n == 1 and v.available
+              assign cc_v = v
+              break
+            endif
+          endfor
+          if cc_v == nil
+            assign cc_ok = false
+            break
+          endif
+          assign cc_ids = cc_ids | append: cc_v.id | append: ','
+          assign cc_faltam = cc_faltam | plus: 1
+          assign cc_soma = cc_soma | plus: cc_v.price
+        endfor
+        assign cc_vale = false
+        if cc_ok and cc_faltam > 0
+          if cc_passada == 1 and cc_tem > 0
+            assign cc_vale = true
+          elsif cc_passada == 2 and cc_tem == 0
+            assign cc_vale = true
+          endif
+        endif
+      -%}
+      {%- if cc_vale -%}
+        {%- liquid
+          assign cc_mostrados = cc_mostrados | plus: 1
+          assign cc_ids = cc_ids | remove_last: ','
+          assign cc_soma_txt = cc_soma | money | replace: ' ', ' '
+          assign cc_frete = false
+          if cc_limite_frete > 0 and cart.total_price < cc_limite_frete
+            assign cc_total_novo = cart.total_price | plus: cc_soma
+            if cc_total_novo >= cc_limite_frete
+              assign cc_frete = true
+            endif
+          endif
+        -%}
+        <li class="cart-combo">
+          {%- assign cc_avulsos_depois = cc_avulsos | plus: cc_faltam -%}
+          {%- if cc_avulsos_depois >= 2 -%}<span class="cart-combo__selo">{{ 'busca_carrinho.cart.combo_selo' | t }}</span>{%- endif -%}
+          <div class="cart-combo__fotos" aria-hidden="true">
+            {%- for cc_h in cc_handles -%}
+              {%- assign cc_p = all_products[cc_h] -%}
+              {%- assign cc_dentro = false -%}
+              {%- if cc_no_carrinho contains cc_p.id -%}{%- assign cc_dentro = true -%}{%- endif -%}
+              {%- if cc_p.featured_image -%}
+                {%- if cc_dentro -%}{%- assign cc_classe = 'cart-combo__foto cart-combo__foto--tem' -%}{%- else -%}{%- assign cc_classe = 'cart-combo__foto' -%}{%- endif -%}
+                {{ cc_p.featured_image | image_url: width: 160 | image_tag: widths: '80, 120, 160', sizes: '56px', loading: 'lazy', alt: '', class: cc_classe }}
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+          <p class="cart-combo__nome">{% if cc_tem > 0 %}{{ 'busca_carrinho.cart.combo_completar' | t }} {% endif %}{{ cc_nome | escape }}</p>
+          <p class="cart-combo__itens">
+            {%- for cc_h in cc_handles -%}
+              {%- assign cc_p = all_products[cc_h] -%}
+              {%- capture cc_n_txt -%}{% render 'v3-nome-visivel', produto: cc_p, modo: 'texto' %}{%- endcapture -%}
+              {{- cc_n_txt | strip | remove: 'Pure ' -}}{%- if cc_no_carrinho contains cc_p.id %} ({{ 'busca_carrinho.cart.combo_ja_tem' | t }}){% endif -%}{%- unless forloop.last -%}, {% endunless -%}
+            {%- endfor -%}
+          </p>
+          <p class="cart-combo__preco">
+            <strong>{{ 'busca_carrinho.cart.combo_preco' | t: potes: cc_faltam, preco: cc_soma_txt }}</strong>
+            <span>{{ 'busca_carrinho.cart.combo_regra' | t }}{% if cc_frete %} {{ 'busca_carrinho.cart.troca_kit_frete' | t }}{% endif %}</span>
+          </p>
+          <button type="button" class="cart-combo__botao" data-combo-adicionar="{{ cc_ids }}">{{ 'busca_carrinho.cart.combo_botao' | t: potes: cc_faltam }}</button>
+          <p class="cart-combo__erro" role="alert" hidden></p>
+        </li>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if cc_mostrados > 0 -%}
+  <section class="cart-combos" aria-label="{{ 'busca_carrinho.cart.combo_titulo' | t }}">
+    <h3 class="cart-combos__titulo">{{ 'busca_carrinho.cart.combo_titulo' | t }}</h3>
+    <ul class="cart-combos__lista" role="list">{{ cc_cards }}</ul>
+  </section>
+{%- endif -%}

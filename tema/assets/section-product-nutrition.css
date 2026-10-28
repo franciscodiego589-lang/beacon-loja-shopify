@@ -1,0 +1,21 @@
+/*
+  Beacon Labs · Informação nutricional, seção própria (section-product-nutrition.css)
+  Área produto. sections/product-nutrition.liquid.
+  A caixa em si (.produto-nutrition) é estilizada por component-produto-nutrition.css
+  (compartilhado com o bloco "Como tomar" de product-rich-content.liquid); aqui fica só o
+  espaçamento da seção e a largura máxima da caixa nesta página.
+*/
+
+.product-nutrition-section {
+  padding-block: var(--section-spacing);
+}
+
+@media screen and (min-width: 990px) {
+  .product-nutrition-section {
+    padding-block: var(--section-spacing-desktop);
+  }
+}
+
+.product-nutrition-section__inner {
+  max-width: 720px;
+}

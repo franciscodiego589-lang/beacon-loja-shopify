@@ -1,0 +1,42 @@
+/*
+  Beacon Labs · foto de fundo opcional das seções de página (section-background.css)
+
+  Carregado só por snippets/section-background.liquid, e só quando a seção tem imagem de fundo.
+  A classe has-section-bg vai no elemento raiz da seção (rich-text ou multicolumn); a camada
+  .section-bg fica atrás do conteúdo, com a foto em cover e um véu no tom do campo noite
+  (#081C2D, --lg-field-noite). A opacidade do véu vem de --section-bg-veil (padrão 0,75).
+*/
+
+.has-section-bg {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.section-bg {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.section-bg__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.section-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 28, 45, var(--section-bg-veil, 0.75));
+}
+
+/* Contraste aumentado e cores forçadas: sai a foto, fica a cor de base do campo noite. */
+@media (prefers-contrast: more), (forced-colors: active) {
+  .section-bg {
+    display: none;
+  }
+}

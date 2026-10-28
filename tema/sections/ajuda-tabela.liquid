@@ -1,0 +1,351 @@
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'ajuda-secoes.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Tabela de prazos e custos por região (página Entregas, maquete de 29/09/2026).
+  - Bloco regiao: nome, estados e três valores (capitais, interior e frete). A linha só
+    aparece com pelo menos um dos três valores preenchido; a coluna só aparece quando alguma
+    linha visível tem aquele valor. Sem nenhuma linha visível, a seção inteira não aparece na
+    loja (no editor, fica um aviso no lugar).
+  - Cartões ao lado da tabela: um cartão de informação (ícone, título e texto) e o cartão
+    "Quando o prazo começa", com um bloco inicio por forma de pagamento (forma e texto). Cada
+    um só aparece preenchido.
+  - Nota abaixo da tabela, opcional.
+  No celular, cada linha vira um cartão com o nome da região e os valores rotulados.
+  Etapa 8e, item 9 (03/10/2026): a tabela e os cartões são blocos sólidos #ECF3F9 (.pb-bloco,
+  paginas-blog.css), sem borda e sem sombra; antes eram vidro de conteúdo da v2 (.glass .glass--card).
+{%- endcomment -%}
+
+{%- liquid
+  assign tb_rows = 0
+  assign tb_has_capitais = false
+  assign tb_has_interior = false
+  assign tb_has_frete = false
+  for block in section.blocks
+    if block.type == 'regiao'
+      if block.settings.capitais != blank or block.settings.interior != blank or block.settings.frete != blank
+        assign tb_rows = tb_rows | plus: 1
+        if block.settings.capitais != blank
+          assign tb_has_capitais = true
+        endif
+        if block.settings.interior != blank
+          assign tb_has_interior = true
+        endif
+        if block.settings.frete != blank
+          assign tb_has_frete = true
+        endif
+      endif
+    endif
+  endfor
+
+  assign tb_inicio = 0
+  for block in section.blocks
+    if block.type == 'inicio' and block.settings.forma != blank and block.settings.texto != blank
+      assign tb_inicio = tb_inicio | plus: 1
+    endif
+  endfor
+
+  assign tb_has_info = false
+  if section.settings.info_title != blank and section.settings.info_text != blank
+    assign tb_has_info = true
+  endif
+
+  assign tb_has_side = false
+  if tb_has_info or tb_inicio > 0
+    assign tb_has_side = true
+  endif
+-%}
+
+{%- if tb_rows > 0 -%}
+  <div class="ajuda-tabela pb-pad--{{ section.settings.padding }}">
+    <div class="page-width">
+      {%- if section.settings.heading != blank or section.settings.text != blank -%}
+        <div class="ajuda-cabecalho">
+          <div class="ajuda-cabecalho__textos">
+            {%- if section.settings.heading != blank -%}
+              <h2 class="ajuda-cabecalho__titulo">{{ section.settings.heading | escape }}</h2>
+            {%- endif -%}
+            {%- if section.settings.text != blank -%}
+              <div class="ajuda-cabecalho__texto rte">{{ section.settings.text }}</div>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+
+      <div class="ajuda-tabela__grade{% if tb_has_side %} ajuda-tabela__grade--com-lado{% endif %}">
+        <div class="ajuda-tabela__caixa pb-bloco">
+          <table class="ajuda-tabela__tabela">
+            {%- if section.settings.caption != blank -%}
+              <caption class="visually-hidden">{{ section.settings.caption | escape }}</caption>
+            {%- endif -%}
+            <thead>
+              <tr>
+                <th scope="col">{{ section.settings.col_regiao | escape }}</th>
+                {%- if tb_has_capitais -%}<th scope="col">{{ section.settings.col_capitais | escape }}</th>{%- endif -%}
+                {%- if tb_has_interior -%}<th scope="col">{{ section.settings.col_interior | escape }}</th>{%- endif -%}
+                {%- if tb_has_frete -%}<th scope="col">{{ section.settings.col_frete | escape }}</th>{%- endif -%}
+              </tr>
+            </thead>
+            <tbody>
+              {%- for block in section.blocks -%}
+                {%- if block.type == 'regiao' -%}
+                  {%- if block.settings.capitais != blank or block.settings.interior != blank or block.settings.frete != blank -%}
+                    <tr {{ block.shopify_attributes }}>
+                      <th scope="row">
+                        <span class="ajuda-tabela__regiao">{{ block.settings.nome | escape }}</span>
+                        {%- if block.settings.ufs != blank -%}
+                          <span class="ajuda-tabela__ufs">{{ block.settings.ufs | escape }}</span>
+                        {%- endif -%}
+                      </th>
+                      {%- if tb_has_capitais -%}
+                        <td data-rotulo="{{ section.settings.col_capitais_curto | default: section.settings.col_capitais | escape }}">{{ block.settings.capitais | default: '–' | escape }}</td>
+                      {%- endif -%}
+                      {%- if tb_has_interior -%}
+                        <td data-rotulo="{{ section.settings.col_interior | escape }}">{{ block.settings.interior | default: '–' | escape }}</td>
+                      {%- endif -%}
+                      {%- if tb_has_frete -%}
+                        <td data-rotulo="{{ section.settings.col_frete_curto | default: section.settings.col_frete | escape }}">{{ block.settings.frete | default: '–' | escape }}</td>
+                      {%- endif -%}
+                    </tr>
+                  {%- endif -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </tbody>
+          </table>
+        </div>
+
+        {%- if tb_has_side -%}
+          <div class="ajuda-tabela__lado">
+            {%- if tb_has_info -%}
+              <div class="ajuda-tabela__info pb-bloco">
+                <div class="ajuda-tabela__info-topo">
+                  {%- if section.settings.info_icon != 'none' -%}
+                    <span class="ajuda-icone-circulo">{%- render 'icon', name: section.settings.info_icon, size: 20 -%}</span>
+                  {%- endif -%}
+                  <h3 class="ajuda-tabela__info-titulo">{{ section.settings.info_title | escape }}</h3>
+                </div>
+                <div class="ajuda-tabela__info-texto rte">{{ section.settings.info_text }}</div>
+              </div>
+            {%- endif -%}
+            {%- if tb_inicio > 0 -%}
+              <div class="ajuda-tabela__info pb-bloco">
+                {%- if section.settings.inicio_title != blank -%}
+                  <h3 class="ajuda-tabela__info-titulo">{{ section.settings.inicio_title | escape }}</h3>
+                {%- endif -%}
+                <dl class="ajuda-tabela__inicio">
+                  {%- for block in section.blocks -%}
+                    {%- if block.type == 'inicio' and block.settings.forma != blank and block.settings.texto != blank -%}
+                      <div class="ajuda-tabela__inicio-linha" {{ block.shopify_attributes }}>
+                        <dt>
+                          {%- if block.settings.icon != 'none' -%}
+                            {%- render 'icon', name: block.settings.icon, size: 18 -%}
+                          {%- endif -%}
+                          <span>{{ block.settings.forma | escape }}</span>
+                        </dt>
+                        <dd>{{ block.settings.texto | escape }}</dd>
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                </dl>
+              </div>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.note != blank -%}
+        <div class="ajuda-tabela__nota rte">{{ section.settings.note }}</div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="page-width ajuda-aviso-editor">
+    <p>Prazos por região: a tabela aparece na loja quando pelo menos uma região tiver prazo ou frete preenchido.</p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Ajuda: prazos por região",
+  "tag": "section",
+  "class": "section-ajuda-tabela",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Prazos e custos por região"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto de apoio"
+    },
+    {
+      "type": "text",
+      "id": "caption",
+      "label": "Legenda da tabela (lida pelo leitor de tela)",
+      "default": "Prazo de entrega e valor do frete por região do Brasil"
+    },
+    {
+      "type": "header",
+      "content": "Colunas"
+    },
+    {
+      "type": "text",
+      "id": "col_regiao",
+      "label": "Coluna da região",
+      "default": "Região"
+    },
+    {
+      "type": "text",
+      "id": "col_capitais",
+      "label": "Coluna das capitais",
+      "default": "Capitais e regiões metropolitanas"
+    },
+    {
+      "type": "text",
+      "id": "col_capitais_curto",
+      "label": "Rótulo curto das capitais (celular)",
+      "default": "Capitais"
+    },
+    {
+      "type": "text",
+      "id": "col_interior",
+      "label": "Coluna do interior",
+      "default": "Interior"
+    },
+    {
+      "type": "text",
+      "id": "col_frete",
+      "label": "Coluna do frete",
+      "default": "Frete"
+    },
+    {
+      "type": "text",
+      "id": "col_frete_curto",
+      "label": "Rótulo curto do frete (celular)",
+      "default": "Frete"
+    },
+    {
+      "type": "header",
+      "content": "Cartões ao lado da tabela"
+    },
+    {
+      "type": "select",
+      "id": "info_icon",
+      "label": "Ícone do cartão de informação",
+      "options": [
+        { "value": "none", "label": "Sem ícone" },
+        { "value": "truck", "label": "Entrega" },
+        { "value": "tag", "label": "Etiqueta" },
+        { "value": "help-circle", "label": "Ajuda" }
+      ],
+      "default": "truck"
+    },
+    {
+      "type": "text",
+      "id": "info_title",
+      "label": "Título do cartão de informação"
+    },
+    {
+      "type": "richtext",
+      "id": "info_text",
+      "label": "Texto do cartão de informação",
+      "info": "Sem título ou sem texto, o cartão não aparece."
+    },
+    {
+      "type": "text",
+      "id": "inicio_title",
+      "label": "Título do cartão das formas de pagamento",
+      "default": "Quando o prazo começa"
+    },
+    {
+      "type": "richtext",
+      "id": "note",
+      "label": "Nota abaixo da tabela"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        { "value": "small", "label": "Pequeno" },
+        { "value": "normal", "label": "Normal" }
+      ],
+      "default": "normal"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "regiao",
+      "name": "Região",
+      "settings": [
+        {
+          "type": "text",
+          "id": "nome",
+          "label": "Região"
+        },
+        {
+          "type": "text",
+          "id": "ufs",
+          "label": "Estados"
+        },
+        {
+          "type": "text",
+          "id": "capitais",
+          "label": "Prazo nas capitais",
+          "info": "Ex.: 3 a 5 dias úteis."
+        },
+        {
+          "type": "text",
+          "id": "interior",
+          "label": "Prazo no interior"
+        },
+        {
+          "type": "text",
+          "id": "frete",
+          "label": "Frete",
+          "info": "A linha só aparece com prazo ou frete preenchido."
+        }
+      ]
+    },
+    {
+      "type": "inicio",
+      "name": "Início do prazo",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            { "value": "none", "label": "Sem ícone" },
+            { "value": "card", "label": "Cartão" },
+            { "value": "coin", "label": "Moeda" },
+            { "value": "file-text", "label": "Documento" },
+            { "value": "clock", "label": "Relógio" }
+          ],
+          "default": "card"
+        },
+        {
+          "type": "text",
+          "id": "forma",
+          "label": "Forma de pagamento"
+        },
+        {
+          "type": "text",
+          "id": "texto",
+          "label": "Quando o prazo começa",
+          "info": "Sem forma ou sem texto, a linha não aparece."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Ajuda: prazos por região"
+    }
+  ]
+}
+{% endschema %}

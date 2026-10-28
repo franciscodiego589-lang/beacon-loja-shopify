@@ -1,0 +1,118 @@
+{{ 'home-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'section-product-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'section-related-products.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'related-products.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Área produto. Produtos relacionados, montados com a Product Recommendations API (Section
+  Rendering, intent "related"). A API só existe pelo endpoint Ajax da Shopify: a seção nasce
+  vazia e o JS (related-products.js) busca a si mesma pelo próprio id, pedindo de novo esta
+  mesma seção com o parâmetro de recomendação. Sem JS, ou sem produto relacionado, a seção não
+  mostra nada (mesma limitação do tema padrão da Shopify). O gancho [data-related-products-loaded]
+  marca o miolo que o JS devolve à página e não muda.
+
+  Redesenho v3 (etapa 8b da tarefa 8, emenda 14): a prateleira é a mesma das vitrines da home, no
+  formato trilho (sections/product-carousel.liquid): mesma marcação e mesmas classes
+  (.product-carousel*, .trilho), então o CSS é o de assets/section-product-carousel.css, carregado
+  acima. Título em .v3-title, link "Ver todos" com seta em .v3-link (44 px de altura), setas de
+  vidro fino no alto à direita (a partir de 761 px), quatro cards por vez no computador, 2,4 até
+  1080 px e 72% da largura (no máximo 320 px) no celular, e o espaço de uma seção (--section-gap)
+  em cima e embaixo. O indicador de páginas (pontos) saiu, como nas vitrines. O título padrão é o
+  da maquete do celular ("Compre também"): o da maquete do computador ("Quem comprou também
+  levou") afirma um dado de compra que a recomendação da Shopify não garante.
+  Reaproveita snippets/product-card.liquid (fundação), para o cartão ficar igual ao das
+  vitrines e coleções. O espaçamento fica no miolo carregado: sem relacionados, a seção não
+  ocupa espaço nenhum.
+  sizes da foto do card: o mesmo do trilho das vitrines, porque a geometria é a mesma (emenda 15,
+  M4). Antes o card usava o padrão do snippet, que declarava 212 px para uma foto de 124 px a
+  390 px. A foto mede o card menos a faixa da etiqueta (40 px; 36 px no celular).
+{%- endcomment -%}
+
+{%- if recommendations.performed? -%}
+  {%- if recommendations.products_count > 0 -%}
+    {%- liquid
+      assign rp_heading_id = 'RelatedProducts-' | append: section.id | append: '-heading'
+      assign rp_track_id = 'RelatedProducts-' | append: section.id | append: '-track'
+      assign rp_nav_previous = 'home.product_carousel.previous' | t
+      assign rp_nav_next = 'home.product_carousel.next' | t
+      assign rp_sizes = '(min-width: 1248px) 245px, (min-width: 1081px) calc((100vw - 268px) / 4), (min-width: 761px) calc((100vw - 88px) / 2.4 - 40px), (min-width: 485px) 284px, calc((100vw - 40px) * 0.72 - 36px)'
+    -%}
+    <div class="related-products__content product-carousel product-carousel--trilho lg-field--mare" data-related-products-loaded>
+      <carousel-slider class="page-width product-carousel__inner" data-mode="scroll">
+        <div class="product-carousel__head">
+          <h2 class="v3-title product-carousel__title" id="{{ rp_heading_id }}">{{ section.settings.heading | escape }}</h2>
+          <div class="product-carousel__side">
+            {%- if section.settings.view_all_label != blank -%}
+              <a href="{{ routes.all_products_collection_url }}" class="v3-link product-carousel__link">
+                {{- section.settings.view_all_label | escape -}}
+                {% render 'icon', name: 'chevron-right', size: 16 %}
+              </a>
+            {%- endif -%}
+            {%- if recommendations.products_count > 1 -%}
+              <div class="product-carousel__nav">
+                {% render 'home-carousel-arrows', controls: rp_track_id, label_previous: rp_nav_previous, label_next: rp_nav_next, size: 18 %}
+              </div>
+            {%- endif -%}
+          </div>
+        </div>
+        <ul class="product-carousel__track home-carousel-track trilho" id="{{ rp_track_id }}" data-carousel-track role="list" aria-labelledby="{{ rp_heading_id }}">
+          {%- for product in recommendations.products -%}
+            <li class="product-carousel__item" data-carousel-slide>
+              {% render 'product-card', product: product, show_ribbon: true, show_rating: true, lazy: true, section_id: section.id, heading_tag: 'h3', sizes: rp_sizes %}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </carousel-slider>
+    </div>
+  {%- endif -%}
+{%- else -%}
+  <related-products
+    class="related-products"
+    data-section-id="{{ section.id }}"
+    data-product-id="{{ product.id }}"
+    data-limit="{{ section.settings.products_to_show }}"
+  >
+    <div data-related-products-list></div>
+  </related-products>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Produtos relacionados",
+  "tag": "div",
+  "class": "section-related-products",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "info": "Só use \"Quem comprou também levou\" com dado real de compras.",
+      "default": "Compre também"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Texto do link para todos os produtos",
+      "info": "Vazio esconde o link.",
+      "default": "Ver todos"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "label": "Quantidade de produtos",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Produtos relacionados"
+    }
+  ]
+}
+{% endschema %}

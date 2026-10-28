@@ -1,0 +1,745 @@
+{{ 'component-colecao-pagination.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-collection-product-grid.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'facet-filters.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Grade de produtos da coleção (redesenho v3; spec 2.5; alvo.css linhas 274 a 280 e 455 a 463).
+
+  Estrutura:
+  - Filtros SEMPRE em gaveta, também no computador: não há painel lateral. O <facet-filters> leva
+    data-facets-mode="drawer"; o botão "Filtrar" ([data-facets-open]) abre a gaveta (<dialog>) em
+    qualquer largura. O <aside data-facets-home> só guarda o painel enquanto a gaveta está fechada
+    (o painel se move para a gaveta quando ela abre e volta quando fecha) e fica escondido. Sem
+    JavaScript a gaveta não abre: o <aside> aparece acima da grade e os filtros funcionam por
+    formulário GET, com o botão "Aplicar filtros".
+  - Barra, na ordem em que se vê e se lê: "Filtrar" (botão de vidro claro, .button--secondary
+    .button--small), contagem e ordenação em <select> nativo. No celular a contagem da barra fica
+    escondida sem filtro, como no alvo (o topo da coleção traz o total); com filtro ativo ela aparece
+    numa segunda linha, porque o topo continua mostrando o total da coleção e o resultado filtrado
+    é outro número (inclusive "0 produtos"). Com o seletor "Mostrar" ligado, ele também vai para a
+    segunda linha, com o rótulo visível.
+  - Grade (.collection-grid): 4 colunas a partir de 1081 px, 3 de 761 a 1080 px e 2 até 760 px.
+    O card escolhe o próprio modo pela largura da coluna. Coleção de 1 produto: um card só, na
+    largura de uma coluna.
+  - Coleção vazia ou filtro sem resultado: no lugar da grade aparece .collection-empty, com a
+    mensagem do tema (e, com filtro ativo, o botão "Limpar filtros").
+  - Celular e tablet: "Carregar mais produtos" no lugar dos números de página (ajuste "Paginação
+    no celular").
+
+  Filtros: storefront filtering da Shopify (collection.filters), criados no app Search & Discovery.
+  Ordenação: collection.sort_options (lista fechada vinda da Shopify), com texto próprio por valor,
+  sem travessão. "Mostrar": lista fechada 9, 15, 30, 60, 100, desligada por padrão (a barra do alvo
+  não a tem). O Liquid não tem acesso a parâmetros arbitrários da URL (o objeto request não expõe a
+  query string), por isso a escolha do visitante, quando o seletor está ligado, é gravada pelo
+  facet-filters.js como atributo do carrinho "produtos_por_pagina" e lida aqui, sempre conferida
+  contra a mesma lista. Sem escolha válida, vale o ajuste "Quantidade padrão" (30).
+
+  Regiões trocadas pelo facet-filters.js depois de cada filtro (atributo data-facets-region):
+  panel, count, badge, active, results, drawer-footer. Não aninhe uma região dentro de outra.
+
+  Vidro e cor: o vidro está nos controles (botão "Filtrar" e a gaveta de filtros, vidro espesso);
+  a grade e o resto são conteúdo sólido sobre a página branca. Nada aqui usa desfoque (spec 8,
+  item 3 e emenda G4).
+{%- endcomment -%}
+
+{%- liquid
+  assign per_page_options = '9,15,30,60,100' | split: ','
+
+  assign per_page = 30
+  assign per_page_setting = section.settings.products_per_page | append: ''
+  if per_page_options contains per_page_setting
+    assign per_page = per_page_setting | plus: 0
+  endif
+
+  if section.settings.enable_per_page
+    assign per_page_visitor = cart.attributes.produtos_por_pagina | append: '' | strip
+    if per_page_options contains per_page_visitor
+      assign per_page = per_page_visitor | plus: 0
+    endif
+  endif
+  assign per_page_string = per_page | append: ''
+
+  assign show_filters = false
+  if section.settings.enable_filtering and collection.filters.size > 0
+    assign show_filters = true
+  endif
+
+  assign show_sort = false
+  if section.settings.enable_sorting and collection.sort_options.size > 0
+    assign show_sort = true
+  endif
+
+  assign current_sort = collection.sort_by | default: collection.default_sort_by
+  assign valid_sort = ''
+  for option in collection.sort_options
+    if option.value == current_sort
+      assign valid_sort = option.value
+      break
+    endif
+  endfor
+
+  assign active_count = 0
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign active_count = active_count | plus: 1
+      endif
+    else
+      assign active_count = active_count | plus: filter.active_values.size
+    endif
+  endfor
+
+  assign clear_url = collection.url
+  if valid_sort != blank and valid_sort != collection.default_sort_by
+    assign safe_sort = valid_sort | url_encode
+    assign clear_url = collection.url | append: '?sort_by=' | append: safe_sort
+  endif
+
+  assign form_id = 'FacetsForm-' | append: section.id
+  assign mobile_mode = 'load_more'
+  if section.settings.mobile_pagination == 'pages'
+    assign mobile_mode = 'pages'
+  endif
+
+  assign offer_label = section.settings.offer_label
+  if offer_label == blank
+    assign offer_label = 'colecao.grid.offer_ribbon' | t
+  endif
+
+  assign card_sizes = '(min-width: 1248px) 285px, (min-width: 1081px) calc((100vw - 108px) / 4), (min-width: 761px) calc((100vw - 88px) / 3), calc((100vw - 52px) / 2)'
+  assign visible_limit = section.settings.filter_values_visible | plus: 0
+  assign collapse_threshold = visible_limit | plus: 1
+-%}
+
+<div class="collection-products page-width" id="CollectionProducts-{{ section.id }}">
+  {%- paginate collection.products by per_page -%}
+    {%- liquid
+      assign range_start = paginate.current_offset | plus: 1
+      assign range_end = paginate.current_offset | plus: collection.products.size
+    -%}
+    <facet-filters
+      class="collection-products__layout"
+      data-section-id="{{ section.id }}"
+      data-url="{{ collection.url }}"
+      data-per-page="{{ per_page }}"
+      data-facets-mode="drawer"
+    >
+      <script type="application/json" data-facets-config>
+        {
+          "perPageOptions": [9, 15, 30, 60, 100],
+          "perPageAttribute": "produtos_por_pagina",
+          "strings": {
+            "loading": {{ 'colecao.grid.js.loading' | t | json }},
+            "error": {{ 'colecao.grid.js.error' | t | json }},
+            "resultsNone": {{ 'colecao.grid.js.results_none' | t | json }},
+            "resultsOne": {{ 'colecao.grid.js.results_one' | t | json }},
+            "resultsOther": {{ 'colecao.grid.js.results_other' | t | json }},
+            "loadedOne": {{ 'colecao.grid.js.loaded_one' | t | json }},
+            "loadedOther": {{ 'colecao.grid.js.loaded_other' | t | json }},
+            "showing": {{ 'colecao.grid.js.showing' | t | json }},
+            "showingRange": {{ 'colecao.grid.js.showing_range' | t | json }}
+          }
+        }
+      </script>
+
+      {%- if show_filters -%}
+        <aside class="collection-facets" aria-labelledby="FacetsHeading-{{ section.id }}" data-facets-home>
+          <div class="collection-facets__panel" id="FacetsPanel-{{ section.id }}" data-facets-panel data-facets-region="panel">
+            <div class="collection-facets__header">
+              <h2 class="collection-facets__heading" id="FacetsHeading-{{ section.id }}">
+                {%- render 'icon', name: 'filter', size: 18 -%}
+                {{ 'colecao.grid.filters_heading' | t }}
+              </h2>
+              {%- if active_count > 0 -%}
+                <a href="{{ clear_url | escape }}" class="collection-facets__clear" data-facets-link>{{ 'colecao.grid.clear_all' | t }}</a>
+              {%- endif -%}
+            </div>
+
+            <form id="{{ form_id }}" class="collection-facets__form" action="{{ collection.url }}" method="get" data-facets-form>
+              {%- for filter in collection.filters -%}
+                {%- assign facet_id = 'Facet-' | append: section.id | append: '-' | append: filter.param_name | handle -%}
+                {%- case filter.type -%}
+                  {%- when 'list', 'boolean' -%}
+                    {%- liquid
+                      assign facet_has_more = false
+                      if filter.values.size > collapse_threshold
+                        assign facet_has_more = true
+                      endif
+                      assign facet_expanded = false
+                      if facet_has_more
+                        for value in filter.values
+                          if forloop.index > visible_limit and value.active
+                            assign facet_expanded = true
+                            break
+                          endif
+                        endfor
+                      endif
+                    -%}
+                    <fieldset class="facet{% if facet_has_more %} facet--collapsible{% endif %}{% if facet_expanded %} is-expanded{% endif %}" id="{{ facet_id }}" data-facet>
+                      <legend class="facet__legend">{{ filter.label | escape }}</legend>
+                      <ul class="facet__list" role="list" id="{{ facet_id }}-list">
+                        {%- for value in filter.values -%}
+                          {%- liquid
+                            assign value_id = 'Filter-' | append: section.id | append: '-' | append: value.param_name | append: '-' | append: value.value | handle
+                            assign value_disabled = false
+                            if value.count == 0 and value.active == false
+                              assign value_disabled = true
+                            endif
+                          -%}
+                          <li class="facet__item{% if facet_has_more and forloop.index > visible_limit %} facet__item--extra{% endif %}">
+                            <label class="facet__option{% if value_disabled %} facet__option--disabled{% endif %}" for="{{ value_id }}">
+                              <input
+                                type="checkbox"
+                                class="facet__checkbox"
+                                id="{{ value_id }}"
+                                name="{{ value.param_name | escape }}"
+                                value="{{ value.value | escape }}"
+                                {% if value.active %}checked{% endif %}
+                                {% if value_disabled %}disabled{% endif %}
+                              >
+                              <span class="facet__label">{{ value.label | escape }}</span>
+                              <span class="facet__count">{{ 'colecao.grid.value_count' | t: count: value.count }}</span>
+                            </label>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                      {%- if facet_has_more -%}
+                        <button
+                          type="button"
+                          class="facet__more"
+                          aria-expanded="{{ facet_expanded }}"
+                          aria-controls="{{ facet_id }}-list"
+                          data-facet-more
+                        >
+                          <span class="facet__more-show">
+                            {{- 'colecao.grid.show_more' | t -}}
+                            <span class="visually-hidden"> {{ 'colecao.grid.show_more_suffix' | t: label: filter.label }}</span>
+                          </span>
+                          <span class="facet__more-hide">
+                            {{- 'colecao.grid.show_less' | t -}}
+                            <span class="visually-hidden"> {{ 'colecao.grid.show_more_suffix' | t: label: filter.label }}</span>
+                          </span>
+                        </button>
+                      {%- endif -%}
+                    </fieldset>
+
+                  {%- when 'price_range' -%}
+                    {%- liquid
+                      assign price_min_id = facet_id | append: '-min'
+                      assign price_max_id = facet_id | append: '-max'
+
+                      assign range_max_cents = filter.range_max | plus: 0
+                      assign range_max_major = range_max_cents | plus: 99 | divided_by: 100
+
+                      assign price_min_value = ''
+                      if filter.min_value.value != nil
+                        assign price_min_cents = filter.min_value.value | plus: 0
+                        assign price_min_rest = price_min_cents | modulo: 100
+                        if price_min_rest == 0
+                          assign price_min_value = price_min_cents | divided_by: 100
+                        else
+                          assign price_min_value = price_min_cents | divided_by: 100.0
+                        endif
+                      endif
+
+                      assign price_max_value = ''
+                      if filter.max_value.value != nil
+                        assign price_max_cents = filter.max_value.value | plus: 0
+                        assign price_max_rest = price_max_cents | modulo: 100
+                        if price_max_rest == 0
+                          assign price_max_value = price_max_cents | divided_by: 100
+                        else
+                          assign price_max_value = price_max_cents | divided_by: 100.0
+                        endif
+                      endif
+                    -%}
+                    <fieldset class="facet facet--price" id="{{ facet_id }}" data-facet>
+                      <legend class="facet__legend">{{ filter.label | escape }}</legend>
+                      <div class="facet__price-fields">
+                        <div class="facet__price-field">
+                          <label class="facet__price-label" for="{{ price_min_id }}">{{ 'colecao.grid.price_min' | t }}</label>
+                          <div class="facet__price-input-wrap">
+                            <span class="facet__currency" aria-hidden="true">{{ cart.currency.symbol | escape }}</span>
+                            <input
+                              type="number"
+                              class="facet__price-input lg-field-input"
+                              id="{{ price_min_id }}"
+                              name="{{ filter.min_value.param_name | escape }}"
+                              value="{{ price_min_value }}"
+                              min="0"
+                              {% if range_max_major > 0 %}max="{{ range_max_major }}"{% endif %}
+                              step="0.01"
+                              inputmode="decimal"
+                              autocomplete="off"
+                              placeholder="0"
+                              data-facet-price
+                            >
+                          </div>
+                        </div>
+                        <div class="facet__price-field">
+                          <label class="facet__price-label" for="{{ price_max_id }}">{{ 'colecao.grid.price_max' | t }}</label>
+                          <div class="facet__price-input-wrap">
+                            <span class="facet__currency" aria-hidden="true">{{ cart.currency.symbol | escape }}</span>
+                            <input
+                              type="number"
+                              class="facet__price-input lg-field-input"
+                              id="{{ price_max_id }}"
+                              name="{{ filter.max_value.param_name | escape }}"
+                              value="{{ price_max_value }}"
+                              min="0"
+                              {% if range_max_major > 0 %}max="{{ range_max_major }}" placeholder="{{ range_max_major }}"{% endif %}
+                              step="0.01"
+                              inputmode="decimal"
+                              autocomplete="off"
+                              data-facet-price
+                            >
+                          </div>
+                        </div>
+                      </div>
+                      <button type="submit" class="button button--secondary facet__price-apply">{{ 'colecao.grid.price_apply' | t }}</button>
+                    </fieldset>
+                {%- endcase -%}
+              {%- endfor -%}
+
+              <div class="collection-facets__nojs">
+                <button type="submit" class="button button--primary button--full">{{ 'colecao.grid.apply_filters' | t }}</button>
+              </div>
+            </form>
+          </div>
+        </aside>
+      {%- endif -%}
+
+      <div class="collection-products__main">
+        {%- comment -%}
+          Coleção vazia e sem filtro ativo: não há o que filtrar nem ordenar, a barra não aparece.
+          Com filtro ativo e nenhum resultado a barra fica (é por ela que se muda o filtro).
+        {%- endcomment -%}
+        {%- if collection.products_count > 0 or active_count > 0 -%}
+          <div class="collection-toolbar">
+            {%- if show_filters -%}
+              <button
+                type="button"
+                class="button button--secondary button--small collection-toolbar__filter-button"
+                aria-haspopup="dialog"
+                aria-controls="FacetsDrawer-{{ section.id }}"
+                aria-expanded="false"
+                data-facets-open
+              >
+                {%- render 'icon', name: 'filter', size: 16 -%}
+                <span>{{ 'colecao.grid.filter_button' | t }}</span>
+                <span class="collection-toolbar__badge-slot" data-facets-region="badge">
+                  {%- if active_count > 0 -%}
+                    <span class="collection-toolbar__badge" aria-hidden="true">{{ active_count }}</span>
+                    <span class="visually-hidden">{{ 'colecao.grid.active_count' | t: count: active_count }}</span>
+                  {%- endif -%}
+                </span>
+              </button>
+            {%- endif -%}
+
+            <p class="collection-toolbar__count{% if active_count > 0 %} collection-toolbar__count--filtered{% endif %}" data-facets-region="count">
+              {%- if collection.products_count > 0 -%}
+                <span data-facets-count="{{ collection.products_count }}">
+                  {{- 'colecao.grid.count' | t: count: collection.products_count -}}
+                </span>
+              {%- else -%}
+                <span data-facets-count="0">{{- 'colecao.grid.count' | t: count: 0 -}}</span>
+              {%- endif -%}
+            </p>
+
+            <div class="collection-toolbar__controls">
+              {%- if show_sort -%}
+                {%- unless show_filters -%}
+                  <form id="{{ form_id }}" class="collection-toolbar__form" action="{{ collection.url }}" method="get" data-facets-form>
+                {%- endunless -%}
+                <div class="collection-toolbar__field collection-toolbar__sort">
+                  <label class="visually-hidden" for="SortBy-{{ section.id }}">{{ 'colecao.grid.sort_label' | t }}</label>
+                  <select
+                    id="SortBy-{{ section.id }}"
+                    class="collection-toolbar__select lg-field-input"
+                    name="sort_by"
+                    form="{{ form_id }}"
+                    data-facets-sort
+                    data-default-sort="{{ collection.default_sort_by | escape }}"
+                  >
+                    {%- for option in collection.sort_options -%}
+                      {%- comment -%}
+                        Texto próprio por valor de ordenação: a Shopify entrega "Ordem alfabética" com um
+                        travessão curto entre as letras, e a regra do tema é não ter travessão em texto
+                        visível. Valor que não esteja na lista usa o nome que a Shopify entrega.
+                      {%- endcomment -%}
+                      {%- liquid
+                        case option.value
+                          when 'manual'
+                            assign sort_name = 'colecao.grid.sort_options.manual' | t
+                          when 'most-relevant'
+                            assign sort_name = 'colecao.grid.sort_options.most_relevant' | t
+                          when 'best-selling'
+                            assign sort_name = 'colecao.grid.sort_options.best_selling' | t
+                          when 'title-ascending'
+                            assign sort_name = 'colecao.grid.sort_options.title_ascending' | t
+                          when 'title-descending'
+                            assign sort_name = 'colecao.grid.sort_options.title_descending' | t
+                          when 'price-ascending'
+                            assign sort_name = 'colecao.grid.sort_options.price_ascending' | t
+                          when 'price-descending'
+                            assign sort_name = 'colecao.grid.sort_options.price_descending' | t
+                          when 'created-ascending'
+                            assign sort_name = 'colecao.grid.sort_options.created_ascending' | t
+                          when 'created-descending'
+                            assign sort_name = 'colecao.grid.sort_options.created_descending' | t
+                          else
+                            assign sort_name = option.name
+                        endcase
+                      -%}
+                      <option value="{{ option.value | escape }}"{% if option.value == current_sort %} selected{% endif %}>{{ sort_name | escape }}</option>
+                    {%- endfor -%}
+                  </select>
+                </div>
+                {%- unless show_filters -%}
+                  </form>
+                {%- endunless -%}
+              {%- endif -%}
+
+              {%- if section.settings.enable_per_page -%}
+                <div class="collection-toolbar__field collection-toolbar__per-page">
+                  <label class="collection-toolbar__label" for="PerPage-{{ section.id }}">
+                    {{- 'colecao.grid.per_page_label' | t -}}
+                    <span class="visually-hidden"> {{ 'colecao.grid.per_page_hidden' | t }}</span>
+                  </label>
+                  <select id="PerPage-{{ section.id }}" class="collection-toolbar__select lg-field-input" data-facets-per-page>
+                    {%- for option in per_page_options -%}
+                      <option value="{{ option }}"{% if option == per_page_string %} selected{% endif %}>{{ option }}</option>
+                    {%- endfor -%}
+                  </select>
+                </div>
+              {%- endif -%}
+
+              {%- if show_sort -%}
+                <button type="submit" form="{{ form_id }}" class="button button--secondary button--small collection-toolbar__nojs">{{ 'colecao.grid.apply' | t }}</button>
+              {%- endif -%}
+            </div>
+          </div>
+        {%- endif -%}
+
+        <p class="form-message form-message--error collection-products__error" role="alert" hidden data-facets-error></p>
+
+        <div class="collection-active" data-facets-region="active">
+          {%- if active_count > 0 -%}
+            <div class="collection-active__inner">
+              <span class="collection-active__title" id="ActiveFilters-{{ section.id }}">{{ 'colecao.grid.active_filters' | t }}</span>
+              <ul class="collection-active__list" role="list" aria-labelledby="ActiveFilters-{{ section.id }}">
+                {%- for filter in collection.filters -%}
+                  {%- if filter.type == 'price_range' -%}
+                    {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+                      {%- liquid
+                        if filter.min_value.value != nil and filter.max_value.value != nil
+                          assign price_chip_min = filter.min_value.value | money
+                          assign price_chip_max = filter.max_value.value | money
+                          assign price_chip = 'colecao.grid.price_range' | t: min: price_chip_min, max: price_chip_max
+                        elsif filter.min_value.value != nil
+                          assign price_chip_min = filter.min_value.value | money
+                          assign price_chip = 'colecao.grid.price_from' | t: amount: price_chip_min
+                        else
+                          assign price_chip_max = filter.max_value.value | money
+                          assign price_chip = 'colecao.grid.price_to' | t: amount: price_chip_max
+                        endif
+                      -%}
+                      <li class="collection-active__item">
+                        <a href="{{ filter.url_to_remove | escape }}" class="collection-active__chip lg-hit" data-facets-link>
+                          <span class="visually-hidden">{{ 'colecao.grid.remove_filter' | t }} {{ filter.label | escape }}:</span>
+                          <span>{{ price_chip }}</span>
+                          {%- render 'icon', name: 'close', size: 14 -%}
+                        </a>
+                      </li>
+                    {%- endif -%}
+                  {%- else -%}
+                    {%- for value in filter.active_values -%}
+                      <li class="collection-active__item">
+                        <a href="{{ value.url_to_remove | escape }}" class="collection-active__chip lg-hit" data-facets-link>
+                          <span class="visually-hidden">{{ 'colecao.grid.remove_filter' | t }} {{ filter.label | escape }}:</span>
+                          <span>{{ value.label | escape }}</span>
+                          {%- render 'icon', name: 'close', size: 14 -%}
+                        </a>
+                      </li>
+                    {%- endfor -%}
+                  {%- endif -%}
+                {%- endfor -%}
+                <li class="collection-active__item">
+                  <a href="{{ clear_url | escape }}" class="collection-active__clear lg-hit" data-facets-link>{{ 'colecao.grid.clear' | t }}</a>
+                </li>
+              </ul>
+            </div>
+          {%- endif -%}
+        </div>
+
+        <div class="collection-results" data-facets-region="results" aria-busy="false">
+          <h2 class="visually-hidden" id="ResultsHeading-{{ section.id }}" tabindex="-1" data-facets-results-heading>{{ 'colecao.grid.products_heading' | t }}</h2>
+
+          {%- if collection.products.size > 0 -%}
+            <ul class="grid collection-grid" role="list" aria-labelledby="ResultsHeading-{{ section.id }}" data-facets-grid>
+              {%- for product in collection.products -%}
+                {%- liquid
+                  assign card_lazy = true
+                  assign card_priority = false
+                  # Primeira linha da grade de 4 colunas: fotos da primeira tela sem carregamento tardio.
+                  if paginate.current_page == 1 and forloop.index <= 4
+                    assign card_lazy = false
+                    if forloop.index == 1
+                      assign card_priority = true
+                    endif
+                  endif
+
+                  assign card_show_ribbon = false
+                  assign card_ribbon_label = ''
+                  assign card_ribbon_tone = 'best'
+                  case section.settings.card_ribbon
+                    when 'metafield'
+                      assign card_show_ribbon = true
+                    when 'offer'
+                      assign card_has_offer = false
+                      for card_variant in product.variants limit: 50
+                        if card_variant.compare_at_price > card_variant.price
+                          assign card_has_offer = true
+                          break
+                        endif
+                      endfor
+                      assign card_show_ribbon = true
+                      if card_has_offer
+                        assign card_ribbon_label = offer_label
+                        assign card_ribbon_tone = 'offer'
+                      endif
+                  endcase
+                -%}
+                <li class="collection-grid__item" data-facets-item>
+                  {% render 'product-card',
+                    product: product,
+                    section_id: section.id,
+                    show_ribbon: card_show_ribbon,
+                    ribbon_label: card_ribbon_label,
+                    ribbon_tone: card_ribbon_tone,
+                    show_rating: section.settings.show_rating,
+                    lazy: card_lazy,
+                    priority: card_priority,
+                    heading_tag: 'h3',
+                    sizes: card_sizes
+                  %}
+                </li>
+              {%- endfor -%}
+            </ul>
+          {%- else -%}
+            <div class="collection-empty">
+              <span class="collection-empty__icon">{% render 'icon', name: 'search', size: 32 %}</span>
+              <h3 class="collection-empty__title">{{ 'colecao.grid.empty_title' | t }}</h3>
+              {%- if active_count > 0 -%}
+                <p class="collection-empty__text">{{ 'colecao.grid.empty_text_filtered' | t }}</p>
+                <a href="{{ clear_url | escape }}" class="button button--primary" data-facets-link>{{ 'colecao.grid.empty_clear' | t }}</a>
+              {%- else -%}
+                <p class="collection-empty__text">{{ 'colecao.grid.empty_text' | t }}</p>
+                {%- if collection.url != routes.all_products_collection_url -%}
+                  <a href="{{ routes.all_products_collection_url }}" class="button button--secondary">{{ 'colecao.grid.empty_all' | t }}</a>
+                {%- endif -%}
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          {%- liquid
+            assign pagination_class = ''
+            if mobile_mode == 'load_more'
+              assign pagination_class = 'colecao-pagination--hide-mobile'
+            endif
+          -%}
+          {% render 'colecao-pagination', paginate: paginate, facets: true, class: pagination_class %}
+
+          {%- if mobile_mode == 'load_more' and collection.products.size > 0 -%}
+            <div
+              class="collection-load-more"
+              data-load-more
+              data-range-start="{{ range_start }}"
+              data-range-end="{{ range_end }}"
+              data-total="{{ collection.products_count }}"
+            >
+              <p class="collection-load-more__status" data-load-more-status>
+                {%- if collection.products_count == 1 -%}
+                  {{- 'colecao.grid.showing_one' | t -}}
+                {%- elsif range_start == 1 -%}
+                  {{- 'colecao.grid.showing' | t: count: collection.products_count, end: range_end -}}
+                {%- else -%}
+                  {{- 'colecao.grid.showing_range' | t: count: collection.products_count, start: range_start, end: range_end -}}
+                {%- endif -%}
+              </p>
+              {%- if paginate.next -%}
+                <a href="{{ paginate.next.url | escape }}" class="button button--secondary button--full collection-load-more__button" data-load-more-link>
+                  {{- 'colecao.grid.load_more' | t -}}
+                </a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- if show_filters -%}
+        <dialog class="drawer drawer--left facets-drawer glass glass--thick" id="FacetsDrawer-{{ section.id }}" aria-labelledby="FacetsDrawerTitle-{{ section.id }}" data-facets-drawer>
+          <div class="drawer__inner">
+            <div class="drawer__header">
+              <h2 class="drawer__title" id="FacetsDrawerTitle-{{ section.id }}">{{ 'colecao.grid.drawer_title' | t }}</h2>
+              <button type="button" class="drawer__close" aria-label="{{ 'colecao.grid.drawer_close' | t }}" data-facets-close>
+                {%- render 'icon', name: 'close', size: 22 -%}
+              </button>
+            </div>
+            <div class="facets-drawer__body" data-facets-drawer-body></div>
+            <div class="drawer__footer facets-drawer__footer" data-facets-region="drawer-footer">
+              {%- if active_count > 0 -%}
+                <a href="{{ clear_url | escape }}" class="button button--secondary facets-drawer__clear" data-facets-link>{{ 'colecao.grid.clear' | t }}</a>
+              {%- endif -%}
+              <button type="button" class="button button--primary facets-drawer__apply" id="FacetsApply-{{ section.id }}" data-facets-close data-facets-apply>
+                {%- if collection.products_count > 0 -%}
+                  {{- 'colecao.grid.drawer_submit' | t: count: collection.products_count -}}
+                {%- else -%}
+                  {{- 'colecao.grid.drawer_submit_none' | t -}}
+                {%- endif -%}
+              </button>
+            </div>
+          </div>
+        </dialog>
+      {%- endif -%}
+    </facet-filters>
+  {%- endpaginate -%}
+</div>
+
+{% schema %}
+{
+  "name": "Grade de produtos",
+  "tag": "section",
+  "class": "section-collection-products",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Produtos por página"
+    },
+    {
+      "type": "select",
+      "id": "products_per_page",
+      "label": "Quantidade padrão",
+      "info": "Com 30, as coleções pequenas aparecem inteiras numa página só.",
+      "options": [
+        {
+          "value": "9",
+          "label": "9"
+        },
+        {
+          "value": "15",
+          "label": "15"
+        },
+        {
+          "value": "30",
+          "label": "30"
+        },
+        {
+          "value": "60",
+          "label": "60"
+        },
+        {
+          "value": "100",
+          "label": "100"
+        }
+      ],
+      "default": "30"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_per_page",
+      "label": "Mostrar o seletor \"Mostrar\" para o visitante",
+      "info": "Desligado por padrão: a barra da coleção fica só com \"Filtrar\", a contagem e a ordenação. A escolha do visitante (9, 15, 30, 60 ou 100) fica guardada no carrinho como o atributo \"produtos_por_pagina\" e segue junto para o pedido.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "mobile_pagination",
+      "label": "Paginação no celular",
+      "options": [
+        {
+          "value": "load_more",
+          "label": "Botão \"Carregar mais produtos\""
+        },
+        {
+          "value": "pages",
+          "label": "Números de página"
+        }
+      ],
+      "default": "load_more"
+    },
+    {
+      "type": "header",
+      "content": "Cards de produto"
+    },
+    {
+      "type": "select",
+      "id": "card_ribbon",
+      "label": "Selo sobre a foto",
+      "options": [
+        {
+          "value": "none",
+          "label": "Nenhum"
+        },
+        {
+          "value": "metafield",
+          "label": "Selo do produto (metafield beacon.selo)"
+        },
+        {
+          "value": "offer",
+          "label": "Fita de oferta nos produtos com preço promocional"
+        }
+      ],
+      "default": "metafield",
+      "info": "Com a fita de oferta, o produto sem preço promocional mostra o selo do metafield, se houver."
+    },
+    {
+      "type": "text",
+      "id": "offer_label",
+      "label": "Texto da fita de oferta",
+      "info": "Vazio usa o padrão \"Oferta\"."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Mostrar estrelas de avaliação",
+      "info": "Aparecem só quando o produto tem os metafields de avaliação preenchidos pelo app.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Filtros e ordenação"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "label": "Mostrar filtros",
+      "info": "Os filtros são criados no app Search & Discovery, da Shopify.",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "filter_values_visible",
+      "min": 3,
+      "max": 15,
+      "step": 1,
+      "label": "Opções visíveis por filtro antes de \"Ver mais\"",
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Mostrar ordenação",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Grade de produtos"
+    }
+  ]
+}
+{% endschema %}

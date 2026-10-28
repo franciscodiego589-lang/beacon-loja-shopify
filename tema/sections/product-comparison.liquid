@@ -1,0 +1,205 @@
+{{ 'section-product-comparison.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Área produto. Tabela de atributos do produto, na posição da maquete de 29/09/2026 (logo abaixo
+  da coluna de compra, antes de "Sobre o produto"). Mudança de 29/09/2026: a coluna "Outras
+  marcas" saiu. A tabela mostra só atributos factuais da própria Beacon, cada um lido de um
+  metafield já gravado, e não afirma nada sobre outras marcas:
+  - "[N] cápsulas por pote": beacon.capsulas_por_pote;
+  - "[N] cápsulas ao dia": beacon.capsulas_por_dia;
+  - a linha de peso líquido de beacon.conteudo, como está gravada ("Peso líquido: 30 g");
+  - "Não contém glúten": só quando beacon.conteudo traz a declaração "NÃO CONTÉM GLÚTEN".
+  Linha sem dado não aparece; sem nenhuma linha, a seção não aparece.
+  Frase de posicionamento e parágrafo de apresentação (coluna de texto da maquete): só de
+  beacon.comparativo (json, {"titulo":"…","texto":"…","fonte":"…"}), que nenhum produto tem
+  hoje; sem ele, a coluna de texto não aparece. As chaves "linhas" e "outros" do formato antigo
+  não são mais lidas.
+  Os textos fixos das linhas e do cabeçalho são ajustes da seção (editáveis). O nome do
+  produto na coluna é o nome curto (snippets/produto-nome-curto).
+  Liquid Glass (spec 7.3): a seção fica sobre o campo farol (.lg-field--farol) com a arte
+  (.lg-field--art, assets/campo-farol.svg). A seção fica abaixo da galeria e da coluna de
+  compra: a arte não vira o elemento de LCP (medido no Chromium em 28/09/2026).
+{%- endcomment -%}
+{%- liquid
+  assign cmp_caps_pote = product.metafields.beacon.capsulas_por_pote.value | plus: 0
+  assign cmp_caps_dia = product.metafields.beacon.capsulas_por_dia.value | plus: 0
+  assign cmp_conteudo = product.metafields.beacon.conteudo.value
+  assign comparativo = product.metafields.beacon.comparativo.value
+
+  assign cmp_peso = ''
+  assign cmp_gluten = false
+  for cmp_item in cmp_conteudo
+    assign cmp_lines = cmp_item.texto | newline_to_br | split: '<br />'
+    for cmp_line in cmp_lines
+      assign cmp_text = cmp_line | strip
+      assign cmp_head = cmp_text | slice: 0, 12 | downcase
+      if cmp_peso == blank and cmp_head == 'peso líquido'
+        assign cmp_peso = cmp_text
+      endif
+      if cmp_text contains 'NÃO CONTÉM GLÚTEN' or cmp_text contains 'Não contém glúten'
+        assign cmp_gluten = true
+      endif
+    endfor
+  endfor
+
+  assign cmp_rows = 0
+  if cmp_caps_pote > 0 and section.settings.label_capsulas_pote != blank
+    assign cmp_rows = cmp_rows | plus: 1
+  endif
+  if cmp_caps_dia > 0 and section.settings.label_capsulas_dia != blank
+    assign cmp_rows = cmp_rows | plus: 1
+  endif
+  if cmp_peso != blank
+    assign cmp_rows = cmp_rows | plus: 1
+  endif
+  if cmp_gluten and section.settings.label_gluten != blank
+    assign cmp_rows = cmp_rows | plus: 1
+  endif
+
+  capture nome_curto
+    render 'produto-nome-curto', product: product
+  endcapture
+  assign nome_curto = nome_curto | strip
+
+  assign cmp_phrase = comparativo.titulo | strip
+  assign cmp_intro = comparativo.texto | strip
+  assign cmp_source = comparativo.fonte | strip
+  assign cmp_title_id = 'ProductComparisonTitle-' | append: section.id
+  assign cmp_caption_id = 'ProductComparisonCaption-' | append: section.id
+-%}
+{%- if cmp_rows > 0 -%}
+  <section class="product-comparison section lg-field--farol lg-field--art" aria-labelledby="{% if cmp_phrase != blank %}{{ cmp_title_id }}{% else %}{{ cmp_caption_id }}{% endif %}">
+    <div class="page-width product-comparison__grid{% if cmp_phrase == blank and cmp_intro == blank %} product-comparison__grid--table-only{% endif %}">
+      {%- if cmp_phrase != blank or cmp_intro != blank -%}
+        <div class="product-comparison__intro-col">
+          {%- if cmp_phrase != blank -%}
+            <h2 class="product-comparison__title" id="{{ cmp_title_id }}">{{ nome_curto | escape }}: {{ cmp_phrase | escape }}</h2>
+          {%- endif -%}
+          {%- if cmp_intro != blank -%}
+            <p class="product-comparison__intro">{{ cmp_intro | escape }}</p>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="product-comparison__table-col">
+        <div class="product-comparison__scroll">
+          <table class="product-comparison__table">
+            <caption class="visually-hidden" id="{{ cmp_caption_id }}">{{ section.settings.column_label | escape }}: {{ nome_curto | escape }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ section.settings.column_label | escape }}</th>
+                <th scope="col" class="product-comparison__our-column">{{ nome_curto | escape }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- if cmp_caps_pote > 0 and section.settings.label_capsulas_pote != blank -%}
+                <tr>
+                  <th scope="row">{{ cmp_caps_pote }} {{ section.settings.label_capsulas_pote | escape }}</th>
+                  <td class="product-comparison__our-column">
+                    <span class="product-comparison__yes-wrap">
+                      <span class="product-comparison__yes" aria-hidden="true">{% render 'icon', name: 'check', size: 18 %}</span>
+                      <span class="product-comparison__yes-label">{{ section.settings.label_yes | escape }}</span>
+                    </span>
+                  </td>
+                </tr>
+              {%- endif -%}
+              {%- if cmp_caps_dia > 0 and section.settings.label_capsulas_dia != blank -%}
+                <tr>
+                  <th scope="row">{{ cmp_caps_dia }} {{ section.settings.label_capsulas_dia | escape }}</th>
+                  <td class="product-comparison__our-column">
+                    <span class="product-comparison__yes-wrap">
+                      <span class="product-comparison__yes" aria-hidden="true">{% render 'icon', name: 'check', size: 18 %}</span>
+                      <span class="product-comparison__yes-label">{{ section.settings.label_yes | escape }}</span>
+                    </span>
+                  </td>
+                </tr>
+              {%- endif -%}
+              {%- if cmp_peso != blank -%}
+                <tr>
+                  <th scope="row">{{ cmp_peso | escape }}</th>
+                  <td class="product-comparison__our-column">
+                    <span class="product-comparison__yes-wrap">
+                      <span class="product-comparison__yes" aria-hidden="true">{% render 'icon', name: 'check', size: 18 %}</span>
+                      <span class="product-comparison__yes-label">{{ section.settings.label_yes | escape }}</span>
+                    </span>
+                  </td>
+                </tr>
+              {%- endif -%}
+              {%- if cmp_gluten and section.settings.label_gluten != blank -%}
+                <tr>
+                  <th scope="row">{{ section.settings.label_gluten | escape }}</th>
+                  <td class="product-comparison__our-column">
+                    <span class="product-comparison__yes-wrap">
+                      <span class="product-comparison__yes" aria-hidden="true">{% render 'icon', name: 'check', size: 18 %}</span>
+                      <span class="product-comparison__yes-label">{{ section.settings.label_yes | escape }}</span>
+                    </span>
+                  </td>
+                </tr>
+              {%- endif -%}
+            </tbody>
+          </table>
+        </div>
+        {%- if cmp_source != blank -%}
+          <p class="product-comparison__source">{{ cmp_source | escape }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <p class="home-editor-note page-width">{{ 'produto.editor.empty' | t: field: 'beacon.capsulas_por_pote / beacon.capsulas_por_dia / beacon.conteudo' }}</p>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Atributos do produto",
+  "tag": "div",
+  "class": "section-product-comparison",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Tabela só com atributos da própria Beacon, lidos dos metafields: cápsulas por pote, cápsulas ao dia, peso líquido e a declaração de glúten de beacon.conteudo. Não compara com outras marcas. Frase de posicionamento e parágrafo só de beacon.comparativo (titulo, texto e fonte)."
+    },
+    {
+      "type": "text",
+      "id": "column_label",
+      "label": "Cabeçalho da coluna de atributos",
+      "default": "Atributos"
+    },
+    {
+      "type": "text",
+      "id": "label_capsulas_pote",
+      "label": "Texto depois do número de cápsulas por pote",
+      "info": "Vazio esconde a linha.",
+      "default": "cápsulas por pote"
+    },
+    {
+      "type": "text",
+      "id": "label_capsulas_dia",
+      "label": "Texto depois do número de cápsulas ao dia",
+      "info": "Vazio esconde a linha.",
+      "default": "cápsulas ao dia"
+    },
+    {
+      "type": "text",
+      "id": "label_gluten",
+      "label": "Texto da linha de glúten",
+      "info": "Só aparece quando beacon.conteudo traz \"NÃO CONTÉM GLÚTEN\". Vazio esconde a linha.",
+      "default": "Não contém glúten"
+    },
+    {
+      "type": "text",
+      "id": "label_yes",
+      "label": "Texto ao lado do check",
+      "default": "Sim"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Atributos do produto"
+    }
+  ]
+}
+{% endschema %}

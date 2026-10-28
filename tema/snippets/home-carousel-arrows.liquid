@@ -1,0 +1,32 @@
+{%- comment -%}
+  Setas anterior/próximo de um carrossel da página inicial (área home).
+  Ficam dentro de um <carousel-slider data-mode="scroll">; o JS (carousel-slider.js)
+  rola o trilho e marca aria-disabled nas pontas. Sem JS, o CSS (home-carousel.css) esconde as setas.
+
+  Parâmetros:
+  - controls: id do trilho [data-carousel-track] (aria-controls)
+  - label_previous: texto acessível da seta anterior (já traduzido)
+  - label_next: texto acessível da próxima seta (já traduzido)
+  - class: classe extra, aplicada também com os sufixos --prev e --next (opcional)
+  - size: tamanho do ícone em px (padrão 20)
+{%- endcomment -%}
+{%- assign arrow_size = size | default: 20 -%}
+<button
+  type="button"
+  class="icon-button home-carousel-arrow home-carousel-arrow--prev{% if class != blank %} {{ class }} {{ class }}--prev{% endif %}"
+  aria-label="{{ label_previous }}"
+  aria-controls="{{ controls }}"
+  aria-disabled="true"
+  data-carousel-prev
+>
+  {% render 'icon', name: 'chevron-left', size: arrow_size %}
+</button>
+<button
+  type="button"
+  class="icon-button home-carousel-arrow home-carousel-arrow--next{% if class != blank %} {{ class }} {{ class }}--next{% endif %}"
+  aria-label="{{ label_next }}"
+  aria-controls="{{ controls }}"
+  data-carousel-next
+>
+  {% render 'icon', name: 'chevron-right', size: arrow_size %}
+</button>

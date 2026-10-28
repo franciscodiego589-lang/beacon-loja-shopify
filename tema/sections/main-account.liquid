@@ -1,0 +1,184 @@
+{{ 'conta-base.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-account.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Minha conta (template customers/account, contas de cliente legadas).
+  - Pedidos paginados: a documentação da Shopify limita customer.orders a 20 por página;
+    a quantidade por página vem do ajuste da seção (5 a 20).
+  - Coluna lateral: dados da conta e endereço principal (customer.default_address).
+  - Todo dado do cliente e do pedido sai com | escape. Valores em dinheiro usam | money.
+{%- endcomment -%}
+
+{%- liquid
+  assign date_format = 'conta.formats.date' | t
+  assign customer_first_name = customer.first_name | escape
+  assign orders_title_id = 'AccountOrdersTitle-' | append: section.id
+  assign details_title_id = 'AccountDetailsTitle-' | append: section.id
+  assign address_title_id = 'AccountAddressTitle-' | append: section.id
+-%}
+
+<div class="conta-page conta-account page-width" style="--conta-pad-top: {{ section.settings.padding_top }}px; --conta-pad-bottom: {{ section.settings.padding_bottom }}px;">
+  <header class="conta-page__header">
+    <p class="conta-page__eyebrow">
+      {%- if customer.first_name != blank -%}
+        {{ 'conta.account.greeting_html' | t: name: customer_first_name }}
+      {%- else -%}
+        {{ 'conta.account.greeting_anonymous' | t }}
+      {%- endif -%}
+    </p>
+    <h1 class="conta-page__title">{{ 'conta.account.title' | t }}</h1>
+  </header>
+
+  {%- render 'conta-account-nav', current: 'orders' -%}
+
+  <div class="conta-account__layout">
+    <section class="conta-account__orders" aria-labelledby="{{ orders_title_id }}">
+      <h2 class="conta-section-title" id="{{ orders_title_id }}">{{ 'conta.account.orders_title' | t }}</h2>
+
+      {%- paginate customer.orders by section.settings.orders_per_page -%}
+        {%- if customer.orders.size > 0 -%}
+          <table class="conta-table conta-orders">
+            <caption class="visually-hidden">{{ 'conta.account.orders_caption' | t }}</caption>
+            <thead>
+              <tr>
+                <th scope="col">{{ 'conta.account.column_order' | t }}</th>
+                <th scope="col">{{ 'conta.account.column_date' | t }}</th>
+                <th scope="col">{{ 'conta.account.column_payment' | t }}</th>
+                <th scope="col">{{ 'conta.account.column_fulfillment' | t }}</th>
+                <th scope="col" class="conta-table__num">{{ 'conta.account.column_total' | t }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {%- for order in customer.orders -%}
+                <tr>
+                  <th scope="row" data-label="{{ 'conta.account.column_order' | t }}">
+                    <a class="link" href="{{ order.customer_url | escape }}">{{ order.name | escape }}</a>
+                  </th>
+                  <td data-label="{{ 'conta.account.column_date' | t }}">
+                    <time datetime="{{ order.created_at | date: '%Y-%m-%d' }}">{{ order.created_at | date: date_format }}</time>
+                  </td>
+                  <td data-label="{{ 'conta.account.column_payment' | t }}">
+                    {{- order.financial_status_label | escape -}}
+                  </td>
+                  <td data-label="{{ 'conta.account.column_fulfillment' | t }}">
+                    {{- order.fulfillment_status_label | escape -}}
+                  </td>
+                  <td data-label="{{ 'conta.account.column_total' | t }}" class="conta-table__num">
+                    {{- order.total_net_amount | money -}}
+                  </td>
+                </tr>
+              {%- endfor -%}
+            </tbody>
+          </table>
+
+          {%- render 'conta-pagination', paginate: paginate -%}
+        {%- else -%}
+          <div class="conta-empty glass glass--card">
+            <p>{{ 'conta.account.orders_empty' | t }}</p>
+            <a class="button button--primary" href="{{ routes.all_products_collection_url }}">
+              {{- 'conta.account.orders_empty_cta' | t -}}
+            </a>
+          </div>
+        {%- endif -%}
+      {%- endpaginate -%}
+    </section>
+
+    <div class="conta-account__aside">
+      <section class="conta-card conta-card--surface glass glass--card" aria-labelledby="{{ details_title_id }}">
+        <h2 class="conta-section-title" id="{{ details_title_id }}">{{ 'conta.account.details_title' | t }}</h2>
+        <p class="conta-account__name">{{ customer.name | escape }}</p>
+        {%- if customer.email != blank -%}
+          <p class="conta-account__contact">{{ customer.email | escape }}</p>
+        {%- endif -%}
+        {%- if customer.phone != blank -%}
+          <p class="conta-account__contact">{{ customer.phone | escape }}</p>
+        {%- endif -%}
+      </section>
+
+      <section class="conta-card glass glass--card" aria-labelledby="{{ address_title_id }}">
+        <h2 class="conta-section-title" id="{{ address_title_id }}">{{ 'conta.account.default_address' | t }}</h2>
+        {%- if customer.default_address -%}
+          {%- render 'conta-address', address: customer.default_address -%}
+        {%- else -%}
+          <p class="conta-account__muted">{{ 'conta.account.no_address' | t }}</p>
+        {%- endif -%}
+        <p class="conta-account__address-link">
+          <a class="link" href="{{ routes.account_addresses_url }}">
+            {{- 'conta.account.manage_addresses' | t -}}
+          </a>
+          {%- if customer.addresses_count > 0 %}
+            <span class="conta-account__muted">({{ 'conta.account.addresses_count' | t: count: customer.addresses_count }})</span>
+          {%- endif -%}
+        </p>
+      </section>
+
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when '@app' -%}
+            {% render block %}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Minha conta",
+  "tag": "section",
+  "class": "section-main-account",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["customers/account"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Resumo da conta com a lista de pedidos. Os textos ficam nas traduções do tema (área conta)."
+    },
+    {
+      "type": "range",
+      "id": "orders_per_page",
+      "label": "Pedidos por página",
+      "min": 5,
+      "max": 20,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "header",
+      "content": "Espaçamento"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espaço acima",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espaço abaixo",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Minha conta"
+    }
+  ]
+}
+{% endschema %}

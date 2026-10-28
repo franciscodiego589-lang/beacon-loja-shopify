@@ -1,0 +1,112 @@
+/*
+  Beacon Labs · benefícios em cards de vidro (Liquid Glass) que reagem ao mouse.
+  Pedido do dono em 03/10/2026: "coloque o tema liquid glass aqui também nos benefícios, onde passo o
+  mouse e ele mexe". Decisão do dono que abre exceção à regra "conteúdo sólido, vidro só nos
+  controles" nesta grade (sections/produto-beneficios-pagina.liquid, .dp-benefits).
+
+  - Fundo: campo azul-claro com duas manchas de luz, para o vidro ter o que refratar (vidro sobre
+    branco liso não aparece).
+  - Card: branco translúcido com desfoque e saturação do fundo, fio de luz na borda e sombra suave.
+  - Mouse (só em aparelho com mouse): assets/beneficios-vidro.js grava --bv-x, --bv-y (posição do
+    ponteiro no card, em %) e --bv-rx, --bv-ry (inclinação, até 5 graus). O card sobe 4 px, inclina para
+    o lado do mouse e um reflexo de luz acompanha o ponteiro.
+  - Movimento reduzido: sem inclinação, sem subida e sem transição.
+  - Sem suporte a backdrop-filter: o card fica branco quase sólido (o texto continua legível).
+  Contraste: título tinta #081C2D e texto apoio #566472 sobre o card, que fica entre #F4F8FB e #FFFFFF.
+*/
+.dp-benefits.dp-benefits--vidro {
+  position: relative;
+  gap: 16px;
+  margin: 0;
+  padding: 24px;
+  border-radius: var(--radius-panel, 32px);
+  background:
+    radial-gradient(60% 80% at 12% 10%, rgba(120, 178, 230, 0.55) 0%, rgba(120, 178, 230, 0) 70%),
+    radial-gradient(55% 70% at 88% 90%, rgba(233, 173, 5, 0.28) 0%, rgba(233, 173, 5, 0) 70%),
+    var(--lg-field-claro, #ECF3F9);
+  isolation: isolate;
+}
+
+@media screen and (min-width: 750px) {
+  .dp-benefits.dp-benefits--vidro {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 28px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .dp-benefits.dp-benefits--vidro {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dp-benefits--vidro .dp-benefit {
+  --bv-x: 50%;
+  --bv-y: 0%;
+  --bv-rx: 0deg;
+  --bv-ry: 0deg;
+  --bv-sobe: 0px;
+
+  position: relative;
+  padding: 22px 22px 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-top: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-card, 22px);
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 10px 30px -12px rgba(8, 28, 45, 0.18);
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  backdrop-filter: blur(18px) saturate(1.6);
+  transform: perspective(900px) translateY(var(--bv-sobe)) rotateX(var(--bv-rx)) rotateY(var(--bv-ry));
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  will-change: transform;
+}
+
+/* Reflexo de luz que acompanha o mouse. */
+.dp-benefits--vidro .dp-benefit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(240px circle at var(--bv-x) var(--bv-y), rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0) 60%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.dp-benefits--vidro .dp-benefit__body {
+  position: relative;
+}
+
+.dp-benefits--vidro .dp-benefit__title {
+  color: var(--color-ink, #081C2D);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .dp-benefits--vidro .dp-benefit:hover {
+    --bv-sobe: -4px;
+
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.95),
+      0 18px 40px -14px rgba(8, 28, 45, 0.28);
+  }
+
+  .dp-benefits--vidro .dp-benefit:hover::before {
+    opacity: 1;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .dp-benefits--vidro .dp-benefit {
+    background: rgba(255, 255, 255, 0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-benefits--vidro .dp-benefit {
+    transform: none;
+    transition: none;
+  }
+}

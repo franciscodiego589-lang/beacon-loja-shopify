@@ -1,0 +1,184 @@
+/*
+  Beacon Labs · seção Artigo (sections/main-article.liquid)
+  Liquid Glass (spec 4.2, 8.3 e 8.5): fundo pelo ajuste (névoa, painel ou campo noite,
+  paginas-blog.css); botões de compartilhar em vidro fino sem desfoque; comentários em cartão de
+  vidro de conteúdo (preenchimento dentro do painel, vidro escuro no campo noite); divisórias
+  em ink a 0,12.
+*/
+
+.main-article__inner {
+  max-width: 900px;
+  margin-inline: auto;
+}
+
+.main-article__inner--normal {
+  max-width: 1100px;
+}
+
+.main-article__header {
+  margin-bottom: 24px;
+}
+
+.main-article__tag {
+  margin-bottom: 12px;
+}
+
+.main-article__title {
+  margin: 0 0 12px;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 32px;
+  line-height: 1.15;
+  color: var(--color-ink);
+}
+
+.main-article__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.main-article__meta-item + .main-article__meta-item::before {
+  content: "·";
+  margin-right: 12px;
+  color: var(--color-line);
+}
+
+.main-article__media {
+  margin-bottom: 28px;
+  aspect-ratio: 16 / 9;
+}
+
+.main-article__body {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--color-text);
+}
+
+.main-article__body :where(h2, h3) {
+  margin-top: 1.6em;
+  font-family: var(--font-heading-family);
+  color: var(--color-ink);
+}
+
+.main-article__body img {
+  border-radius: var(--radius-media);
+}
+
+/* ---------- Compartilhar ---------- */
+
+.main-article__share {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.main-article__share-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.main-article__share-list {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Compartilhar: círculos de 44 px em vidro funcional fino sem desfoque (.glass .glass--thin
+   .glass--interactive na marcação), ícone ink (6,206:1 no pior caso livre); hover a 0,70. */
+.main-article__share-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+}
+
+.main-article__share-link:hover {
+  color: var(--color-ink);
+}
+
+/* ---------- Comentários ---------- */
+
+.main-article__comments {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.main-article__comments-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 20px;
+  font-family: var(--font-heading-family);
+  font-size: 22px;
+  color: var(--color-ink);
+}
+
+.main-article__comments-count {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.main-article__comments-empty {
+  margin: 0 0 24px;
+  color: var(--color-text-muted);
+}
+
+.main-article__comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 0 0 32px;
+  padding: 0;
+  list-style: none;
+}
+
+/* Comentário: cartão de vidro de conteúdo (ou preenchimento dentro do painel; vidro escuro no
+   campo noite), raio 24 (20 no celular). Autor ink e data em apoio (5,860:1 no cartão). */
+.main-article__comment {
+  padding: 20px;
+  border-radius: var(--lg-radius-box, var(--radius-card));
+}
+
+.main-article__comment-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.main-article__comment-author {
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.main-article__comment-date {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.main-article__comment-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.main-article__comment-form {
+  padding-top: 8px;
+}

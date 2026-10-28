@@ -1,0 +1,118 @@
+{{ 'section-collection-chips.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Chips de subcategoria (maquete Categoria-Desktop/Mobile.dc.html, faixa "Subcategorias").
+  Os chips são os links de um menu do admin (Conteúdo > Menus):
+  - com "Usar o menu da própria coleção" ligado, procura primeiro um menu cujo identificador (handle)
+    seja igual ao da coleção aberta; assim cada categoria pode ter os seus chips;
+  - senão, usa o menu escolhido no ajuste da seção.
+  Chip da página atual: fundo na tinta (#081C2D), texto branco e aria-current="page" (link.current).
+  Sem menu com links, a seção não renderiza nada.
+  Redesenho v3 (spec 2.5 e emendas V6 e G4; alvo.css linhas 270 a 273 e 452): as fichas moram no
+  campo claro do topo da coleção (o invólucro da seção é pintado em section-collection-chips.css,
+  junto do banner). Cada ficha é vidro funcional fino SEM desfoque (.glass .glass--thin
+  .glass--interactive, sem .glass--blur); a atual é preenchimento na tinta (.lg-fill--ink). Todas
+  ficam numa linha só, com rolagem lateral em qualquer largura (nunca quebram em duas linhas).
+{%- endcomment -%}
+
+{%- liquid
+  assign chips_menu = section.settings.menu
+  if section.settings.prefer_collection_menu and collection != blank
+    assign handle_menu = linklists[collection.handle]
+    if handle_menu.links.size > 0
+      assign chips_menu = handle_menu
+    endif
+  endif
+
+  assign chips_all_label = section.settings.all_label
+  if chips_all_label == blank
+    assign chips_all_label = 'colecao.chips.all' | t
+  endif
+  assign chips_all_url = section.settings.all_url | default: routes.all_products_collection_url
+  assign chips_all_current = false
+  if request.path == chips_all_url
+    assign chips_all_current = true
+  endif
+-%}
+
+{%- if chips_menu.links.size > 0 -%}
+  <nav class="collection-chips page-width" aria-label="{{ 'colecao.chips.label' | t }}">
+    <ul class="collection-chips__list" role="list">
+      {%- if section.settings.show_all -%}
+        <li class="collection-chips__item">
+          <a
+            href="{{ chips_all_url | escape }}"
+            class="collection-chips__chip{% if chips_all_current %} collection-chips__chip--current lg-fill--ink{% else %} glass glass--thin glass--interactive{% endif %}"
+            {% if chips_all_current %}aria-current="page"{% endif %}
+          >
+            {{- chips_all_label | escape -}}
+          </a>
+        </li>
+      {%- endif -%}
+      {%- for link in chips_menu.links -%}
+        <li class="collection-chips__item">
+          <a
+            href="{{ link.url }}"
+            class="collection-chips__chip{% if link.current %} collection-chips__chip--current lg-fill--ink{% else %} glass glass--thin glass--interactive{% endif %}"
+            {% if link.current %}aria-current="page"{% endif %}
+          >
+            {{- link.title | escape -}}
+          </a>
+        </li>
+      {%- endfor -%}
+    </ul>
+  </nav>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Chips de subcategoria",
+  "tag": "section",
+  "class": "section-collection-chips",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu dos chips",
+      "info": "Cada link do menu vira um chip."
+    },
+    {
+      "type": "checkbox",
+      "id": "prefer_collection_menu",
+      "label": "Usar o menu da própria coleção quando existir",
+      "info": "Crie um menu com o mesmo identificador (handle) da coleção. Exemplo: coleção \"imunidade\" e menu \"imunidade\".",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Chip \"Todos\""
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all",
+      "label": "Mostrar o chip \"Todos\" no começo",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "all_label",
+      "label": "Texto do chip",
+      "info": "Vazio usa o padrão \"Todos\"."
+    },
+    {
+      "type": "url",
+      "id": "all_url",
+      "label": "Link do chip",
+      "info": "Vazio usa a coleção com todos os produtos."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Chips de subcategoria"
+    }
+  ]
+}
+{% endschema %}

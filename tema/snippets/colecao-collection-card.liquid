@@ -1,0 +1,67 @@
+{%- comment -%}
+  Card de coleção (usado por sections/main-list-collections.liquid).
+  Parâmetros:
+  - collection: coleção (obrigatório)
+  - show_count: mostra "[N] produtos" (padrão true)
+  - lazy: carregamento preguiçoso da foto (padrão true; use false nos primeiros cards)
+  - sizes: atributo sizes da foto (opcional)
+
+  Etapa 8e, leva D (03/10/2026): o card é um bloco sólido no tom do fundo das fotos (#ECF3F9, raio
+  --radius-card), sem vidro, sem borda e sem sombra, como o card de produto (component-product-card.css,
+  alvo.css linhas 174 a 187). O card inteiro é um link: foto inteira em cima (quadrada, sem recorte), nome e
+  quantidade de produtos embaixo. O vidro da v2 (.glass .glass--card .glass--interactive) saiu; o anel de foco
+  duplo do sistema vem de .lg-focus-dual.
+
+  Foto: collection.featured_image. Segundo a documentação da Shopify (shopify.dev, objeto collection,
+  consultado em 03/10/2026), é a imagem da coleção e, quando a coleção não tem imagem, a foto de destaque do
+  primeiro produto dela; se esse produto não tiver foto, é nil. É a mesma propriedade das coleções sugeridas da
+  busca e do carrinho vazio. Nenhuma imagem nova: o tema só mostra foto que já está na loja. Antes o card lia
+  collection.image, que não tem essa reserva, e as coleções sem imagem mostravam o desenho de bolsas da
+  Shopify (placeholder). O placeholder_svg_tag da Shopify só aparece agora quando nem a coleção nem o primeiro
+  produto têm foto.
+
+  Classe da foto (regra S1: capture e escape): sem imagem própria da coleção, a foto é a do primeiro produto, e a
+  classe vem de snippets/v3-classe-foto (lg-pote-solto para pote de cápsula, v3-foto-quadro para o resto); com
+  imagem própria da coleção, v3-foto-quadro (a foto fica inteira, sem máscara). O alt é vazio: o nome da coleção
+  está ao lado, dentro do mesmo link.
+{%- endcomment -%}
+{%- if collection != blank -%}
+  {%- liquid
+    assign card_sizes = sizes | default: '(min-width: 1440px) 322px, (min-width: 990px) calc((100vw - 232px) / 4), (min-width: 750px) calc((100vw - 96px) / 3), calc((100vw - 48px) / 2)'
+    assign card_loading = 'lazy'
+    if lazy == false
+      assign card_loading = 'eager'
+    endif
+
+    assign card_image = collection.featured_image
+    assign card_photo_class = 'v3-foto-quadro'
+    if card_image != blank and collection.image == blank
+      assign card_first_product = collection.products.first
+      if card_first_product != blank
+        capture card_photo_class
+          render 'v3-classe-foto', product: card_first_product
+        endcapture
+        assign card_photo_class = card_photo_class | strip
+      endif
+    endif
+    assign card_photo_class = card_photo_class | escape
+    assign card_image_class = 'colecao-collection-card__image ' | append: card_photo_class
+  -%}
+  <a href="{{ collection.url }}" class="colecao-collection-card lg-focus-dual"{% if show_count != false %} aria-describedby="{{ 'colecao-collection-card-' | append: collection.id }}"{% endif %}>
+    <span class="colecao-collection-card__media">
+      {%- if card_image != blank -%}
+        {{ card_image | image_url: width: 640 | image_tag: widths: '240, 320, 480, 640', sizes: card_sizes, loading: card_loading, alt: '', class: card_image_class }}
+      {%- else -%}
+        {{ 'collection-1' | placeholder_svg_tag: 'colecao-collection-card__placeholder' }}
+      {%- endif -%}
+    </span>
+    <span class="colecao-collection-card__body">
+      <span class="colecao-collection-card__title">{{ collection.title | escape }}</span>
+      {%- if show_count != false -%}
+        <span class="colecao-collection-card__count" id="{{ 'colecao-collection-card-' | append: collection.id }}">
+          {{- 'colecao.list.count' | t: count: collection.all_products_count -}}
+        </span>
+      {%- endif -%}
+    </span>
+  </a>
+{%- endif -%}

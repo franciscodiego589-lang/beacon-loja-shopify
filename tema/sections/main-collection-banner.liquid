@@ -1,0 +1,137 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-collection-banner.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Topo da coleção (redesenho v3; spec 2.5; alvo.css linhas 263 a 269 e 450 a 451, colecao.html).
+  Sobre o campo claro (#ECF3F9, pintado no invólucro da seção em section-main-collection-banner.css,
+  sem emenda com o cabeçalho acima nem com as fichas abaixo): trilha "Início / coleção", título
+  (h1), contagem de produtos e, se a coleção tiver, a descrição. As fichas de categoria vêm logo
+  depois, da seção collection-chips, no mesmo campo.
+  - Título: collection.title. Descrição: collection.description (texto do admin).
+  - Contagem: collection.all_products_count, o total da coleção sem filtro. Quem muda com o filtro
+    é a contagem da barra da grade, que a seção da grade troca a cada busca; este topo não é
+    trocado, então não pode mostrar o número filtrado. Coleção vazia não mostra a linha.
+  - Imagem: a do ajuste da seção; se vazia, a imagem da coleção. Só entra quando é panorâmica
+    (proporção de 4:1 ou mais larga): vira uma faixa de largura total entre a trilha e o título,
+    na proporção do próprio arquivo (largura 100%, altura automática: sem corte e sem distorção;
+    foto inteira). É o caso da faixa da coleção de ofertas (2556 × 478, 5,35:1). Imagem de outra
+    proporção não aparece: o desenho do topo não tem lugar para ela e cortá-la fere a regra das
+    fotos inteiras.
+  A caixa de vidro e o fundo da caixa da versão anterior saíram: o topo é só texto sobre o campo.
+{%- endcomment -%}
+
+{%- liquid
+  assign banner_image = nil
+  if section.settings.show_image
+    assign banner_image = section.settings.image | default: collection.image
+  endif
+
+  assign banner_wide = false
+  if banner_image != blank
+    if banner_image.aspect_ratio >= 4
+      assign banner_wide = true
+    endif
+  endif
+
+  assign show_description = false
+  if section.settings.show_description and collection.description != blank
+    assign show_description = true
+  endif
+-%}
+
+<div class="collection-banner page-width">
+  {%- if section.settings.show_breadcrumb -%}
+    {% render 'colecao-breadcrumb',
+      current: collection.title,
+      parent_label: section.settings.breadcrumb_parent_label,
+      parent_url: section.settings.breadcrumb_parent_url,
+      class: 'collection-banner__breadcrumb'
+    %}
+  {%- endif -%}
+
+  {%- if banner_wide -%}
+    {%- assign banner_strip_alt = banner_image.alt | default: collection.title -%}
+    <div class="collection-banner__strip">
+      {{ banner_image | image_url: width: 2400 | image_tag: widths: '375, 750, 1100, 1500, 1920, 2400', sizes: '(min-width: 1248px) 1200px, (min-width: 761px) calc(100vw - 48px), calc(100vw - 40px)', loading: 'eager', fetchpriority: 'high', alt: banner_strip_alt, class: 'collection-banner__strip-image' }}
+    </div>
+  {%- endif -%}
+
+  <div class="collection-banner__head">
+    <h1 class="collection-banner__title" id="CollectionTitle-{{ section.id }}">{{ collection.title | escape }}</h1>
+    {%- if collection.all_products_count > 0 -%}
+      <p class="collection-banner__count">{{ 'colecao.grid.count' | t: count: collection.all_products_count }}</p>
+    {%- endif -%}
+    {%- if show_description -%}
+      <div class="collection-banner__description rte">{{ collection.description }}</div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Banner da categoria",
+  "tag": "section",
+  "class": "section-collection-banner",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "O título e a descrição vêm do cadastro da coleção no admin (Produtos > Coleções). A contagem de produtos é automática."
+    },
+    {
+      "type": "header",
+      "content": "Trilha de navegação"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumb",
+      "label": "Mostrar trilha (Início / categoria)",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "breadcrumb_parent_label",
+      "label": "Nível intermediário: texto",
+      "info": "Opcional. Exemplo: Benefícios. Só aparece com o link preenchido."
+    },
+    {
+      "type": "url",
+      "id": "breadcrumb_parent_url",
+      "label": "Nível intermediário: link"
+    },
+    {
+      "type": "header",
+      "content": "Conteúdo"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Mostrar descrição da coleção",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Imagem"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Mostrar imagem",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagem do banner",
+      "info": "Opcional. Vazio usa a imagem da coleção. Só aparece se for panorâmica (proporção de 4:1 ou mais larga, por exemplo 2556 × 478 px): vira uma faixa de largura total acima do título, sem corte."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner da categoria"
+    }
+  ]
+}
+{% endschema %}

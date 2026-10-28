@@ -1,0 +1,110 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-list-collections.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Lista de todas as coleções da loja (/collections). Sem maquete própria na referência
+  (as pranchetas cobrem a categoria e o produto, não esta página): a seção segue a linguagem
+  do topo da coleção, da busca e da ajuda e a do card de produto.
+
+  "Coleções escolhidas" (ajuste collection_list) deixa o lojista curar a ordem; vazio,
+  usa collections (todas as coleções publicadas, em ordem alfabética: shopify.dev,
+  "list-collections", consultado em 27/09/2026).
+  Sem nenhuma coleção, a seção não renderiza nada.
+
+  Etapa 8e, leva D (03/10/2026): a página saiu da linguagem da v2 (grade sobre o campo maré, com os cards
+  em vidro de conteúdo). Agora começa pelo topo em campo claro de ponta a ponta (.pb-topo, paginas-blog.css):
+  trilha única (snippet colecao-breadcrumb) e título de 56 px (36 px até 760 px), a mesma linguagem da
+  coleção, da busca e das páginas de texto. O "Título" do ajuste é o h1 e o último item da trilha; sem ele
+  vale o título da página (page_title). A grade vem 104 px (68 px no celular) abaixo do topo e os cards são
+  blocos sólidos #ECF3F9 com a foto inteira (snippets/colecao-collection-card.liquid). O recuo de baixo da
+  seção saiu: o vão até o rodapé é o da margem do .main-content::after (104 px; 68 px no celular).
+{%- endcomment -%}
+
+{%- liquid
+  if section.settings.collection_list.count > 0
+    assign list_collections = section.settings.collection_list
+  else
+    assign list_collections = collections
+  endif
+
+  assign list_heading = section.settings.heading
+  if list_heading == blank
+    assign list_heading = page_title
+  endif
+-%}
+
+{%- if list_collections.size > 0 -%}
+  <div class="colecao-list">
+    <div class="colecao-list__topo pb-topo">
+      <div class="page-width">
+        {% render 'colecao-breadcrumb', current: list_heading, class: 'pb-topo__trilha' %}
+
+        <div class="pb-topo__corpo">
+          <h1 class="colecao-list__heading pb-topo__titulo">{{ list_heading | escape }}</h1>
+          {%- if section.settings.text != blank -%}
+            <div class="colecao-list__text pb-topo__texto rte">{{ section.settings.text }}</div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+
+    <div class="page-width">
+      <ul class="grid colecao-list__grid" role="list">
+        {%- for collection in list_collections -%}
+          {%- liquid
+            assign card_lazy = true
+            if forloop.index <= 4
+              assign card_lazy = false
+            endif
+          -%}
+          <li class="colecao-list__item">
+            {% render 'colecao-collection-card', collection: collection, show_count: section.settings.show_count, lazy: card_lazy %}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Lista de coleções",
+  "tag": "section",
+  "class": "section-main-list-collections",
+  "enabled_on": {
+    "templates": ["list-collections"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Nossas categorias"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto de apoio"
+    },
+    {
+      "type": "collection_list",
+      "id": "collection_list",
+      "label": "Coleções escolhidas",
+      "info": "Vazio mostra todas as coleções publicadas, em ordem alfabética.",
+      "limit": 50
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Mostrar quantidade de produtos",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Lista de coleções"
+    }
+  ]
+}
+{% endschema %}

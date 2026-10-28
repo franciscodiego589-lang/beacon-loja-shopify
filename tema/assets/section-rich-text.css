@@ -1,0 +1,84 @@
+/*
+  Beacon Labs · seção Texto com botão (sections/rich-text.liquid)
+  Coluna de leitura de 760 px (estreita) ou 1080 px (larga), alinhada à esquerda ou ao centro.
+
+  Etapa 8e, leva C (03/10/2026): "Em bloco claro" (.rich-text--boxed) põe a coluna num bloco sólido #ECF3F9
+  (.pb-bloco, paginas-blog.css: sem borda, sem sombra), de raio --radius-tile, com a largura da coluna da
+  página e o texto no meio dela. Antes, o fundo "Cinza-azulado claro" ligava um painel de vidro da v2
+  (branco a 0,50, recuo de 24 px e raio 40) que saía da coluna. Contraste sobre o bloco: tinta 15,44:1 e
+  apoio #566472 5,42:1.
+*/
+
+/* Sem "Em bloco claro" o invólucro não faz nada; com ele, é o bloco. */
+.rich-text--boxed .rich-text__bloco {
+  padding: 40px 20px;
+  border-radius: var(--radius-tile);
+}
+
+@media screen and (min-width: 761px) {
+  .rich-text--boxed .rich-text__bloco {
+    padding: 64px 48px;
+  }
+}
+
+.rich-text__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 760px;
+}
+
+.rich-text--wide .rich-text__inner {
+  max-width: 1080px;
+}
+
+.rich-text--center .rich-text__inner {
+  align-items: center;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.rich-text--center .rich-text__actions {
+  justify-content: center;
+}
+
+.rich-text__heading--medium {
+  font-size: 24px;
+}
+
+.rich-text__heading--large {
+  font-size: 30px;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.rich-text__text {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.rich-text__apps {
+  width: 100%;
+  margin-top: 12px;
+  text-align: left;
+}
+
+.rich-text__app + .rich-text__app {
+  margin-top: 20px;
+}
+
+@media screen and (min-width: 990px) {
+  .rich-text__heading--medium {
+    font-size: 32px;
+  }
+
+  .rich-text__heading--large {
+    font-size: 48px;
+  }
+
+  .rich-text__text {
+    font-size: 17px;
+  }
+}

@@ -1,0 +1,73 @@
+{%- comment -%}
+  Página do vale-presente. Não pode ser template JSON (documentação oficial da Shopify:
+  "This template can't be a JSON template") e é servida no domínio checkout.shopify.com,
+  por isso usa {% layout none %} e monta o próprio <html>, sem cabeçalho nem rodapé do tema.
+  Conteúdo: só o objeto gift_card (código, saldo, validade) e um link para a loja.
+  Sem QR code nem carteira digital (Apple Wallet) nesta primeira versão: ver pendências.
+  Liquid Glass: carrega assets/liquid-glass.css logo depois de base.css (como os layouts do
+  tema); o cartão é vidro de conteúdo (.glass .glass--card) sobre a névoa, e o bloco do código
+  é preenchimento (.glass-fill), nunca vidro sobre vidro.
+{%- endcomment -%}
+{% layout none %}
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title>{{ 'paginas_blog.gift_card.title' | t }} · {{ shop.name | escape }}</title>
+
+    {% render 'css-variables' %}
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'liquid-glass.css' | asset_url | stylesheet_tag }}
+    {{ 'section-gift-card.css' | asset_url | stylesheet_tag }}
+  </head>
+  <body class="gift-card-page">
+    {%- liquid
+      assign gc_balance_money = gift_card.balance | money
+      assign gc_initial_money = gift_card.initial_value | money
+      assign gc_expires = ''
+      unless gift_card.expires_on == blank
+        assign gc_expires = gift_card.expires_on | date: '%d/%m/%Y'
+      endunless
+    -%}
+    <main class="gift-card">
+      <div class="gift-card__card glass glass--card">
+        <a href="{{ routes.root_url }}" class="gift-card__logo">
+          <img
+            src="{{ 'logo-beacon-labs.svg' | asset_url }}"
+            alt="{{ shop.name | escape }}"
+            width="150"
+            height="59"
+          >
+        </a>
+
+        {%- if gift_card.enabled == false -%}
+          <p class="gift-card__status gift-card__status--off">{{ 'paginas_blog.gift_card.disabled' | t }}</p>
+        {%- elsif gift_card.expired -%}
+          <p class="gift-card__status gift-card__status--off">{{ 'paginas_blog.gift_card.expired' | t }}</p>
+        {%- endif -%}
+
+        <p class="gift-card__eyebrow">{{ 'paginas_blog.gift_card.eyebrow' | t }}</p>
+        <p class="gift-card__balance">{{ gc_balance_money }}</p>
+
+        {%- if gift_card.balance != gift_card.initial_value -%}
+          <p class="gift-card__initial">{{ 'paginas_blog.gift_card.initial_value' | t: amount: gc_initial_money }}</p>
+        {%- endif -%}
+
+        <div class="gift-card__code-block glass-fill">
+          <span class="gift-card__code-label">{{ 'paginas_blog.gift_card.code_label' | t }}</span>
+          <p class="gift-card__code">{{ gift_card.code | escape }}</p>
+        </div>
+
+        {%- unless gc_expires == blank -%}
+          <p class="gift-card__expiry">{{ 'paginas_blog.gift_card.expires_on' | t: date: gc_expires }}</p>
+        {%- endunless -%}
+
+        <a href="{{ routes.root_url }}" class="button button--primary button--large gift-card__cta">
+          {{- 'paginas_blog.gift_card.shop_button' | t -}}
+        </a>
+      </div>
+    </main>
+  </body>
+</html>

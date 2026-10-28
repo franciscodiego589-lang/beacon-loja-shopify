@@ -1,0 +1,366 @@
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-image-with-text.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Imagem com texto: imagem de um lado; selo, título, texto, lista com ícones (blocos)
+  e botão do outro. Lado da imagem configurável. No celular a imagem vem primeiro.
+  Opção "em cartão": o fundo escolhido vai para um cartão arredondado dentro da página,
+  como nos blocos da página de qualidade da referência.
+  Sem imagem, título, texto e itens com texto, a seção não renderiza nada. Item sem texto não
+  aparece.
+
+  Etapa 8e, leva C (03/10/2026): o cartão é o bloco sólido #ECF3F9 (.pb-bloco, paginas-blog.css), sem borda e
+  sem sombra, e não mais o cartão de vidro da v2 (.glass .glass--card). Com o fundo azul-marinho ele segue
+  sendo o campo noite. A linha pequena acima do título é a v3 (.v3-eyebrow, #8A0503); no campo noite, a ficha.
+{%- endcomment -%}
+
+{%- liquid
+  assign iwt_image = section.settings.image
+
+  assign iwt_has_button = false
+  if section.settings.button_label != blank and section.settings.button_link != blank
+    assign iwt_has_button = true
+  endif
+
+  assign iwt_item_count = 0
+  for block in section.blocks
+    if block.settings.text != blank
+      assign iwt_item_count = iwt_item_count | plus: 1
+    endif
+  endfor
+
+  assign iwt_has_content = false
+  if iwt_image != blank or section.settings.heading != blank or section.settings.text != blank or iwt_item_count > 0
+    assign iwt_has_content = true
+  endif
+
+  assign iwt_loading = 'lazy'
+  unless section.index > 2
+    assign iwt_loading = 'eager'
+  endunless
+
+  assign iwt_alt = iwt_image.alt | default: section.settings.heading | default: shop.name
+
+  assign iwt_outer_scheme = section.settings.color_scheme
+  assign iwt_box_scheme = ''
+  if section.settings.boxed
+    assign iwt_outer_scheme = 'default'
+    assign iwt_box_scheme = ' pb-scheme--' | append: section.settings.color_scheme
+    # A caixa é o bloco claro sólido (#ECF3F9); no esquema escuro, é o campo noite, só com a cor de
+    # base: a arte dos raios virou o elemento de LCP na medição de 28/09/2026 (spec 7.1).
+    if section.settings.color_scheme == 'ink'
+      assign iwt_box_scheme = iwt_box_scheme | append: ' lg-field--noite'
+    else
+      assign iwt_box_scheme = iwt_box_scheme | append: ' pb-bloco'
+    endif
+  endif
+
+  assign iwt_ink = false
+  if section.settings.color_scheme == 'ink'
+    assign iwt_ink = true
+  endif
+
+  assign iwt_media_class = 'image-with-text__media pb-media pb-media--' | append: section.settings.image_ratio
+  if section.settings.image_shape == 'asymmetric'
+    assign iwt_media_class = iwt_media_class | append: ' pb-media--asymmetric'
+  endif
+-%}
+
+{%- if iwt_has_content -%}
+  <div class="image-with-text image-with-text--image-{{ section.settings.image_position }} pb-scheme--{{ iwt_outer_scheme }}{% render 'paginas-blog-surface', scheme: iwt_outer_scheme %} pb-pad--{{ section.settings.padding }}">
+    <div class="page-width">
+      <div class="image-with-text__grid image-with-text__grid--{{ section.settings.vertical_align }}{% if section.settings.boxed %} image-with-text__grid--boxed{% endif %}{{ iwt_box_scheme }}">
+        <div class="{{ iwt_media_class }}">
+          {%- if iwt_image != blank -%}
+            {{ iwt_image | image_url: width: 1400 | image_tag: widths: '375, 550, 750, 900, 1100, 1400', sizes: '(min-width: 1440px) 620px, (min-width: 990px) calc(50vw - 100px), calc(100vw - 32px)', loading: iwt_loading, alt: iwt_alt, class: 'image-with-text__image' }}
+          {%- else -%}
+            {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg image-with-text__placeholder' }}
+          {%- endif -%}
+        </div>
+
+        <div class="image-with-text__content">
+          {%- if section.settings.eyebrow != blank -%}
+            {%- if iwt_ink -%}
+              <span class="chip image-with-text__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- else -%}
+              <span class="v3-eyebrow image-with-text__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+            {%- endif -%}
+          {%- endif -%}
+
+          {%- if section.settings.heading != blank -%}
+            <h2 class="image-with-text__heading">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+
+          {%- if section.settings.text != blank -%}
+            <div class="image-with-text__text rte">{{ section.settings.text }}</div>
+          {%- endif -%}
+
+          {%- if iwt_item_count > 0 -%}
+            <ul class="image-with-text__items" role="list">
+              {%- for block in section.blocks -%}
+                {%- if block.settings.text != blank -%}
+                  <li class="image-with-text__item" {{ block.shopify_attributes }}>
+                    {%- if block.settings.icon != 'none' -%}
+                      <span class="image-with-text__item-icon">
+                        {%- render 'icon', name: block.settings.icon, size: 22 -%}
+                      </span>
+                    {%- endif -%}
+                    <span class="image-with-text__item-text">{{ block.settings.text }}</span>
+                  </li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+
+          {%- if iwt_has_button -%}
+            <div class="pb-actions image-with-text__actions">
+              <a href="{{ section.settings.button_link }}" class="button button--large button--{{ section.settings.button_style }}">
+                {{- section.settings.button_label | escape -}}
+                {%- render 'icon', name: 'arrow-right', size: 18 -%}
+              </a>
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Imagem com texto",
+  "tag": "section",
+  "class": "section-image-with-text",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagem",
+      "info": "Preencha o texto alternativo da imagem na biblioteca de arquivos."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Lado da imagem no computador",
+      "options": [
+        {
+          "value": "left",
+          "label": "Esquerda"
+        },
+        {
+          "value": "right",
+          "label": "Direita"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Proporção da imagem",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "Original"
+        },
+        {
+          "value": "square",
+          "label": "Quadrada (1:1)"
+        },
+        {
+          "value": "portrait",
+          "label": "Retrato (4:5)"
+        },
+        {
+          "value": "landscape",
+          "label": "Paisagem (3:2)"
+        }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "select",
+      "id": "image_shape",
+      "label": "Cantos da imagem",
+      "options": [
+        {
+          "value": "rounded",
+          "label": "Arredondados"
+        },
+        {
+          "value": "asymmetric",
+          "label": "Assimétricos"
+        }
+      ],
+      "default": "asymmetric"
+    },
+    {
+      "type": "header",
+      "content": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto do botão"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Link do botão"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Estilo do botão",
+      "options": [
+        {
+          "value": "dark",
+          "label": "Azul-marinho"
+        },
+        {
+          "value": "primary",
+          "label": "Azul"
+        },
+        {
+          "value": "accent",
+          "label": "Amarelo-limão"
+        },
+        {
+          "value": "secondary",
+          "label": "Contorno"
+        }
+      ],
+      "default": "dark"
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "vertical_align",
+      "label": "Alinhamento vertical do texto",
+      "options": [
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "top",
+          "label": "Topo"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "options": [
+        {
+          "value": "default",
+          "label": "Branco"
+        },
+        {
+          "value": "surface",
+          "label": "Cinza-azulado claro"
+        },
+        {
+          "value": "surface-2",
+          "label": "Azul claro"
+        },
+        {
+          "value": "ink",
+          "label": "Azul-marinho"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "checkbox",
+      "id": "boxed",
+      "label": "Mostrar em cartão",
+      "info": "Põe o conteúdo num bloco sólido arredondado dentro da coluna: azul claro (ou azul-marinho, no fundo azul-marinho). Cinza-azulado claro e Azul claro valem como Branco.",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        }
+      ],
+      "default": "normal"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Item com ícone",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            { "value": "none", "label": "Sem ícone" },
+            { "value": "check-circle", "label": "Confirmação" },
+            { "value": "badge-check", "label": "Selo de verificado" },
+            { "value": "shield-check", "label": "Escudo" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "clock", "label": "Relógio" },
+            { "value": "truck", "label": "Entrega" },
+            { "value": "bag", "label": "Sacola" },
+            { "value": "lock", "label": "Cadeado" },
+            { "value": "refresh", "label": "Troca" },
+            { "value": "search", "label": "Lupa" },
+            { "value": "bulb", "label": "Lâmpada" },
+            { "value": "sparkles", "label": "Brilho" },
+            { "value": "star", "label": "Estrela" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "user", "label": "Pessoa" },
+            { "value": "message", "label": "Mensagem" }
+          ],
+          "default": "check-circle"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "Texto"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Imagem com texto"
+    }
+  ]
+}
+{% endschema %}

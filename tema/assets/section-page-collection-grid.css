@@ -1,0 +1,83 @@
+/* Beacon Labs · seção Grade de coleções ou produtos (sections/page-collection-grid.liquid) */
+
+.page-collection-grid__heading {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 26px;
+  color: var(--color-ink);
+}
+
+.page-collection-grid__grid {
+  --grid-columns-mobile: 2;
+  --grid-columns-tablet: 2;
+  --grid-columns-desktop: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns-mobile), minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .page-collection-grid__grid {
+    grid-template-columns: repeat(var(--grid-columns-tablet), minmax(0, 1fr));
+    gap: 20px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .page-collection-grid__grid {
+    grid-template-columns: repeat(var(--grid-columns-desktop), minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+.page-collection-grid__collection {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--color-text);
+}
+
+.page-collection-grid__media {
+  margin-bottom: 12px;
+}
+
+.page-collection-grid__body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.page-collection-grid__title {
+  font-family: var(--font-heading-family);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--color-ink);
+}
+
+.page-collection-grid__count {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.page-collection-grid__arrow {
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.page-collection-grid__editor-empty {
+  margin: 0;
+  padding: 24px;
+  border: 1px dashed var(--color-line);
+  border-radius: var(--radius-card);
+  color: var(--color-text-muted);
+  text-align: center;
+}

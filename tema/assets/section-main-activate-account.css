@@ -1,0 +1,14 @@
+/*
+  Beacon Labs · section-main-activate-account.css (área conta)
+
+  Ativação de conta: dois campos de senha e dois botões ("Ativar conta" e
+  "Recusar convite"). Layout geral em conta-auth.css; campos em conta-base.css.
+*/
+
+.conta-activate__form .conta-field + .conta-field {
+  margin-top: 20px;
+}
+
+.conta-activate__form .conta-auth__actions {
+  gap: 8px;
+}

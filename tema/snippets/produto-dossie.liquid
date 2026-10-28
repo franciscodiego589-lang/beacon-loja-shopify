@@ -1,0 +1,98 @@
+{%- comment -%}
+  Área produto. Bloco "dossie" da seção main-product: dois botões em pílula, "Benefícios" e
+  "Dossiê técnico". Pedido do dono em 29/09/2026, no modelo do catálogo dele
+  (catalogo.lemoncapsauto.com, lido em navegador em 29/09/2026): cada botão é um LINK que abre
+  uma página própria do produto, não um painel.
+
+  Endereços (modelo alternativo do produto, parâmetro ?view=; shopify.dev, "Alternate
+  templates", consultado em 29/09/2026):
+  - {{ product.url }}?view=beneficios  ->  templates/product.beneficios.json
+                                          (sections/produto-beneficios-pagina.liquid)
+  - {{ product.url }}?view=dossie      ->  templates/product.dossie.json
+                                          (sections/produto-dossie-pagina.liquid)
+
+  Parâmetros:
+  - product: o produto
+  - shopify_attributes: block.shopify_attributes
+  - design_mode: request.design_mode (nota do editor quando não há dado)
+
+  Dados (metafields do produto; as duas definições de metaobjeto são publishable, e entrada em
+  rascunho devolve nil no Liquid):
+  - beacon.dossie: metaobjeto "dossie" (resumo, composicao, modo_de_uso, advertencias,
+    ingredientes, fabricante, laudos, armazenamento, alegacoes_nutricionais, fonte, data_consulta).
+  - beacon.insumos: lista de metaobjetos "insumo_dossie".
+  - beacon.conteudo: itens "Benefícios" e "Sobre ..." (texto livre do site).
+  Cada botão só aparece quando a página dele tem o que mostrar.
+
+  Em 30/09/2026 o dono pediu o dossiê e os benefícios "nessa página principal", uma seção
+  embaixo da outra, e os dois botões passaram a rolar até as seções embutidas no modelo do
+  produto (templates/product.json, ids "beneficios" e "dossie"). Em 02/10/2026 (redesenho v3,
+  emenda 26, Ruling 28) o dono clicou em "Dossiê técnico" e o clique só rolava a página, uns
+  4.000 px (7.400 px no celular) até o bloco; os dois botões voltaram a abrir as páginas próprias
+  ?view=beneficios e ?view=dossie, na MESMA aba. As seções embutidas continuam no modelo do
+  produto. Só "Documentação" abre em NOVA ABA (texto escondido para leitor de tela).
+  - Documentação: página da loja com handle "documentacao"; o botão só aparece com a página
+    publicada (página oculta devolve vazio no Liquid).
+  Sem JavaScript: links comuns. O painel lateral e o JS antigo (assets/produto-dossie.js,
+  snippets/produto-dossie-insumo.liquid) deixaram de ser usados por este bloco.
+{%- endcomment -%}
+{%- liquid
+  assign dossie = product.metafields.beacon.dossie.value
+  assign insumos_lista = product.metafields.beacon.insumos.value
+  assign conteudo = product.metafields.beacon.conteudo.value
+
+  assign tem_insumos = false
+  for insumo in insumos_lista
+    if insumo != blank and insumo.nome.value != blank
+      assign tem_insumos = true
+      break
+    endif
+  endfor
+
+  assign tem_beneficios_texto = false
+  for bloco in conteudo
+    if bloco.titulo == 'Benefícios' or bloco.titulo contains 'Sobre'
+      assign tem_beneficios_texto = true
+      break
+    endif
+  endfor
+
+  assign tem_dossie = false
+  if dossie != blank
+    if dossie.resumo.value != blank or dossie.composicao.value != blank or dossie.modo_de_uso.value != blank or dossie.advertencias.value != blank or dossie.ingredientes.value != blank
+      assign tem_dossie = true
+    endif
+  endif
+
+  assign doc_page = pages['documentacao']
+
+  assign mostra_beneficios = false
+  if tem_insumos or tem_beneficios_texto
+    assign mostra_beneficios = true
+  endif
+-%}
+{%- if mostra_beneficios or tem_dossie -%}
+  {{ 'component-produto-dossie.css' | asset_url | stylesheet_tag }}
+  {{ 'component-botoes-vivos.css' | asset_url | stylesheet_tag }}
+  <nav class="main-product__block produto-dossie" aria-label="{{ 'produto.dossie.pills_label' | t }}" {{ shopify_attributes }}>
+    <ul class="produto-dossie__pills produto-dossie__pills--vivos" role="list">
+      {%- if mostra_beneficios -%}
+        <li>
+          <a class="produto-dossie__pill produto-dossie__pill--beneficios" href="{{ product.url }}?view=beneficios">{{ 'produto.dossie.pill_benefits' | t }}</a>
+        </li>
+      {%- endif -%}
+      {%- if tem_dossie -%}
+        <li>
+          <a class="produto-dossie__pill produto-dossie__pill--dossie" href="{{ product.url }}?view=dossie">{{ 'produto.dossie.pill_dossier' | t }}</a>
+        </li>
+      {%- endif -%}
+      {%- if doc_page.content != blank -%}
+        <li>
+          <a class="produto-dossie__pill produto-dossie__pill--docs" href="{{ doc_page.url }}" target="_blank" rel="noopener">{{ 'produto.dossie.pill_docs' | t }}<span class="visually-hidden"> ({{ 'produto.dossie.new_tab' | t }})</span></a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- elsif design_mode -%}
+  <p class="main-product__block main-product__editor-note" {{ shopify_attributes }}>{{ 'produto.editor.empty' | t: field: 'beacon.dossie / beacon.insumos' }}</p>
+{%- endif -%}

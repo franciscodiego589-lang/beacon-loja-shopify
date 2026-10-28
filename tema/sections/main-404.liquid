@@ -1,0 +1,126 @@
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-404.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Página não encontrada: mensagem e busca, centralizadas.
+  Sem objeto sugerido pela Shopify para este template (documentação oficial): o conteúdo
+  é só texto, um campo de busca e um botão para voltar à loja.
+
+  Etapa 8e, item 6 (03/10/2026): o fundo padrão passou de "Azul claro" (painel de vidro da v2, que
+  saía 96 px da coluna de 1200 px, nascia colado na base da cápsula e punha o campo e os botões
+  dentro de outra moldura) para "Branco": a mensagem fica direto na página branca, na coluna de
+  480 px, e a bandeja clara do cabeçalho (section-header.css) dá o respiro sob a cápsula.
+{%- endcomment -%}
+
+{%- liquid
+  assign nf_heading = section.settings.heading
+  if nf_heading == blank
+    assign nf_heading = 'paginas_blog.not_found.heading' | t
+  endif
+
+  assign nf_text = section.settings.text
+  if nf_text == blank
+    assign nf_text = 'paginas_blog.not_found.text' | t
+  endif
+-%}
+
+<div class="main-404 pb-scheme--{{ section.settings.color_scheme }}{% render 'paginas-blog-surface', scheme: section.settings.color_scheme %} pb-pad--{{ section.settings.padding }}">
+  <div class="page-width">
+    <div class="main-404__inner">
+      <span class="v3-eyebrow main-404__eyebrow">{{ 'paginas_blog.not_found.eyebrow' | t }}</span>
+
+      {%- render 'icon', name: 'search', size: 32, class: 'main-404__icon' -%}
+
+      <h1 class="main-404__heading">{{ nf_heading | escape }}</h1>
+      <p class="main-404__text">{{ nf_text | escape }}</p>
+
+      {%- if section.settings.show_search -%}
+        <form action="{{ routes.search_url }}" method="get" role="search" class="main-404__search">
+          <label for="NotFoundSearch-{{ section.id }}" class="visually-hidden">{{ 'fundacao.search.label' | t }}</label>
+          <input
+            type="search"
+            id="NotFoundSearch-{{ section.id }}"
+            class="main-404__search-input"
+            name="q"
+            placeholder="{{ 'fundacao.search.placeholder' | t }}"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            enterkeyhint="search"
+          >
+          <input type="hidden" name="options[prefix]" value="last">
+          <button type="submit" class="main-404__search-submit" aria-label="{{ 'fundacao.search.submit' | t }}">
+            {%- render 'icon', name: 'search', size: 20 -%}
+          </button>
+        </form>
+      {%- endif -%}
+
+      <div class="pb-actions pb-actions--center main-404__actions">
+        <a href="{{ routes.all_products_collection_url }}" class="button button--large button--primary">
+          {{- 'paginas_blog.general.shop_all' | t -}}
+        </a>
+        <a href="{{ routes.root_url }}" class="button button--large button--secondary">
+          {{- 'paginas_blog.not_found.home_link' | t -}}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Página não encontrada",
+  "tag": "section",
+  "class": "section-main-404",
+  "enabled_on": {
+    "templates": ["404"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "info": "Vazio usa o texto padrão \"Página não encontrada\"."
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Texto",
+      "info": "Vazio usa o texto padrão."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Mostrar campo de busca",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "options": [
+        { "value": "default", "label": "Branco" },
+        { "value": "surface", "label": "Cinza-azulado claro" },
+        { "value": "surface-2", "label": "Azul claro" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        { "value": "normal", "label": "Normal" },
+        { "value": "large", "label": "Grande" }
+      ],
+      "default": "large"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Página não encontrada"
+    }
+  ]
+}
+{% endschema %}

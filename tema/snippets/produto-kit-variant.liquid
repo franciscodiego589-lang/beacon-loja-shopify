@@ -1,0 +1,46 @@
+{%- comment -%}
+  Área produto. Um cartão do seletor de kit (dentro de <kit-selector>, em
+  sections/main-product.liquid), extraído para cá para simplificar a lógica condicional da
+  seção principal (o Theme Check aponta complexidade demais quando este laço fica embutido).
+  Parâmetros:
+  - variant: variante do kit (obrigatório)
+  - kit_index: posição (0-based) da opção "Kit" no produto, ou -1 se não existir
+  - capsulas_por_pote / capsulas_por_dia: metafields beacon.*, repassados ao kit-card
+  - radio_name: atributo name do rádio (mesmo valor para todos os cartões do seletor)
+  - current_variant_id: id da variante ativa (marca o cartão selecionado)
+  - highlight_enabled / highlight_units / highlight_label: ajustes do bloco "Seletor de kit"
+  - show_installments: repassado ao kit-card (parcelamento sem juros no preço do cartão)
+{%- endcomment -%}
+{%- liquid
+  assign variant_units = 0
+  if kit_index >= 0
+    capture variant_units
+      render 'produto-kit-units', kit: variant.options[kit_index]
+    endcapture
+    assign variant_units = variant_units | strip | plus: 0
+  endif
+
+  assign variant_highlight = false
+  if highlight_enabled and highlight_units > 0 and variant_units == highlight_units
+    assign variant_highlight = highlight_label | strip
+    if variant_highlight == blank
+      assign variant_highlight = true
+    endif
+  endif
+
+  assign variant_selected = false
+  if variant.id == current_variant_id
+    assign variant_selected = true
+  endif
+-%}
+{% render 'kit-card',
+  variant: variant,
+  units: variant_units,
+  capsulas_por_pote: capsulas_por_pote,
+  capsulas_por_dia: capsulas_por_dia,
+  selected: variant_selected,
+  highlight: variant_highlight,
+  name: radio_name,
+  id_prefix: radio_name,
+  show_installments: show_installments
+%}

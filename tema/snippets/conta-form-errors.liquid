@@ -1,0 +1,32 @@
+{%- comment -%}
+  Área conta: resumo dos erros de um formulário da Shopify (form.errors).
+  Parâmetros:
+  - form: o objeto form do {% form %} em volta (obrigatório)
+  - id: id do bloco, usado no aria-describedby dos campos (opcional)
+
+  Tudo o que vem de form.errors sai com | escape. A chave de tradução termina em _html
+  para a Shopify não escapar de novo os valores que já saem escapados daqui.
+  O resumo já vem pronto na página que volta do envio, e role="alert" presente no carregamento
+  nem sempre é anunciado. Por isso ele recebe o foco ao carregar (tabindex="-1" + autofocus,
+  sem JavaScript): o leitor de tela lê os erros e o Tab segue para os campos.
+{%- endcomment -%}
+{%- if form.errors -%}
+  <div class="conta-form-errors"{% if id != blank %} id="{{ id }}"{% endif %} role="alert" tabindex="-1" autofocus>
+    <p class="conta-form-errors__title">{{ 'conta.errors.title' | t }}</p>
+    <ul class="conta-form-errors__list">
+      {%- for error in form.errors -%}
+        <li>
+          {%- if error == 'form' -%}
+            {{ form.errors.messages[error] | escape }}
+          {%- else -%}
+            {%- liquid
+              assign error_field = form.errors.translated_fields[error] | capitalize | escape
+              assign error_message = form.errors.messages[error] | escape
+            -%}
+            {{ 'conta.errors.field_message_html' | t: field: error_field, message: error_message }}
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}

@@ -1,0 +1,452 @@
+{{ 'component-produto-dossie.css' | asset_url | stylesheet_tag }}
+{{ 'component-produto-nutrition.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'produto-dossie-pagina.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Página "Dossiê técnico" do produto (templates/product.dossie.json, aberta na MESMA aba por
+  {{ product.url }}?view=dossie a partir do botão "Dossiê técnico" do painel de compra; emenda 26
+  e Ruling 28 de 02/10/2026).
+  Modelo: catálogo do dono (catalogo.lemoncapsauto.com/catalogo/<produto>, lido em 29/09/2026).
+  Redesenho v3 (tarefa 6, parte C, 02/10/2026): capa em bloco claro (.lg-field--claro, sem arte),
+  pote solto pela classe de snippets/v3-classe-foto, fatos rápidos em preenchimento branco, índice
+  fixo (computador) e seções em blocos sólidos no tom claro (conteúdo não é vidro). Nome pelo
+  snippets/v3-nome-visivel. Botões: .button--primary e .button--secondary (emenda 22: o secundário
+  é o botão de vidro do alvo, o mesmo do resto do tema v3; o .lg-button--glass é da família
+  anterior, com borda branca a 0,80 e reflexo).
+
+  Fora de propósito, de forma deliberada:
+  - "Condições comerciais" do catálogo (preço por pote e pedido mínimo): dado B2B da fábrica.
+  - Selo "Composição conferida contra os limites vigentes da ANVISA": a loja tem produtos
+    ativados por decisão do dono com aviso da ANVISA; o tema mostra só fontes e datas do dossiê.
+
+  Dados (o tema não escreve nada): beacon.dossie (resumo, composicao, modo_de_uso, advertencias,
+  ingredientes, fabricante, laudos, armazenamento, alegacoes_nutricionais, fonte, data_consulta),
+  beacon.insumos (nome, forma_quimica, quantidade_por_porcao, alegacoes), beacon.detalhes
+  (dicas_de_uso, cuidados; spec docs/superpowers/loja/spec-detalhes-produto.md), beacon.segmento
+  (texto livre, ex. "Performance esportiva"; ao lado de "Linha" na identificação) e
+  capsulas_por_pote, capsulas_por_dia. Campo vazio não renderiza; o item do índice também não.
+
+  Advertências e cuidados, 30/09/2026: uma seção só (pedido do dono, o catálogo modelo não repete
+  a mesma frase em dois lugares). beacon.dossie.advertencias (texto obrigatório do Anexo VI) vem
+  primeiro; beacon.detalhes.cuidados vem depois, como "Cuidados" dentro da mesma seção, mas só os
+  itens que não repetem, ao pé da letra, alguma advertência já mostrada (cuidados_dup_idx).
+
+  "Salvar dossiê em PDF": abre a janela de impressão (assets/produto-dossie-pagina.js); o CSS de
+  impressão esconde cabeçalho, rodapé, índice e botões.
+
+  Configuração "embutido" (30/09/2026, pedido do dono: dossiê e benefícios "nessa página
+  principal", uma seção embaixo da outra): a mesma seção entra em templates/product.json, logo
+  depois dos benefícios, com id="dossie" (alvo do botão "Dossiê técnico"). Sem voltar, título,
+  resumo, botões e foto (já estão no topo da página); ficam o rótulo "Dossiê técnico" e os fatos
+  rápidos. Produto sem dossiê não mostra nada.
+{%- endcomment -%}
+{%- liquid
+  # Nome visível (emenda 24, Ruling 24): fonte única em snippets/v3-nome-visivel. 'html' já sai escapado,
+  # com as palavras de hífen juntas, e vai direto entre tags; 'texto' já sai escapado, para alt e t:.
+  capture nome_html
+    render 'v3-nome-visivel', produto: product, modo: 'html'
+  endcapture
+  assign nome_html = nome_html | strip
+  capture nome_texto
+    render 'v3-nome-visivel', produto: product, modo: 'texto'
+  endcapture
+  assign nome_texto = nome_texto | strip
+  # Foto principal (emenda 15, C9): pote solto no campo claro, ou quadro para foto fora do padrão.
+  capture dp_foto_classe
+    render 'v3-classe-foto', product: product
+  endcapture
+  assign dp_foto_classe = dp_foto_classe | strip | prepend: 'dp-hero__img '
+  assign dossie = product.metafields.beacon.dossie.value
+  assign insumos_lista = product.metafields.beacon.insumos.value
+  assign detalhes = product.metafields.beacon.detalhes.value
+  assign pote = product.metafields.beacon.capsulas_por_pote.value
+  assign por_dia = product.metafields.beacon.capsulas_por_dia.value
+  assign segmento = product.metafields.beacon.segmento.value
+  assign doc_page = pages['documentacao']
+  # Linha e tipo regulatório (T33, 22/10/2026). Linha: os Pure antigos (handle «pure-…») continuam «Pure»; os produtos
+  # novos (handle sem esse prefixo) mostram «Beacon Labs». Tipo regulatório: segue a designação do rótulo, pela etiqueta
+  # formato:* (gotas, gomas, pó); «de creatina» quando o tipo do produto é Creatina; sem etiqueta de forma, cápsulas.
+  assign dp_linha_pure = false
+  assign dp_prefixo_handle = product.handle | slice: 0, 5
+  if dp_prefixo_handle == 'pure-'
+    assign dp_linha_pure = true
+  endif
+  assign dp_tipo_chave = 'produto.dossie.id_type_value'
+  if product.tags contains 'formato:gotas'
+    assign dp_tipo_chave = 'produto.dossie.id_type_value_gotas'
+  elsif product.tags contains 'formato:gomas'
+    assign dp_tipo_chave = 'produto.dossie.id_type_value_gomas'
+    if product.type == 'Creatina'
+      assign dp_tipo_chave = 'produto.dossie.id_type_value_gomas_creatina'
+    endif
+  elsif product.tags contains 'formato:po'
+    assign dp_tipo_chave = 'produto.dossie.id_type_value_po'
+    if product.type == 'Creatina'
+      assign dp_tipo_chave = 'produto.dossie.id_type_value_po_creatina'
+    endif
+  endif
+
+  assign d_resumo = dossie.resumo.value
+  assign d_tabela = dossie.composicao.value
+  # Sem tabela própria no dossiê, usa a mesma tabela da página do produto (beacon.tabela_nutricional).
+  if d_tabela == blank
+    assign d_tabela = product.metafields.beacon.tabela_nutricional.value
+  endif
+  assign d_modo = dossie.modo_de_uso.value
+  assign d_advertencias = dossie.advertencias.value
+  assign d_ingredientes = dossie.ingredientes.value
+  assign d_fabricante = dossie.fabricante.value
+  assign d_laudos = dossie.laudos.value
+  assign d_armazenamento = dossie.armazenamento.value
+  assign d_nutricionais = dossie.alegacoes_nutricionais.value
+  assign d_fonte = dossie.fonte.value
+  assign d_data = dossie.data_consulta.value
+
+  assign tem_tabela = false
+  if d_tabela != blank and d_tabela.linhas != blank
+    assign tem_tabela = true
+  endif
+
+  assign insumos_count = 0
+  assign tem_alegacoes = false
+  for insumo in insumos_lista
+    if insumo != blank and insumo.nome.value != blank
+      assign insumos_count = insumos_count | plus: 1
+      if insumo.alegacoes.value != blank
+        assign tem_alegacoes = true
+      endif
+    endif
+  endfor
+  if d_nutricionais != blank
+    assign tem_alegacoes = true
+  endif
+
+  assign n_dicas = detalhes.dicas_de_uso.size | default: 0
+
+  # Cuidados que já aparecem, com o mesmo texto, na advertência obrigatória: não repetir.
+  assign cuidados_dup_idx = ','
+  for cuidado in detalhes.cuidados
+    assign c_idx = forloop.index0
+    for advertencia in d_advertencias
+      if advertencia == cuidado
+        assign cuidados_dup_idx = cuidados_dup_idx | append: c_idx | append: ','
+      endif
+    endfor
+  endfor
+  assign n_cuidados_unicos = 0
+  for cuidado in detalhes.cuidados
+    assign token = ',' | append: forloop.index0 | append: ','
+    unless cuidados_dup_idx contains token
+      assign n_cuidados_unicos = n_cuidados_unicos | plus: 1
+    endunless
+  endfor
+  assign tem_fontes = false
+  if d_fonte != blank or d_data != blank
+    assign tem_fontes = true
+  endif
+
+  assign sid = section.id
+  assign embutido = section.settings.embutido
+-%}
+
+{%- if embutido == false or dossie != blank -%}
+<article class="dp dp--dossie{% if embutido %} dp--embutido{% endif %}" id="{% if embutido %}dossie{% else %}Dossie-{{ sid }}{% endif %}" aria-labelledby="DossieTitulo-{{ sid }}">
+  {%- capture dp_fatos -%}
+        <dl class="dp-facts">
+          {%- if segmento != blank -%}<div class="dp-fact glass-fill"><dt>{{ 'produto.dossie.id_segment' | t }}</dt><dd>{{ segmento | escape }}</dd></div>{%- endif -%}
+          <div class="dp-fact glass-fill"><dt>{{ 'produto.dossie.id_line' | t }}</dt><dd>{%- if dp_linha_pure -%}{{ 'produto.dossie.id_line_value' | t }}{%- else -%}{{ 'produto.dossie.id_line_value_beacon' | t }}{%- endif -%}</dd></div>
+          <div class="dp-fact glass-fill"><dt>{{ 'produto.dossie.id_type' | t }}</dt><dd>{{ dp_tipo_chave | t }}</dd></div>
+          {%- if pote != blank -%}<div class="dp-fact glass-fill"><dt>{{ 'produto.dossie.id_presentation' | t }}</dt><dd>{{ 'produto.dossie.capsules_count' | t: count: pote }}</dd></div>{%- endif -%}
+          {%- if por_dia != blank -%}<div class="dp-fact glass-fill"><dt>{{ 'produto.dossie.id_daily' | t }}</dt><dd>{{ 'produto.dossie.capsules_per_day' | t: count: por_dia }}</dd></div>{%- endif -%}
+        </dl>
+  {%- endcapture -%}
+  {%- if embutido -%}
+  <div class="dp-embed-head page-width">
+    <h2 class="dp-eyebrow" id="DossieTitulo-{{ sid }}">{{ 'produto.dossie.pill_dossier' | t }}</h2>
+    {{ dp_fatos }}
+  </div>
+  {%- else -%}
+  <header class="dp-hero dp-hero--dossie lg-field--claro">
+    <div class="dp-hero__inner page-width">
+      <div class="dp-hero__text">
+        <a class="dp-back" href="{{ product.url }}">
+          {%- render 'icon', name: 'arrow-left', size: 18 -%}
+          <span>{{ 'produto.dossie.back_to_product' | t }}</span>
+        </a>
+        <p class="dp-eyebrow">{{ 'produto.dossie.pill_dossier' | t }}</p>
+        <h1 class="dp-hero__title" id="DossieTitulo-{{ sid }}">{{ nome_html }}</h1>
+        {%- if d_resumo != blank -%}
+          <p class="dp-hero__lead">{{ d_resumo | escape | newline_to_br }}</p>
+        {%- endif -%}
+        {{ dp_fatos }}
+        <div class="dp-hero__actions">
+          <button type="button" class="button button--primary dp-button" data-dossie-print hidden>
+            {%- render 'icon', name: 'file-text', size: 18 -%}
+            <span>{{ 'produto.dossie.save_pdf' | t }}</span>
+          </button>
+          {%- if insumos_count > 0 -%}
+            <a class="button button--secondary dp-button" href="{{ product.url }}?view=beneficios">
+              {%- render 'icon', name: 'list', size: 18 -%}
+              <span>{{ 'produto.dossie.see_benefits' | t }}</span>
+            </a>
+          {%- endif -%}
+          {%- if doc_page.content != blank -%}
+            <a class="button button--secondary dp-button" href="{{ doc_page.url }}" target="_blank" rel="noopener">
+              <span>{{ 'produto.dossie.pill_docs' | t }}</span>
+              <span class="visually-hidden"> ({{ 'produto.dossie.new_tab' | t }})</span>
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+      <div class="dp-hero__media">
+        {%- if product.featured_media -%}
+          {{ product.featured_media | image_url: width: 900 | image_tag: widths: '360, 540, 720, 900', sizes: '(min-width: 990px) 420px, (min-width: 750px) 40vw, 80vw', loading: 'eager', fetchpriority: 'high', alt: nome_texto, class: dp_foto_classe }}
+        {%- endif -%}
+      </div>
+    </div>
+  </header>
+  {%- endif -%}
+
+  <div class="dp-layout page-width">
+    <nav class="dp-index" aria-label="{{ 'produto.dossie.index_label' | t }}">
+      <p class="dp-index__title">{{ 'produto.dossie.index_label' | t }}</p>
+      <ol class="dp-index__list" role="list">
+        {%- if insumos_count > 0 -%}<li><a href="#dp-composicao">{{ 'produto.dossie.composition_per_dose' | t }}</a></li>{%- endif -%}
+        {%- if tem_tabela -%}<li><a href="#dp-nutricional">{{ 'produto.nutrition.title' | t }}</a></li>{%- endif -%}
+        {%- if d_ingredientes != blank -%}<li><a href="#dp-ingredientes">{{ 'produto.dossie.ingredients' | t }}</a></li>{%- endif -%}
+        {%- if d_modo != blank or n_dicas > 0 -%}<li><a href="#dp-modo">{{ 'produto.dossie.usage_heading' | t }}</a></li>{%- endif -%}
+        {%- if d_advertencias != blank or n_cuidados_unicos > 0 -%}<li><a href="#dp-advertencias">{{ 'produto.dossie.warnings_care_heading' | t }}</a></li>{%- endif -%}
+        {%- if tem_alegacoes -%}<li><a href="#dp-alegacoes">{{ 'produto.dossie.section_claims' | t }}</a></li>{%- endif -%}
+        {%- if d_armazenamento != blank -%}<li><a href="#dp-conservacao">{{ 'produto.dossie.storage_heading' | t }}</a></li>{%- endif -%}
+        {%- if d_laudos != blank -%}<li><a href="#dp-laudos">{{ 'produto.dossie.reports' | t }}</a></li>{%- endif -%}
+        {%- if d_fabricante != blank -%}<li><a href="#dp-fabricante">{{ 'produto.dossie.manufacturer_heading' | t }}</a></li>{%- endif -%}
+        {%- if tem_fontes -%}<li><a href="#dp-fontes">{{ 'produto.dossie.sources_heading' | t }}</a></li>{%- endif -%}
+      </ol>
+    </nav>
+
+    <div class="dp-main">
+      {%- if insumos_count > 0 -%}
+        <section class="dp-card" id="dp-composicao" aria-labelledby="dp-composicao-t">
+          <h2 class="dp-card__title" id="dp-composicao-t">{{ 'produto.dossie.composition_per_dose' | t }}</h2>
+          {%- comment -%}
+            Foto da matéria-prima de cada insumo (pedido do dono em 03/10/2026: "o dossiê está muito
+            só com escritas"). Fotos geradas pelo ChatGPT do dono, uma por insumo, só o material num
+            vidro de relógio, sem texto nem marca (marca/insumos-dossie-2026-10-03/). O arquivo é
+            assets/insumo-<handle sem "insumo-dossie-">-{400,800}.jpg; a lista abaixo diz quais existem
+            (o Liquid não testa se um asset existe). Insumo fora da lista fica sem foto.
+          {%- endcomment -%}
+          {%- liquid
+            assign dp_fotos = ''
+            assign dp_com_foto = 0
+            for insumo in insumos_lista
+              if insumo != blank and insumo.nome.value != blank
+                assign dp_slug = insumo.system.handle | remove_first: 'insumo-dossie-'
+                assign dp_chave = ',' | append: dp_slug | append: ','
+                if dp_fotos contains dp_chave
+                  assign dp_com_foto = dp_com_foto | plus: 1
+                endif
+              endif
+            endfor
+          -%}
+          {%- if dp_com_foto > 0 -%}<div class="dp-composicao">
+            <div class="dp-composicao__fotos">
+              {%- for insumo in insumos_lista -%}
+                {%- if insumo != blank and insumo.nome.value != blank -%}
+                  {%- assign dp_slug = insumo.system.handle | remove_first: 'insumo-dossie-' -%}
+                  {%- assign dp_chave = ',' | append: dp_slug | append: ',' -%}
+                  {%- if dp_fotos contains dp_chave -%}
+                    {%- assign dp_base = 'insumo-' | append: dp_slug -%}
+                    <figure class="dp-insumo-foto">
+                      <img
+                        src="{{ dp_base | append: '-800.jpg' | asset_url }}"
+                        srcset="{{ dp_base | append: '-400.jpg' | asset_url }} 400w, {{ dp_base | append: '-800.jpg' | asset_url }} 800w"
+                        sizes="(max-width: 760px) min(calc(100vw - 80px), 320px), 220px"
+                        width="800"
+                        height="800"
+                        loading="lazy"
+                        alt="{{ 'produto.dossie.insumo_foto_alt' | t: nome: insumo.nome.value | escape }}"
+                      >
+                      <figcaption><span class="dp-insumo-foto__nome">{{ insumo.nome.value | escape }}</span> {{ 'produto.dossie.insumo_foto_nota' | t }}</figcaption>
+                    </figure>
+                  {%- endif -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+          <div class="dp-composicao__dados">
+          <div class="dp-table-wrap">
+            <table class="dp-table">
+              <thead><tr><th scope="col">{{ 'produto.dossie.col_ingredient' | t }}</th><th scope="col">{{ 'produto.dossie.col_dose' | t }}</th></tr></thead>
+              <tbody>
+                {%- for insumo in insumos_lista -%}
+                  {%- if insumo != blank and insumo.nome.value != blank -%}
+                    <tr>
+                      <td>{{ insumo.nome.value | escape }}{% if insumo.forma_quimica.value != blank %}<span class="dp-table__sub">{{ insumo.forma_quimica.value | escape }}</span>{% endif %}</td>
+                      <td>{{ insumo.quantidade_por_porcao.value | escape }}</td>
+                    </tr>
+                  {%- endif -%}
+                {%- endfor -%}
+              </tbody>
+            </table>
+          </div>
+          {%- comment -%}
+            Benefícios embaixo da tabela, em azul-marinho (pedido do dono em 03/10/2026: "coloque os
+            benefícios aqui abaixo nesse espaço em branco em letras azuis"). Mesmo texto da página
+            Benefícios (beacon.detalhes.beneficios, benefícios livres no site por decisão do dono de
+            29/09/2026): os 4 primeiros, com link para a lista inteira.
+          {%- endcomment -%}
+          {%- assign dp_n_benef = detalhes.beneficios.size | default: 0 -%}
+          {%- if dp_n_benef > 0 -%}
+            <div class="dp-comp-benef">
+              <h3 class="dp-comp-benef__titulo">{{ 'produto.dossie.comp_beneficios_titulo' | t }}</h3>
+              <ul class="dp-comp-benef__lista" role="list">
+                {%- for b in detalhes.beneficios limit: 4 -%}
+                  <li class="dp-comp-benef__item">
+                    {% render 'dp-icone-beneficio', titulo: b.titulo %}
+                    <span>
+                      {%- if b.titulo != blank -%}<strong class="dp-comp-benef__nome">{{ b.titulo | escape }}</strong>{%- endif -%}
+                      {%- if b.texto != blank -%}<span class="dp-comp-benef__texto">{{ b.texto | escape }}</span>{%- endif -%}
+                    </span>
+                  </li>
+                {%- endfor -%}
+              </ul>
+              <a class="dp-comp-benef__link link" href="{{ product.url }}?view=beneficios">{% if dp_n_benef > 4 %}{{ 'produto.dossie.comp_beneficios_link' | t: count: dp_n_benef }}{% else %}{{ 'produto.dossie.comp_beneficios_link_curto' | t }}{% endif %}</a>
+            </div>
+          {%- endif -%}
+          </div>
+          {%- if dp_com_foto > 0 -%}</div>{%- endif -%}
+        </section>
+      {%- endif -%}
+
+      {%- if tem_tabela -%}
+        <section class="dp-card dp-card--flush" id="dp-nutricional">
+          {% render 'produto-nutrition-table', product: product, tabela: d_tabela, heading_tag: 'h2', id_prefix: sid, class: 'dp-nutrition' %}
+        </section>
+      {%- endif -%}
+
+      {%- if d_ingredientes != blank -%}
+        <section class="dp-card" id="dp-ingredientes" aria-labelledby="dp-ingredientes-t">
+          <h2 class="dp-card__title" id="dp-ingredientes-t">{{ 'produto.dossie.ingredients' | t }}</h2>
+          <p class="dp-text">{{ d_ingredientes | escape | newline_to_br }}</p>
+        </section>
+      {%- endif -%}
+
+      {%- if d_modo != blank or n_dicas > 0 -%}
+        <section class="dp-card" id="dp-modo" aria-labelledby="dp-modo-t">
+          <h2 class="dp-card__title" id="dp-modo-t">{{ 'produto.dossie.usage_heading' | t }}</h2>
+          {%- if d_modo != blank -%}<p class="dp-text dp-text--strong">{{ d_modo | escape | newline_to_br }}</p>{%- endif -%}
+          {%- if n_dicas > 0 -%}
+            <h3 class="dp-subtitle">{{ 'produto.dossie.section_tips' | t }}</h3>
+            <ul class="dp-checks" role="list">
+              {%- for dica in detalhes.dicas_de_uso -%}<li>{{ dica | escape }}</li>{%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+
+      {%- if d_advertencias != blank or n_cuidados_unicos > 0 -%}
+        <section class="dp-card dp-card--warn" id="dp-advertencias" aria-labelledby="dp-advertencias-t">
+          <div class="dp-card__head">
+            <span class="dp-card__icon dp-card__icon--care" aria-hidden="true">{% render 'icon', name: 'alert-triangle', size: 20 %}</span>
+            <h2 class="dp-card__title" id="dp-advertencias-t">{{ 'produto.dossie.warnings_care_heading' | t }}</h2>
+          </div>
+          {%- if d_advertencias != blank -%}
+            <ul class="dp-list dp-list--warn" role="list">
+              {%- for advertencia in d_advertencias -%}{%- if advertencia != blank -%}<li>{{ advertencia | escape }}</li>{%- endif -%}{%- endfor -%}
+            </ul>
+          {%- endif -%}
+          {%- if n_cuidados_unicos > 0 -%}
+            <h3 class="dp-subtitle">{{ 'produto.dossie.section_care' | t }}</h3>
+            <p class="dp-card__note">{{ 'produto.dossie.care_note' | t }}</p>
+            <ul class="dp-list" role="list">
+              {%- for cuidado in detalhes.cuidados -%}
+                {%- assign token = ',' | append: forloop.index0 | append: ',' -%}
+                {%- unless cuidados_dup_idx contains token -%}<li>{{ cuidado | escape }}</li>{%- endunless -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+
+      {%- if tem_alegacoes -%}
+        <section class="dp-card" id="dp-alegacoes" aria-labelledby="dp-alegacoes-t">
+          <div class="dp-card__head">
+            <span class="dp-card__icon lg-fill--badge" aria-hidden="true">{% render 'icon', name: 'shield-check', size: 20 %}</span>
+            <div>
+              <h2 class="dp-card__title" id="dp-alegacoes-t">{{ 'produto.dossie.section_claims' | t }}</h2>
+              <p class="dp-card__note">{{ 'produto.dossie.claims_note' | t }}</p>
+            </div>
+          </div>
+          {%- for insumo in insumos_lista -%}
+            {%- if insumo != blank and insumo.alegacoes.value != blank -%}
+              {%- if insumos_count > 1 -%}<h3 class="dp-subtitle">{{ insumo.nome.value | escape }}</h3>{%- endif -%}
+              <ul class="dp-checks" role="list">
+                {%- for a in insumo.alegacoes.value -%}{%- if a != blank -%}<li>{{ a | escape }}</li>{%- endif -%}{%- endfor -%}
+              </ul>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- if d_nutricionais != blank -%}
+            <ul class="dp-checks" role="list">
+              {%- for a in d_nutricionais -%}{%- if a != blank -%}<li>{{ a | escape }}</li>{%- endif -%}{%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+
+      {%- if d_armazenamento != blank -%}
+        <section class="dp-card" id="dp-conservacao" aria-labelledby="dp-conservacao-t">
+          <h2 class="dp-card__title" id="dp-conservacao-t">{{ 'produto.dossie.storage_heading' | t }}</h2>
+          <p class="dp-text">{{ d_armazenamento | escape | newline_to_br }}</p>
+        </section>
+      {%- endif -%}
+
+      {%- if d_laudos != blank -%}
+        <section class="dp-card" id="dp-laudos" aria-labelledby="dp-laudos-t">
+          <h2 class="dp-card__title" id="dp-laudos-t">{{ 'produto.dossie.reports' | t }}</h2>
+          <p class="dp-text">{{ d_laudos | escape | newline_to_br }}</p>
+        </section>
+      {%- endif -%}
+
+      {%- if d_fabricante != blank -%}
+        <section class="dp-card" id="dp-fabricante" aria-labelledby="dp-fabricante-t">
+          <h2 class="dp-card__title" id="dp-fabricante-t">{{ 'produto.dossie.manufacturer_heading' | t }}</h2>
+          <p class="dp-text">{{ d_fabricante | escape | newline_to_br }}</p>
+        </section>
+      {%- endif -%}
+
+      {%- if tem_fontes -%}
+        <section class="dp-card" id="dp-fontes" aria-labelledby="dp-fontes-t">
+          <h2 class="dp-card__title" id="dp-fontes-t">{{ 'produto.dossie.sources_heading' | t }}</h2>
+          <div class="dp-source">{% render 'produto-dossie-fonte', fonte: d_fonte, data: d_data %}</div>
+          {%- if doc_page.content != blank -%}
+            <a class="dp-link" href="{{ doc_page.url }}" target="_blank" rel="noopener">
+              <span>{{ 'produto.dossie.docs_link' | t }}</span>
+              <span class="visually-hidden"> ({{ 'produto.dossie.new_tab' | t }})</span>
+              {%- render 'icon', name: 'arrow-right', size: 16 -%}
+            </a>
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+
+      {%- if dossie == blank -%}
+        <p class="dp-empty">{{ 'produto.dossie.no_data' | t }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</article>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Dossiê do produto",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "embutido",
+      "label": "Dentro da página do produto",
+      "info": "Mostra só o rótulo \"Dossiê técnico\", os fatos rápidos e o conteúdo, sem a capa. Usado no modelo padrão do produto.",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

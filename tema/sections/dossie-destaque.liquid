@@ -1,0 +1,211 @@
+{{ 'section-dossie-destaque.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Dossiê em destaque da home (redesenho v3, tarefa 4b, parte 2; alvo.css linhas 209 a 221, 375 e 423 a 431;
+  home.html linhas 206 a 218). Bloco claro (--color-photo-bg, raio --radius-tile, sem vidro) com o texto à
+  esquerda (linha pequena, título h2, frase e o botão "Ver um exemplo") e, à direita, a ficha de UM produto em
+  vidro de CONTEÚDO (.glass .glass--card, sem desfoque: nunca .glass--blur). Até 1080 px, uma coluna.
+
+  A ficha não tem nenhum dado digitado: tudo vem do cadastro do produto, sempre com | escape (S3), na ordem do
+  alvo. Dado que não existe no cadastro simplesmente não aparece:
+  - uma linha por insumo (até 3) de beacon.insumos (metaobjetos insumo_dossie: nome e quantidade_por_porcao),
+    com o rótulo "<nome> por porção" (chave existente produto.dossie.per_serving: o campo é a quantidade por porção);
+  - "Dose diária": beacon.capsulas_por_dia; "Conteúdo": beacon.capsulas_por_pote (chave existente
+    produto.dossie.capsules_count);
+  - "Porção" e "Rende": campos porcao e porcoes da tabela nutricional, na mesma ordem de escolha da página do
+    dossiê (beacon.dossie.composicao e, sem ela, beacon.tabela_nutricional). O alvo mostra "Rende 30 dias", que
+    não é dado do cadastro (o cadastro traz 30 porções); por isso a linha diz "Rende 30 porções".
+  Cabeçalho: foto de 60 px, o rótulo "Dossiê técnico" (chave existente produto.dossie.pill_dossier) e o nome
+  visível. O botão e o link final levam a {{ produto.url }}?view=dossie, a página do dossiê (modelo
+  templates/product.dossie.json). A seção só aparece se o produto tem dossiê (mesma condição do botão "Dossiê
+  técnico" do produto: resumo, composição, modo de uso, advertências ou ingredientes).
+
+  Produto: o nome sai sempre de snippets/v3-nome-visivel (já escapado: não passa por | escape de novo) e a classe
+  da foto sai de snippets/v3-classe-foto (emenda C9). Foto: <img> escrito aqui (e não por image_tag) para o texto
+  alternativo, já escapado pelo snippet do nome, não ser escapado duas vezes; width e height reais, loading
+  lazy (a seção nunca está na primeira tela).
+
+  Segurança (S1 a S5): ajustes text e textarea com | escape; nenhum ajuste html ou liquid; link só pelo url do
+  produto (objeto da loja); nenhum <script>; nenhuma chave de tradução com _html. Aviso do editor: só aparece
+  com request.design_mode.
+{%- endcomment -%}
+
+{%- liquid
+  assign dsd_produto = section.settings.product
+  assign dsd_dossie = dsd_produto.metafields.beacon.dossie.value
+
+  assign dsd_tem_dossie = false
+  if dsd_produto != blank and dsd_dossie != blank
+    if dsd_dossie.resumo.value != blank or dsd_dossie.composicao.value != blank or dsd_dossie.modo_de_uso.value != blank or dsd_dossie.advertencias.value != blank or dsd_dossie.ingredientes.value != blank
+      assign dsd_tem_dossie = true
+    endif
+  endif
+-%}
+
+{%- if dsd_tem_dossie -%}
+  {%- liquid
+    capture dsd_nome_html
+      render 'v3-nome-visivel', produto: dsd_produto, modo: 'html'
+    endcapture
+    capture dsd_nome_txt
+      render 'v3-nome-visivel', produto: dsd_produto, modo: 'texto'
+    endcapture
+    capture dsd_foto_classe
+      render 'v3-classe-foto', product: dsd_produto
+    endcapture
+    assign dsd_nome_html = dsd_nome_html | strip
+    assign dsd_nome_txt = dsd_nome_txt | strip
+    assign dsd_foto_classe = dsd_foto_classe | strip
+    assign dsd_id = section.id | handleize | prepend: 'dossie-destaque-'
+    assign dsd_midia = dsd_produto.featured_media
+
+    assign dsd_insumos = dsd_produto.metafields.beacon.insumos.value
+    assign dsd_dia = dsd_produto.metafields.beacon.capsulas_por_dia.value
+    assign dsd_pote = dsd_produto.metafields.beacon.capsulas_por_pote.value
+    assign dsd_tabela = dsd_dossie.composicao.value
+    if dsd_tabela == blank
+      assign dsd_tabela = dsd_produto.metafields.beacon.tabela_nutricional.value
+    endif
+    assign dsd_porcao = dsd_tabela.porcao
+    assign dsd_porcoes = dsd_tabela.porcoes
+  -%}
+
+  {%- capture dsd_linhas -%}
+    {%- assign dsd_n_insumos = 0 -%}
+    {%- for insumo in dsd_insumos -%}
+      {%- if insumo != blank and insumo.nome.value != blank and insumo.quantidade_por_porcao.value != blank and dsd_n_insumos < 3 -%}
+        {%- assign dsd_n_insumos = dsd_n_insumos | plus: 1 -%}
+        <div class="dossie-destaque__linha"><dt>{{ insumo.nome.value | escape }} {{ 'produto.dossie.per_serving' | t }}</dt><dd>{{ insumo.quantidade_por_porcao.value | escape }}</dd></div>
+      {%- endif -%}
+    {%- endfor -%}
+    {%- if dsd_dia != blank -%}
+      {%- assign dsd_dia_txt = dsd_dia | escape -%}
+      <div class="dossie-destaque__linha"><dt>{{ 'home.dossie_destaque.row_daily' | t }}</dt><dd>{{ 'produto.dossie.capsules_count' | t: count: dsd_dia_txt }}</dd></div>
+    {%- endif -%}
+    {%- if dsd_porcao != blank -%}
+      <div class="dossie-destaque__linha"><dt>{{ 'home.dossie_destaque.row_serving' | t }}</dt><dd>{{ dsd_porcao | escape }}</dd></div>
+    {%- endif -%}
+    {%- if dsd_pote != blank -%}
+      {%- assign dsd_pote_txt = dsd_pote | escape -%}
+      <div class="dossie-destaque__linha"><dt>{{ 'home.dossie_destaque.row_content' | t }}</dt><dd>{{ 'produto.dossie.capsules_count' | t: count: dsd_pote_txt }}</dd></div>
+    {%- endif -%}
+    {%- if dsd_porcoes != blank -%}
+      {%- assign dsd_porcoes_txt = dsd_porcoes | escape -%}
+      <div class="dossie-destaque__linha"><dt>{{ 'home.dossie_destaque.row_yield' | t }}</dt><dd>{{ 'home.dossie_destaque.servings_count' | t: porcoes: dsd_porcoes_txt }}</dd></div>
+    {%- endif -%}
+  {%- endcapture -%}
+  {%- assign dsd_linhas = dsd_linhas | strip -%}
+
+  <div class="dossie-destaque page-width"{% if section.settings.title != blank %} role="region" aria-labelledby="{{ dsd_id }}-titulo"{% endif %}>
+    <div class="dossie-destaque__bloco">
+      <div class="dossie-destaque__texto">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="dossie-destaque__eyebrow v3-eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.title != blank -%}
+          <h2 class="dossie-destaque__titulo" id="{{ dsd_id }}-titulo">{{ section.settings.title | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.text != blank -%}
+          <p class="dossie-destaque__frase">{{ section.settings.text | escape }}</p>
+        {%- endif -%}
+        {%- if section.settings.button_label != blank -%}
+          <a class="button button--primary dossie-destaque__botao" href="{{ dsd_produto.url }}?view=dossie">{{ section.settings.button_label | escape }}<span class="visually-hidden"> {{ dsd_nome_txt }}</span></a>
+        {%- endif -%}
+      </div>
+
+      <div class="dossie-destaque__ficha glass glass--card">
+        <div class="dossie-destaque__ficha-cab">
+          {%- if dsd_midia != blank -%}
+            <img
+              class="dossie-destaque__foto {{ dsd_foto_classe | escape }}"
+              src="{{ dsd_midia | image_url: width: 180 }}"
+              srcset="{{ dsd_midia | image_url: width: 60 }} 60w, {{ dsd_midia | image_url: width: 120 }} 120w, {{ dsd_midia | image_url: width: 180 }} 180w"
+              sizes="60px"
+              width="180"
+              height="{{ 180 | divided_by: dsd_midia.aspect_ratio | round }}"
+              loading="lazy"
+              decoding="async"
+              alt="{{ dsd_nome_txt }}"
+            >
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'dossie-destaque__foto dossie-destaque__placeholder' }}
+          {%- endif -%}
+          <p class="dossie-destaque__ficha-titulo">
+            <span class="dossie-destaque__ficha-rotulo">{{ 'produto.dossie.pill_dossier' | t }}</span>
+            <span class="dossie-destaque__ficha-nome">{{ dsd_nome_html }}</span>
+          </p>
+        </div>
+        {%- if dsd_linhas != blank -%}
+          <dl class="dossie-destaque__dados">{{ dsd_linhas }}</dl>
+        {%- endif -%}
+        {%- if section.settings.ficha_link_label != blank -%}
+          <a class="v3-link dossie-destaque__ficha-link" href="{{ dsd_produto.url }}?view=dossie">
+            {{- section.settings.ficha_link_label | escape -}}
+            {% render 'icon', name: 'chevron-right', size: 16 %}
+            <span class="visually-hidden"> {{ dsd_nome_txt }}</span>
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="dossie-destaque page-width">
+    <p class="dossie-destaque__aviso">
+      <span class="visually-hidden">{{ 'home.general.editor_only' | t }}</span>
+      {{ 'home.dossie_destaque.editor_empty' | t }}
+    </p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Dossiê em destaque",
+  "tag": "section",
+  "class": "section-dossie-destaque",
+  "settings": [
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Produto da ficha",
+      "info": "Escolha um produto com o dossiê preenchido. As linhas da ficha vêm do cadastro do produto. Sem dossiê, a seção não aparece na loja."
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Linha pequena",
+      "default": "Transparência"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "default": "Dossiê técnico em todos os produtos."
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Frase",
+      "default": "Composição por dose, modo de uso e fontes consultadas, abertos na página de cada produto."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto do botão",
+      "info": "O botão leva à página do dossiê do produto da ficha.",
+      "default": "Ver um exemplo"
+    },
+    {
+      "type": "text",
+      "id": "ficha_link_label",
+      "label": "Texto do link da ficha",
+      "info": "O link leva à página do dossiê do produto da ficha.",
+      "default": "Ver o dossiê completo"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Dossiê em destaque"
+    }
+  ]
+}
+{% endschema %}

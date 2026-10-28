@@ -1,0 +1,158 @@
+{{ 'home-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'section-video-reels.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'video-reel.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  "Quem usa, mostra": carrossel de vídeos verticais (9:16). Cada bloco é um
+  <video-reel>: o vídeo só carrega quando o visitante aperta o play (o <video> fica
+  inerte dentro de um <template> até o clique). Bloco sem vídeo escolhido não
+  aparece na loja (no editor, mostra um aviso). Sem nenhum bloco com vídeo, a
+  seção inteira não renderiza nada.
+
+  Liquid Glass (spec 8.3 e 8.5): rótulo do topo, play e legenda em vidro funcional escuro
+  SEM desfoque (.glass .glass--dark), com texto branco sólido; setas em vidro fino COM
+  desfoque (.glass--thin .glass--blur), porque no computador ficam sobre os pôsteres (uma
+  das peças da regra 1 da seção 10 da spec).
+{%- endcomment -%}
+
+{%- liquid
+  assign vr_count = 0
+  for block in section.blocks
+    if block.type == 'video' and block.settings.video != blank
+      assign vr_count = vr_count | plus: 1
+    endif
+  endfor
+  assign vr_heading_id = 'VideoReels-' | append: section.id
+  assign vr_track_id = 'VideoReelsTrack-' | append: section.id
+  assign vr_nav_previous = 'home.video_reels.previous' | t
+  assign vr_nav_next = 'home.video_reels.next' | t
+-%}
+
+{%- if vr_count > 0 or request.design_mode -%}
+  <div class="video-reels section">
+    {%- comment -%}
+      O <carousel-slider> envolve o título e as setas: o carousel-slider.js só enxerga
+      os controles que estão dentro dele. O trilho ocupa a largura toda (até 1440 px), com
+      o recuo lateral da página como padding (section-video-reels.css).
+    {%- endcomment -%}
+    <carousel-slider class="video-reels__carousel" data-mode="scroll">
+      <div class="page-width video-reels__head">
+        <div class="section-heading">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="section-heading__title" id="{{ vr_heading_id }}">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if vr_count > 1 -%}
+            <div class="video-reels__nav">
+              {% render 'home-carousel-arrows', controls: vr_track_id, label_previous: vr_nav_previous, label_next: vr_nav_next, class: 'glass glass--thin glass--blur glass--interactive video-reels__arrow', size: 24 %}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- if section.blocks.size > 0 -%}
+        <ul class="video-reels__track home-carousel-track page-width" id="{{ vr_track_id }}" data-carousel-track role="list"{% if section.settings.heading != blank %} aria-labelledby="{{ vr_heading_id }}"{% endif %}>
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'video' and block.settings.video != blank -%}
+              {%- liquid
+                assign vr_product = block.settings.product
+                # Legenda só com o nome do produto: sem produto, o rótulo já aparece no topo do card.
+                assign vr_caption = vr_product.title
+                assign vr_dialog_id = 'VideoReelDialog-' | append: block.id
+              -%}
+              <li class="video-reels__item" data-carousel-slide {{ block.shopify_attributes }}>
+                <video-reel class="video-reel">
+                  <button type="button" class="video-reel__open" aria-haspopup="dialog" aria-controls="{{ vr_dialog_id }}" aria-label="{% if vr_product != blank %}{{ 'home.video_reels.play' | t: title: vr_product.title }}{% else %}{{ 'home.video_reels.play_untitled' | t }}{% endif %}" data-video-reel-open>
+                    {%- if block.settings.video.preview_image != blank -%}
+                      {{ block.settings.video.preview_image | image_url: width: 400 | image_tag: widths: '200, 280, 400', sizes: '(min-width: 990px) 200px, 146px', loading: 'lazy', alt: '', class: 'video-reel__poster' }}
+                    {%- endif -%}
+                    {%- if block.settings.label != blank -%}
+                      <span class="video-reel__eyebrow glass glass--dark">{{ block.settings.label | escape }}</span>
+                    {%- endif -%}
+                    <span class="video-reel__play glass glass--dark">{% render 'icon', name: 'play', size: 22 %}</span>
+                    {%- if vr_caption != blank -%}
+                      <span class="video-reel__caption glass glass--dark">{{ vr_caption | escape }}</span>
+                    {%- endif -%}
+                  </button>
+
+                  <dialog id="{{ vr_dialog_id }}" class="video-reel__dialog" aria-label="{% if vr_product != blank %}{{ 'home.video_reels.dialog_label' | t: title: vr_product.title }}{% else %}{{ 'home.video_reels.dialog_label_untitled' | t }}{% endif %}" data-video-reel-dialog>
+                    <button type="button" class="icon-button icon-button--plain video-reel__close" aria-label="{{ 'home.video_reels.close' | t }}" data-video-reel-close>
+                      {% render 'icon', name: 'close', size: 20 %}
+                    </button>
+                    <div class="video-reel__player" data-video-reel-player></div>
+                    {%- if vr_product != blank -%}
+                      <a href="{{ vr_product.url }}" class="link video-reel__product-link">{{ 'home.video_reels.view_product' | t }}</a>
+                    {%- endif -%}
+                  </dialog>
+
+                  <template data-video-reel-template>
+                    {{ block.settings.video | video_tag: image_size: '1200x', controls: false }}
+                  </template>
+                </video-reel>
+              </li>
+            {%- elsif block.type == 'video' and request.design_mode -%}
+              <li class="video-reels__item video-reels__item--empty" data-carousel-slide {{ block.shopify_attributes }}>
+                <p class="home-editor-note">
+                  <span class="visually-hidden">{{ 'home.general.editor_only' | t }}</span>
+                  {{ 'home.video_reels.editor_empty' | t }}
+                </p>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+        <div class="home-carousel-progress page-width" data-carousel-progress aria-hidden="true"></div>
+      {%- endif -%}
+    </carousel-slider>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Vídeos de clientes",
+  "tag": "section",
+  "class": "section-video-reels",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Quem usa, mostra"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Vídeo",
+      "settings": [
+        {
+          "type": "video",
+          "id": "video",
+          "label": "Vídeo"
+        },
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Produto (opcional)",
+          "info": "Mostra o nome do produto no card e um link \"Ver produto\" dentro do vídeo."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Rótulo sobre o vídeo"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Vídeos de clientes",
+      "blocks": [
+        { "type": "video" },
+        { "type": "video" },
+        { "type": "video" },
+        { "type": "video" }
+      ]
+    }
+  ]
+}
+{% endschema %}

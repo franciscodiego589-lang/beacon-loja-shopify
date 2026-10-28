@@ -1,0 +1,61 @@
+/*
+  Beacon Labs · section-main-account.css (área conta)
+
+  Minha conta: pedidos em tabela (vira cartões no celular, ver conta-base.css) e coluna
+  lateral com dados da conta e endereço principal.
+  Computador: duas colunas (pedidos 2/3, lateral 1/3). Celular: uma coluna.
+*/
+
+.conta-account__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+}
+
+.conta-account__aside {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.conta-account__name {
+  font-weight: 700;
+}
+
+.conta-account__contact {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.conta-account__muted {
+  color: var(--color-text-muted);
+}
+
+.conta-account__address-link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 12px;
+}
+
+.conta-account__address-link .link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+}
+
+.conta-orders .link {
+  display: inline-flex;
+  align-items: center;
+  min-width: var(--touch-target);
+  min-height: var(--touch-target);
+  margin-block: -12px;
+}
+
+@media screen and (min-width: 990px) {
+  .conta-account__layout {
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 48px;
+  }
+}

@@ -1,0 +1,56 @@
+/*
+  Beacon Labs · sugestões curadas do carrinho na página /cart (component-cart-upsell.css)
+  Marcação em snippets/cart-upsell.liquid; o visual dos blocos é o das sugestões da gaveta
+  (assets/component-cart-drawer.css, classes cart-recommendations__*). Aqui só o espaço da
+  seção na página e o título sem moldura.
+
+  Etapa 8e (juiz visual, item 2, 03/10/2026): a moldura externa (cartão branco com borda e raio 20)
+  saiu. Era caixa dentro de caixa: um cartão contendo dois cartões e, no celular, três molduras
+  aninhadas. Agora o título fica direto sobre a página branca e cada sugestão é um bloco sólido
+  #ECF3F9 (regra .cart-recommendations__item de component-cart-drawer.css, a mesma da gaveta).
+
+  Ritmo vertical (item 20): --cart-gap (24 px; 16 px até 749 px) é o vão entre os blocos da coluna
+  do carrinho (cabeçalho, lista, observação, sugestões e resumo). O vão fica na margem de cima do
+  próprio bloco de sugestões, não no invólucro da seção: sem sugestão, a seção não deixa vão.
+*/
+
+.main-cart-upsell {
+  --cart-gap: 16px;
+
+  padding-block: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .main-cart-upsell {
+    --cart-gap: 24px;
+  }
+}
+
+.main-cart-upsell .cart-upsell {
+  margin-top: var(--cart-gap);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+/* Título no tamanho do título do resumo do pedido (18 px; 20 px a partir de 990 px): sem a moldura,
+   o de 16 px da gaveta ficava pequeno entre dois cartões de título maior. */
+.main-cart-upsell .cart-recommendations__title {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+@media screen and (min-width: 990px) {
+  .main-cart-upsell .cart-recommendations__title {
+    font-size: 20px;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .main-cart-upsell .cart-recommendations__list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--grid-gap, 12px);
+  }
+}

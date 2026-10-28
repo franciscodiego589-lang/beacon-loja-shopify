@@ -1,0 +1,225 @@
+/*
+  Beacon Labs · section-main-order.css (área conta)
+
+  Detalhe do pedido: cabeçalho com status, tabela de itens (vira cartões no celular,
+  ver conta-base.css), resumo de valores e coluna lateral com os dois endereços.
+  Computador: duas colunas (itens 2/3, lateral 1/3). Celular: uma coluna.
+  Liquid Glass: aviso e endereços em cartão de vidro de conteúdo (marcação); divisórias em ink
+  a 0,12; descontos em #0058B8 (6,088:1 na névoa) e reembolso em #9B3915 (6,288:1), spec D6 e D30.
+*/
+
+/* ---------- Cabeçalho ---------- */
+
+.conta-order__header {
+  gap: 12px;
+}
+
+.conta-order__statuses {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Aviso de pedido cancelado: cartão de vidro de conteúdo (.glass .glass--card na marcação). */
+.conta-order__notice {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--lg-radius-small, var(--radius-input));
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.conta-order__notice p + p {
+  margin-top: 4px;
+}
+
+.conta-order__status-link {
+  margin-top: 16px;
+}
+
+/* ---------- Layout ---------- */
+
+.conta-order__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+}
+
+.conta-order__aside {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+.conta-order__muted {
+  color: var(--color-text-muted);
+}
+
+@media screen and (min-width: 990px) {
+  .conta-order__layout {
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 48px;
+  }
+}
+
+/* ---------- Item do pedido ---------- */
+
+.conta-line-item {
+  display: flex;
+  gap: 12px;
+  text-align: left;
+}
+
+.conta-line-item__media {
+  flex-shrink: 0;
+  width: 64px;
+  border-radius: var(--radius-media);
+  background: var(--color-photo-bg);
+  overflow: hidden;
+}
+
+.conta-line-item__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.conta-line-item__placeholder {
+  display: block;
+}
+
+.conta-line-item__info {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.conta-line-item__title {
+  font-weight: 700;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+a.conta-line-item__title:hover {
+  text-decoration: underline;
+}
+
+.conta-line-item__details {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.conta-line-item__meta {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.conta-line-item__discounts {
+  display: grid;
+  gap: 2px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.conta-line-item__discounts li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--lg-link-glass, var(--color-primary));
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.conta-line-item__fulfillment {
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.conta-line-item__fulfillment p {
+  margin: 0;
+}
+
+.conta-line-item__track {
+  display: inline-flex;
+  margin-top: 4px;
+}
+
+/* Preço original riscado + preço final (usado nas colunas de preço e total). */
+.conta-price {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.conta-price__compare {
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+/* ---------- Resumo de valores ---------- */
+
+.conta-order__summary {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.conta-summary {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.conta-summary__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0;
+}
+
+.conta-summary__row dt {
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.conta-summary__row dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.conta-summary__row--discount dd {
+  color: var(--lg-link-glass, var(--color-primary));
+}
+
+.conta-summary__row--refund dd {
+  color: var(--lg-error-text, var(--color-offer));
+}
+
+.conta-summary__row--total {
+  padding-top: 10px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.conta-summary__row--total dt,
+.conta-summary__row--total dd {
+  color: var(--color-ink);
+  font-size: 17px;
+  font-weight: 700;
+}

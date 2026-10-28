@@ -1,0 +1,129 @@
+/*
+  Beacon Labs · seção Colunas (sections/multicolumn.liquid)
+  A grade usa a classe .grid da fundação; o número de colunas vem das variáveis
+  --grid-columns-mobile, --grid-columns-tablet e --grid-columns-desktop, definidas pela seção.
+  Ícone em círculo de 44 px (fundo do chip), como a faixa de vantagens da maquete.
+  No arranjo "card", cada coluna é um bloco sólido #ECF3F9 (.pb-bloco, paginas-blog.css; etapa 8e, item 9,
+  03/10/2026: antes era cartão de vidro de conteúdo da v2, .glass .glass--card), preenchimento dentro do
+  painel (.glass-fill) e vidro escuro de conteúdo no campo noite (.glass .glass--dark-card), raio
+  --radius-card (22 px; 20 px no celular). O círculo do ícone, que é do tom do bloco, fica branco no cartão.
+  Material, borda de luz e sombra do vidro vêm de liquid-glass.css; aqui só forma e espaço.
+*/
+
+.multicolumn__heading {
+  font-size: 24px;
+}
+
+.multicolumn__item {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.multicolumn--card .multicolumn__item {
+  padding: 20px;
+  border-radius: var(--radius-card);
+}
+
+.multicolumn--card .multicolumn__icon {
+  background: #FFFFFF;
+}
+
+.multicolumn--inline .multicolumn__item {
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.multicolumn--align-center .multicolumn__item {
+  align-items: center;
+  text-align: center;
+}
+
+.multicolumn--inline.multicolumn--align-center .multicolumn__item {
+  justify-content: center;
+  text-align: left;
+}
+
+.multicolumn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-chip-bg);
+  color: var(--color-chip-text);
+}
+
+.pb-scheme--ink .multicolumn__icon {
+  background: var(--glass-dark-card-bg, var(--color-footer-surface));
+  color: var(--color-accent);
+}
+
+.pb-scheme--ink.multicolumn--card .multicolumn__icon {
+  background: var(--color-ink);
+}
+
+.multicolumn__media {
+  width: 100%;
+  border-radius: var(--radius-card-sm);
+}
+
+.multicolumn__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.multicolumn__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.multicolumn--align-center:not(.multicolumn--inline) .multicolumn__body {
+  align-items: center;
+}
+
+.multicolumn__title {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.multicolumn__text {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.multicolumn__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.multicolumn__actions {
+  margin-top: 28px;
+}
+
+@media screen and (min-width: 990px) {
+  .multicolumn__heading {
+    font-size: 36px;
+  }
+
+  .multicolumn--card .multicolumn__item {
+    padding: 24px;
+  }
+
+  .multicolumn__title {
+    font-size: 17px;
+  }
+
+  .multicolumn__actions {
+    margin-top: 40px;
+  }
+}

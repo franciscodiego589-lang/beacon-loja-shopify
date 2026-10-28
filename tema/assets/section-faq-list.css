@@ -1,0 +1,530 @@
+/*
+  Beacon Labs · seção Perguntas frequentes (sections/faq-list.liquid)
+  Painéis com borda (raio 18 px) e perguntas em <details>. Linha de pergunta com no mínimo
+  56 px de altura, divisória #D6E2EA, seta que gira ao abrir, como na maquete.
+
+  Liquid Glass (spec 8.7): painéis com título em preenchimento (.glass-fill) dentro do painel da seção.
+  Etapa 8e, item 9 (03/10/2026): sobre a página branca, os painéis com título e a lista de categorias são
+  blocos sólidos #ECF3F9 (.pb-bloco, paginas-blog.css), sem borda e sem sombra, raio --radius-card (22 px;
+  20 px no celular); antes eram cartões de vidro de conteúdo da v2 (.glass .glass--card), raio 24 (20 no
+  celular). O círculo do ícone do grupo é branco, porque o tom do chip é o mesmo do bloco. Divisórias em
+  ink a 0,12. Pergunta ink 15 px 700, resposta em apoio 14 px
+  (5,554:1 no painel, pior caso controlado), ícone ink. Hover da linha: preenchimento ink a
+  4% (ink sobre ele 13,860:1 [calculado] no painel, pior caso controlado). Ícone gira ao abrir; com movimento
+  reduzido, troca sem giro (base.css zera as transições).
+
+  Redesenho v3, tarefa 4b, parte 3 (02/10/2026): o arranjo "lado" ganhou o visual do alvo na página
+  branca (bloco no fim do arquivo); a lista de categorias do arranjo "categorias" ganhou position:
+  relative (emenda 11); o espaçamento vertical "Nenhum" usa o espaço padrão entre seções.
+*/
+
+.faq-list__heading {
+  font-size: 26px;
+}
+
+.faq-list__panels {
+  display: grid;
+  gap: 20px;
+  align-items: start;
+}
+
+.faq-list__panel {
+  padding: 8px 16px;
+  border-radius: var(--radius-card);
+}
+
+/* Maquete (Main/Categoria): sem grupo (título), a seção some com o cartão e fica um
+   acordeão simples embaixo do título, igual à página de produto; o cartão com borda fica
+   só para painéis com título (ex.: "Dúvidas"/"Trocas" na página dedicada de perguntas). */
+.faq-list__panel--untitled {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.faq-list__panel--untitled .faq-list__items {
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+/* Etapa 8e, leva E, item 9: a lista em uma coluna (arranjo "one", usado em Trocas e devoluções) terminava na
+   linha de texto da última pergunta, com 16 px de ar do botão de 56 px, e o fim visível ficava 123 px
+   (87 px no celular) antes da seção seguinte, em vez de 104 (68). Ganha o fio de fechamento que a lista do
+   arranjo "lado" (Entregas) e a do FAQ do produto já têm, e o vão passa a ser medido a partir dele. */
+.faq-list--one .faq-list__panel--untitled .faq-list__items {
+  border-bottom: 1px solid var(--lg-divider, var(--color-line));
+}
+
+/* A tag do título (h2 ou h3) segue a hierarquia da página (sections/faq-list.liquid); a aparência
+   não depende dela: tamanho e espaçamento entre letras fixos aqui (o h3 de base.css já tinha
+   letter-spacing 0). */
+.faq-list__panel-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0 10px;
+  font-size: 17px;
+  letter-spacing: 0;
+}
+
+.faq-list__panel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  color: var(--color-chip-text);
+}
+
+.faq-list__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.faq-list__item + .faq-list__item {
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.faq-list__panel-title + .faq-list__items {
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.faq-list__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 56px;
+  padding: 12px 0;
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* Hover da linha: preenchimento ink a 4% que passa 12 px para cada lado (margem negativa com
+   o mesmo padding), sem mover o texto. */
+.faq-list__summary {
+  margin-inline: -12px;
+  padding-inline: 12px;
+  border-radius: var(--lg-radius-small, 12px);
+  transition: background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+@media (hover: hover) {
+  .faq-list__summary:hover {
+    background-color: var(--lg-fill-ink-04, transparent);
+  }
+}
+
+.faq-list__summary:hover .faq-list__question {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.faq-list__chevron {
+  flex-shrink: 0;
+  color: var(--color-text);
+  transition: transform var(--lg-dur-state, 240ms) var(--lg-ease-glass, ease);
+}
+
+.faq-list__details[open] .faq-list__chevron {
+  transform: rotate(180deg);
+}
+
+.faq-list__answer {
+  padding: 0 0 20px;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+@media screen and (min-width: 990px) {
+  .faq-list__heading {
+    font-size: 32px;
+  }
+
+  .faq-list--two .faq-list__panels {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  /* Só o painel com título (cartão com borda) ganha recuo; o acordeão sem título continua
+     alinhado com o título da seção. */
+  .faq-list__panel:not(.faq-list__panel--untitled) {
+    padding: 8px 24px;
+  }
+
+  .faq-list__summary {
+    font-size: 16px;
+  }
+
+  .faq-list__answer {
+    font-size: 15px;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): divisórias em ink. */
+@media (prefers-contrast: more) {
+  .faq-list__panel--untitled .faq-list__items,
+  .faq-list__item + .faq-list__item,
+  .faq-list__panel-title + .faq-list__items {
+    border-top-color: var(--color-ink);
+  }
+}
+
+/* ---------- Arranjos "categorias" e "lado" (maquete das páginas de ajuda, 29/09/2026) ----------
+   Só seletores novos: os arranjos "one" e "two" continuam como estavam.
+   - categorias: lista de categorias em bloco sólido (.pb-bloco) à esquerda, fixa ao rolar
+     no computador, e os grupos à direita; no celular, a lista vira uma faixa de chips com
+     rolagem lateral acima dos grupos. Número de perguntas em chip.
+   - lado: título, texto e link à esquerda; perguntas à direita no computador.
+   Link da resposta e âncora: a resposta com id ganha margem de rolagem para a pergunta ficar
+   visível acima dela. */
+
+.faq-list__intro-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+.faq-list__answer-link {
+  margin-top: 4px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.faq-list__answer[id] {
+  scroll-margin-top: 72px;
+}
+
+.faq-list__panel[id] {
+  scroll-margin-top: 16px;
+}
+
+.faq-list__panel-count {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.faq-list__body {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+
+.faq-list--categorias .faq-list__panels {
+  gap: 16px;
+}
+
+.faq-list__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: var(--radius-card);
+}
+
+.faq-list__nav-title {
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.08em;
+}
+
+/* position: relative (emenda 11 da tarefa 4): a faixa de categorias rola de lado abaixo de 990 px e o texto
+   escondido de cada número (.visually-hidden, position: absolute) precisa ter esta lista como referência.
+   Sem isto ele escapava da rolagem e alargava a página (595 px de estouro a 390 px no tema no ar). */
+.faq-list__nav-list {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  /* Etapa 8e, leva E, item 2: abaixo de 990 px a faixa sangra até a borda do bloco (margem negativa igual
+     ao recuo de 12 px de .faq-list__nav, devolvido por padding-inline e scroll-padding-inline): a ficha
+     que não cabe é cortada na borda do bloco, não 12 px antes dela. */
+  margin: 0 -12px;
+  padding: 0 12px 4px;
+  overflow-x: auto;
+  list-style: none;
+  scroll-padding-inline: 12px;
+  scroll-snap-type: x proximity;
+}
+
+.faq-list__nav-item {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.faq-list__nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 8px 0 16px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.faq-list__nav-link:hover {
+  background-color: var(--lg-fill-ink-04, transparent);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.faq-list__nav-link--all {
+  background-color: var(--color-ink);
+  color: var(--color-on-dark);
+}
+
+.faq-list__nav-link--all:hover {
+  background-color: var(--color-ink);
+  color: var(--color-on-dark);
+}
+
+.faq-list__nav-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-ink-04, var(--color-chip-bg));
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+}
+
+.faq-list__nav-link--all .faq-list__nav-count {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.faq-list__nav-help {
+  display: none;
+}
+
+@media screen and (min-width: 990px) {
+  .faq-list--categorias .faq-list__body {
+    grid-template-columns: 288px minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  .faq-list--categorias .faq-list__panels {
+    gap: 24px;
+  }
+
+  .faq-list__nav {
+    position: sticky;
+    top: calc(var(--lg-header-height, 0px) + 16px);
+    padding: 20px 12px 12px;
+  }
+
+  .faq-list__nav-list {
+    flex-direction: column;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .faq-list__nav-link {
+    white-space: normal;
+  }
+
+  .faq-list__nav-help {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+    padding: 12px 8px 0;
+    border-top: 1px solid var(--lg-divider, var(--color-line));
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .faq-list--categorias .faq-list__panel:not(.faq-list__panel--untitled) {
+    padding: 8px 28px 12px;
+  }
+
+  .faq-list--categorias .faq-list__panel-title {
+    min-height: 72px;
+    padding: 0;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+  }
+
+  .faq-list--categorias .faq-list__panel-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* O arranjo "lado" saiu daqui: ver o bloco "Arranjo lado no visual do alvo" no fim do arquivo
+     (duas colunas só a partir de 1081 px, como o alvo). */
+}
+
+@media (prefers-contrast: more) {
+  .faq-list__nav-help {
+    border-top-color: var(--color-ink);
+  }
+}
+
+/* ---------- Arranjo "lado" no visual do alvo (redesenho v3, tarefa 4b, parte 3) ----------
+   Alvo: alvo.css linhas 228 a 238 (computador), 376 (até 1080 px) e 435 a 438 (celular); home.html linhas 226 a 231.
+   Página branca, sem caixa e sem vidro (a marcação não põe .glass nem .glass-fill neste arranjo): título e frase
+   de apoio à esquerda (coluna de 360 px, vão de 80 px) e as perguntas à direita, cada uma com um fio
+   --color-line em cima e a última também embaixo. Até 1080 px, uma coluna (vão de 28 px; 24 px até 760 px).
+   Título de 40 px (30 px no celular), peso 600, linha de 1,1 e espaçamento -0,025 em; frase de 17 px em
+   --color-text-muted. Resumo da pergunta de 19 px (17 px no celular), peso 600, recuo de 22 px (18 px no
+   celular); ícone de mais de 20 px que gira 45 graus ao abrir. Resposta de 17 px em --color-text-muted, com
+   recuo de 48 px à direita (0 no celular) e links na tinta, sublinhados (3 px de afastamento).
+   Movimento reduzido: o giro do ícone perde a transição (o estado aberto continua valendo, sem animar).
+   Os arranjos one, two e categorias não usam nada deste bloco. */
+
+.faq-list--lado > .page-width {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+}
+
+/* Sem título, texto nem link, as perguntas ocupam a linha toda. */
+.faq-list--lado .faq-list__panels:first-child {
+  grid-column: 1 / -1;
+}
+
+.faq-list--lado .pb-intro {
+  gap: 14px;
+  max-width: none;
+  margin-bottom: 0;
+}
+
+.faq-list--lado .faq-list__heading {
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.faq-list--lado .pb-intro__text {
+  font-size: 17px;
+  line-height: calc(25 / 17);
+}
+
+/* Painel com título (grupo) sem caixa: só o título e a lista, na largura da coluna. */
+.faq-list--lado .faq-list__panels > .faq-list__panel {
+  padding: 0;
+  border-radius: 0;
+}
+
+.faq-list--lado .faq-list__items {
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.faq-list--lado .faq-list__item + .faq-list__item {
+  border-top: 1px solid var(--color-line);
+}
+
+.faq-list--lado .faq-list__summary {
+  gap: 24px;
+  min-height: 0;
+  margin-inline: 0;
+  padding: 22px 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: calc(25 / 17);
+  letter-spacing: -0.02em;
+}
+
+/* O alvo não pinta a linha no hover; a pergunta continua sublinhada (regra geral acima). */
+@media (hover: hover) {
+  .faq-list--lado .faq-list__summary:hover {
+    background-color: transparent;
+  }
+}
+
+.faq-list--lado .faq-list__details[open] .faq-list__chevron {
+  transform: rotate(45deg);
+}
+
+.faq-list--lado .faq-list__answer {
+  padding: 0 48px 24px 0;
+  font-size: 17px;
+  line-height: calc(25 / 17);
+}
+
+.faq-list--lado .faq-list__answer a {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.faq-list--lado .faq-list__answer-link {
+  font-size: inherit;
+  font-weight: 600;
+}
+
+@media screen and (min-width: 1081px) {
+  .faq-list--lado > .page-width {
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 80px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .faq-list--lado > .page-width {
+    gap: 24px;
+  }
+
+  .faq-list--lado .faq-list__heading {
+    font-size: 30px;
+  }
+
+  .faq-list--lado .faq-list__summary {
+    padding: 18px 0;
+    font-size: 17px;
+  }
+
+  .faq-list--lado .faq-list__answer {
+    padding-right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq-list--lado .faq-list__chevron {
+    transition: none;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): os fios do arranjo lado também em ink. */
+@media (prefers-contrast: more) {
+  .faq-list--lado .faq-list__items,
+  .faq-list--lado .faq-list__item + .faq-list__item {
+    border-color: var(--color-ink);
+  }
+}
+
+/* ---------- Espaço entre seções (emenda 15 da tarefa 4) ----------
+   Espaçamento vertical "Nenhum": sem padding de seção, só o espaço padrão entre seções
+   (104 px; 68 px até 760 px) como margem do próprio bloco; as margens de seções vizinhas se fundem.
+   Última seção da página: o vão até o rodapé é de uma regra geral (.main-content::after em
+   section-footer.css), que funde a margem de baixo da última seção com o espaço do rodapé; não há
+   regra local aqui. */
+.faq-list.pb-pad--none {
+  margin-block: var(--section-gap, 64px);
+}

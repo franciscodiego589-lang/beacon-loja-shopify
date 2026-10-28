@@ -1,0 +1,34 @@
+{%- comment -%}
+  Anel que pulsa sem parar em volta do botão verde desenhado dentro da imagem do banner (pedido do
+  dono em 03/10/2026: "Montar meu kit", "Ver lançamentos", "Ver as vitaminas", "Comprar agora"
+  pulsando sem parar). O botão é parte da arte (texto na imagem), então o pulso é um anel por cima,
+  sem mexer na imagem; o clique continua sendo o do link do banner inteiro.
+
+  Posição do botão em cada arte, em % da largura e da altura (x, y, largura, altura), medida pela
+  cor verde do botão nos próprios arquivos (assets/<arte>-2172.jpg e <arte>-1122.jpg) e conferida com
+  retângulo desenhado sobre as 16 artes em 03/10/2026, com folga de 0,6 ponto dos lados e 0,8 em cima
+  e embaixo. Arte nova ou trocada precisa de medida nova aqui; arte sem medida não ganha anel.
+
+  Uso: {% render 'banner-pulso', base: 'faixa-kits-v1', base_cel: 'faixa-kits-cel-v1' %}
+  (só quando a imagem é a arte do tema, não uma imagem escolhida no editor).
+{%- endcomment -%}
+{%- liquid
+  assign bp_mapa = 'faixa-frete-cel-v1:24.71,87.93,50.22,9.23|faixa-frete-v1:64.59,81.52,28.32,14.58|faixa-frete-v2:65.06,80.80,27.62,13.54|faixa-frete-cel-v2:22.91,90.58,54.10,7.85|faixa-gotas-a-v1:70.49,56.24,26.38,16.93|faixa-gotas-b-v1:72.42,62.46,24.82,15.00|faixa-gotas-c-v1:73.62,63.29,23.90,14.45|faixa-kits-cel-v1:26.58,89.50,46.83,7.66|faixa-kits-v1:68.28,63.01,22.65,13.06|faixa-lancamento-cel-v1:18.56,89.78,62.79,8.73|faixa-lancamento-v1:66.30,81.66,21.92,12.10|faixa-preco-dia-cel-v1:26.05,90.14,47.90,7.95|faixa-preco-dia-v1:12.75,81.66,20.35,11.96|faixa-preco-dia-v2:13.31,82.46,19.20,10.64|faixa-preco-dia-cel-v2:26.65,91.16,46.70,6.28|faixa-gotas-nova-v1:5.62,85.91,18.83,9.25|faixa-gotas-nova-cel-v1:30.66,86.31,38.59,9.63|faixa-qualidade-cel-v1:22.04,91.07,55.92,7.02|faixa-qualidade-cel-v2:2.94,48.64,34.94,6.35|faixa-qualidade-v1:11.60,81.93,27.95,13.48|faixa-qualidade-v2:5.06,81.49,27.03,12.29|faixa-qualidade-v3:12.06,82.32,27.03,11.88|faixa-qualidade-cel-v3:22.10,91.08,56.06,6.42|vitrine-gotas-v2:71.96,58.56,23.94,14.23|vitrine-gotas-cel-v2:27.45,90.51,45.10,6.13|faixa-trocas-cel-v1:13.13,88.71,73.48,10.59|faixa-trocas-v1:35.59,79.86,28.78,15.96|faixa-trocas-v2:35.68,81.91,28.55,15.19|faixa-trocas-cel-v2:12.75,88.30,74.24,10.56|vitrine-gotas-cel-v1:26.85,89.71,46.39,7.81|vitrine-gotas-v1:71.41,57.63,25.14,16.10|vitrine-frete-cel-v1:20.43,90.50,59.04,8.45|vitrine-frete-v1:65.15,83.45,24.91,12.79|vitrine-vitamina-c-cel-v2:27.47,91.92,45.05,7.31|vitrine-vitamina-c-v2:68.37,66.05,20.31,12.51' | split: '|'
+  assign bp_pc = ''
+  assign bp_cel = ''
+  for bp_item in bp_mapa
+    assign bp_partes = bp_item | split: ':'
+    if bp_partes[0] == base
+      assign bp_pc = bp_partes[1] | split: ','
+    endif
+    if base_cel != blank and bp_partes[0] == base_cel
+      assign bp_cel = bp_partes[1] | split: ','
+    endif
+  endfor
+-%}
+{%- if bp_pc != '' -%}
+  <span class="banner-pulso{% if bp_cel != '' %} banner-pulso--pc{% endif %}" aria-hidden="true" style="--bp-x: {{ bp_pc[0] }}%; --bp-y: {{ bp_pc[1] }}%; --bp-w: {{ bp_pc[2] }}%; --bp-h: {{ bp_pc[3] }}%;"></span>
+{%- endif -%}
+{%- if bp_cel != '' -%}
+  <span class="banner-pulso banner-pulso--cel" aria-hidden="true" style="--bp-x: {{ bp_cel[0] }}%; --bp-y: {{ bp_cel[1] }}%; --bp-w: {{ bp_cel[2] }}%; --bp-h: {{ bp_cel[3] }}%;"></span>
+{%- endif -%}

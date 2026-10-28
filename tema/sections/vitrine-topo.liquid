@@ -1,0 +1,626 @@
+{{ 'section-vitrine-topo.css' | asset_url | stylesheet_tag }}
+{{ 'component-promo.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'vitrine-topo.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Topo da home: carrossel de banners (redesenho v3, emendas 10 e 14, decisão D22 do dono em 02/10/2026).
+  Substitui o topo "Linha Pure." de três potes e a doca de categorias (D19 e D20). Cada bloco é um banner:
+  - "Banner" (banner): imagem inteira (3:1), texto alternativo com o texto de dentro da imagem e link opcional.
+  - "Capa com texto" (capa): imagem com selo, título, texto, três itens e dois botões em HTML por cima (versão A
+    da maquete capa/monta_capas_gpt.py). No computador o texto fica sobre o terço livre da imagem; até 1200 px
+    sai de cima da foto e vai para o campo claro, acima dela.
+  A imagem vem do seletor de imagem do bloco; sem ela, vale a arte guardada no tema, escolhida em "Arte guardada no
+  tema" (assets/vitrine-<arte>-<versão>-<largura>.jpg, nas larguras 720, 1080, 1440 e 2172). As artes v1 (farol, lago,
+  estante, piscina e folhas) são PROVISÓRIAS: têm erros de rótulo e serão trocadas pelas corrigidas. A arte v2 da
+  Vitamina C (conferida letra por letra em 02/10/2026) tem versão própria para o celular. O lago também tem
+  versão de celular (vitrine-lago-cel-v1), PROVISÓRIA: posta a pedido do dono em 02/10/2026 com 8 erros de rótulo
+  conhecidos (Cromo, B1, Psyllium, Espirulina, Creatina, Ácido Hialurônico, Colágeno e B12), à espera da corrigida.
+  - Banner sem versão de celular (06/10/2026, pedido do dono: a capa do farol "fica horrível" no celular, porque a
+    imagem 3:1 cai para 130 px de altura com 27 potes ilegíveis): quando o bloco "Banner" não tem imagem para
+    celular nem arte de celular guardada, e tem título ou produto 1 preenchido, até 760 px o slide mostra o banner
+    promocional em HTML (snippets/v3-promo.liquid) com os ajustes do próprio bloco, 4:5; no computador continua a
+    imagem. Classes vitrine-topo__imagem-pc e vitrine-topo__cel-html, em assets/section-vitrine-topo.css.
+  - "Banner promocional" (promo): marcação em snippets/v3-promo.liquid e estilos em assets/component-promo.css
+    (os mesmos da faixa de banners, sections/faixa-promos.liquid). Banner em HTML, sem imagem de arte: selo, título com destaque, apoio, botão e as
+    fotos principais (inteiras, sem recorte) de 1 a 3 produtos escolhidos, em blocos claros #ECF3F9. Copia as
+    maquetes aprovadas do dono (capa/modelos-marketing-2026-10-03/index.html, modelos 2 e 3). Computador 3:1 e
+    celular 4:5, as mesmas proporções dos banners de imagem. Os tamanhos de letra e de espaço são em cqw (largura
+    do banner), de modo que a proporção da maquete vale em qualquer largura.
+  Imagem do celular: até 760 px de largura de tela, o banner mostra a imagem própria do celular, quando existe
+  (seletor "Imagem para celular" ou a versão de celular da arte guardada; <picture> com <source>); sem ela, mostra
+  a do computador. Só o primeiro banner carrega já (fetchpriority high);
+  os outros ficam com loading lazy. Nenhuma troca automática. O comportamento é de assets/vitrine-topo.js.
+  Título da página: quando nenhum bloco "capa" tem título, a seção escreve um h1 visualmente oculto
+  (ajuste "Título da página (oculto)"), para a home nunca ficar sem h1.
+  Sem nenhum banner com imagem, a seção não renderiza nada.
+{%- endcomment -%}
+
+{%- liquid
+  assign vt_total = 0
+  for block in section.blocks
+    assign vt_arte = block.settings.arte | default: 'nenhuma'
+    if block.type == 'promo'
+      if block.settings.titulo != blank or block.settings.produto_1 != blank
+        assign vt_total = vt_total | plus: 1
+      endif
+    elsif block.settings.image != blank or vt_arte != 'nenhuma'
+      assign vt_total = vt_total | plus: 1
+    endif
+  endfor
+  assign vt_h1_capa = false
+  for block in section.blocks
+    if block.type == 'capa' and block.settings.titulo != blank
+      assign vt_h1_capa = true
+    endif
+  endfor
+  assign vt_sizes = '(min-width: 1440px) 1440px, 100vw'
+  assign vp_sizes = '(max-width: 760px) 44vw, (min-width: 1440px) 413px, 29vw'
+-%}
+
+{%- if vt_total > 0 -%}
+  <div class="vitrine-topo lg-field--claro" role="region" aria-roledescription="carrossel" aria-label="{{ 'home.vitrine_topo.region_label' | t }}">
+    {%- unless vt_h1_capa -%}
+      <h1 class="visually-hidden">{{ section.settings.titulo_pagina | escape }}</h1>
+    {%- endunless -%}
+    <vitrine-carrossel class="vitrine-topo__inner">
+      <div class="vitrine-topo__palco">
+        <div class="vitrine-topo__trilho" data-vitrine-trilho tabindex="0">
+          {%- assign vt_i = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- liquid
+              assign vt_arte = block.settings.arte | default: 'nenhuma'
+              assign vt_promo = false
+              if block.type == 'promo'
+                assign vt_promo = true
+                if block.settings.titulo == blank and block.settings.produto_1 == blank
+                  continue
+                endif
+              elsif block.settings.image == blank and vt_arte == 'nenhuma'
+                continue
+              endif
+              assign vt_i = vt_i | plus: 1
+              assign vt_alt = block.settings.alt
+              assign vt_base_cel = blank
+              case vt_arte
+                when 'farol'
+                  assign vt_base = 'vitrine-farol-v1'
+                when 'lago'
+                  assign vt_base = 'vitrine-lago-v1'
+                  assign vt_base_cel = 'vitrine-lago-cel-v1'
+                when 'estante'
+                  assign vt_base = 'vitrine-estante-v1'
+                when 'piscina'
+                  assign vt_base = 'vitrine-piscina-v1'
+                when 'folhas'
+                  assign vt_base = 'vitrine-folhas-v1'
+                when 'vitamina-c'
+                  assign vt_base = 'vitrine-vitamina-c-v2'
+                  assign vt_base_cel = 'vitrine-vitamina-c-cel-v2'
+                when 'frete'
+                  assign vt_base = 'vitrine-frete-v1'
+                  assign vt_base_cel = 'vitrine-frete-cel-v1'
+                when 'qualidade'
+                  assign vt_base = 'faixa-qualidade-v3'
+                  assign vt_base_cel = 'faixa-qualidade-cel-v3'
+                when 'gotas'
+                  assign vt_base = 'vitrine-gotas-v2'
+                  assign vt_base_cel = 'vitrine-gotas-cel-v2'
+              endcase
+            -%}
+            {%- liquid
+              assign vt_cel_html = false
+              if vt_promo == false and block.type == 'banner' and block.settings.image_mobile == blank and vt_base_cel == blank
+                if block.settings.titulo != blank or block.settings.titulo_celular != blank or block.settings.produto_1 != blank
+                  assign vt_cel_html = true
+                endif
+              endif
+            -%}
+            {%- unless vt_promo -%}
+            {%- capture vt_fonte_cel -%}
+              {%- if block.settings.image_mobile != blank -%}
+                <source media="(max-width: 760px)" srcset="{{ block.settings.image_mobile | image_url: width: 600 }} 600w, {{ block.settings.image_mobile | image_url: width: 900 }} 900w, {{ block.settings.image_mobile | image_url: width: 1200 }} 1200w, {{ block.settings.image_mobile | image_url: width: 1680 }} 1680w, {{ block.settings.image_mobile | image_url: width: 2244 }} 2244w" sizes="100vw" width="{{ block.settings.image_mobile.width }}" height="{{ block.settings.image_mobile.height }}">
+              {%- elsif block.settings.image == blank and vt_base_cel != blank -%}
+                <source media="(max-width: 760px)" srcset="{{ vt_base_cel | append: '-600.jpg' | asset_url }} 600w, {{ vt_base_cel | append: '-900.jpg' | asset_url }} 900w, {{ vt_base_cel | append: '-1122.jpg' | asset_url }} 1122w" sizes="100vw" width="1122" height="1402">
+              {%- endif -%}
+            {%- endcapture -%}
+            {%- capture vt_imagem -%}
+              {%- if vt_fonte_cel != blank -%}<picture>{{ vt_fonte_cel }}{%- endif -%}
+              {%- if block.settings.image != blank -%}
+                {%- if vt_i == 1 -%}
+                  {{ block.settings.image | image_url: width: 4344 | image_tag: widths: '720, 1080, 1440, 2172, 2880, 4344', sizes: vt_sizes, alt: vt_alt, loading: 'eager', fetchpriority: 'high' }}
+                {%- else -%}
+                  {{ block.settings.image | image_url: width: 4344 | image_tag: widths: '720, 1080, 1440, 2172, 2880, 4344', sizes: vt_sizes, alt: vt_alt, loading: 'lazy' }}
+                {%- endif -%}
+              {%- else -%}
+                <img
+                  src="{{ vt_base | append: '-1440.jpg' | asset_url }}"
+                  srcset="{{ vt_base | append: '-720.jpg' | asset_url }} 720w, {{ vt_base | append: '-1080.jpg' | asset_url }} 1080w, {{ vt_base | append: '-1440.jpg' | asset_url }} 1440w, {{ vt_base | append: '-2172.jpg' | asset_url }} 2172w"
+                  sizes="{{ vt_sizes }}"
+                  width="2172"
+                  height="724"
+                  alt="{{ vt_alt | escape }}"
+                  {% if vt_i == 1 %}loading="eager" fetchpriority="high"{% else %}loading="lazy"{% endif %}
+                >
+              {%- endif -%}
+              {%- if vt_fonte_cel != blank -%}</picture>{%- endif -%}
+            {%- endcapture -%}
+            {%- endunless -%}
+            <div
+              class="vitrine-topo__slide{% if vt_promo %} vitrine-topo__slide--promo{% endif %}{% if vt_cel_html %} vitrine-topo__slide--cel-html{% endif %}"
+              role="group"
+              aria-roledescription="slide"
+              aria-label="{{ 'home.vitrine_topo.slide_label' | t: number: vt_i, total: vt_total }}"
+              {{ block.shopify_attributes }}
+            >
+              {%- if block.type == 'promo' -%}
+                {%- assign vt_prioridade = false -%}
+                {%- if vt_i == 1 -%}{%- assign vt_prioridade = true -%}{%- endif -%}
+                {%- render 'v3-promo', bloco: block, prioridade: vt_prioridade, sizes: vp_sizes -%}
+              {%- elsif block.type == 'capa' -%}
+                <div class="vitrine-topo__capa">
+                  <div class="vitrine-topo__capa-imagem">{{ vt_imagem }}</div>
+                  <div class="vitrine-topo__capa-texto">
+                    {%- if block.settings.selo != blank -%}
+                      <p class="vitrine-topo__selo">{{ block.settings.selo | escape }}</p>
+                    {%- endif -%}
+                    {%- if block.settings.titulo != blank -%}
+                      <h1 class="vitrine-topo__titulo">{{ block.settings.titulo | escape }}</h1>
+                    {%- endif -%}
+                    {%- if block.settings.texto != blank -%}
+                      <p class="vitrine-topo__texto">{{ block.settings.texto | escape }}</p>
+                    {%- endif -%}
+                    {%- liquid
+                      assign vt_fatos = block.settings.fato_1 | append: block.settings.fato_2 | append: block.settings.fato_3
+                    -%}
+                    {%- if vt_fatos != blank -%}
+                      <ul class="vitrine-topo__fatos" role="list">
+                        {%- for n in (1..3) -%}
+                          {%- liquid
+                            case n
+                              when 1
+                                assign vt_fato = block.settings.fato_1
+                              when 2
+                                assign vt_fato = block.settings.fato_2
+                              else
+                                assign vt_fato = block.settings.fato_3
+                            endcase
+                          -%}
+                          {%- if vt_fato != blank -%}
+                            <li>{% render 'icon', name: 'check', size: 18 %}<span>{{ vt_fato | escape }}</span></li>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+                    {%- if block.settings.botao_1_rotulo != blank or block.settings.botao_2_rotulo != blank -%}
+                      <div class="vitrine-topo__botoes">
+                        {%- if block.settings.botao_1_rotulo != blank and block.settings.botao_1_link != blank -%}
+                          <a href="{{ block.settings.botao_1_link }}" class="button button--primary">{{ block.settings.botao_1_rotulo | escape }}</a>
+                        {%- endif -%}
+                        {%- if block.settings.botao_2_rotulo != blank and block.settings.botao_2_link != blank -%}
+                          <a href="{{ block.settings.botao_2_link }}" class="button button--secondary">{{ block.settings.botao_2_rotulo | escape }}</a>
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              {%- elsif block.settings.link != blank -%}
+                <a class="vitrine-topo__link{% if vt_cel_html %} vitrine-topo__imagem-pc{% endif %}" href="{{ block.settings.link }}">{{ vt_imagem }}{%- if block.settings.image == blank -%}{% render 'banner-pulso', base: vt_base, base_cel: vt_base_cel %}{%- endif -%}</a>
+                {%- if vt_cel_html -%}<div class="vitrine-topo__cel-html">{% render 'v3-promo', bloco: block, prioridade: false, sizes: vp_sizes %}</div>{%- endif -%}
+              {%- elsif vt_cel_html -%}
+                <div class="vitrine-topo__imagem-pc">{{ vt_imagem }}</div>
+                <div class="vitrine-topo__cel-html">{% render 'v3-promo', bloco: block, prioridade: false, sizes: vp_sizes %}</div>
+              {%- else -%}
+                {{ vt_imagem }}
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+        <button
+          type="button"
+          class="icon-button vitrine-topo__seta vitrine-topo__seta--ant"
+          aria-label="{{ 'home.vitrine_topo.previous' | t }}"
+          aria-disabled="true"
+          data-vitrine-anterior
+          data-vitrine-controle
+          hidden
+        >
+          {% render 'icon', name: 'chevron-left', size: 20 %}
+        </button>
+        <button
+          type="button"
+          class="icon-button vitrine-topo__seta vitrine-topo__seta--prox"
+          aria-label="{{ 'home.vitrine_topo.next' | t }}"
+          data-vitrine-proximo
+          data-vitrine-controle
+          hidden
+        >
+          {% render 'icon', name: 'chevron-right', size: 20 %}
+        </button>
+      </div>
+      <div class="vitrine-topo__pontos" data-vitrine-controle hidden>
+        {%- for n in (1..vt_total) -%}
+          <button type="button" class="vitrine-topo__ponto" aria-label="{{ 'home.vitrine_topo.go_to' | t: number: n }}"{% if n == 1 %} aria-current="true"{% endif %} data-vitrine-ponto></button>
+        {%- endfor -%}
+      </div>
+    </vitrine-carrossel>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="page-width"><p>Topo: acrescente um banner com imagem (ou escolha uma arte provisória) para o carrossel aparecer.</p></div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Topo: carrossel",
+  "tag": "section",
+  "class": "section-vitrine-topo",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "titulo_pagina",
+      "label": "Título da página (oculto)",
+      "info": "Título principal da home para leitores de tela e buscadores; não aparece na tela. Vale só quando nenhuma capa com texto tem título.",
+      "default": "Beacon Labs: suplementos alimentares em cápsulas da linha Pure"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "banner",
+      "name": "Banner",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem do banner",
+          "info": "Formato 3:1 (2172 x 724 px), usada inteira. Sem imagem aqui, vale a arte guardada no tema, abaixo."
+        },
+        {
+          "type": "image_picker",
+          "id": "image_mobile",
+          "label": "Imagem para celular",
+          "info": "Vertical 4:5 (1122 x 1402 px) ou quadrada, para telas de até 760 px. Sem ela, o celular mostra a imagem do computador."
+        },
+        {
+          "type": "select",
+          "id": "arte",
+          "label": "Arte guardada no tema",
+          "options": [
+            { "value": "nenhuma", "label": "Nenhuma (usar a imagem escolhida acima)" },
+            { "value": "vitamina-c", "label": "Vitamina C: uma nova opção (computador e celular)" },
+            { "value": "frete", "label": "Frete grátis acima de R$ 179 (degraus)" },
+            { "value": "qualidade", "label": "Qualidade comprovada, laudo técnico" },
+            { "value": "gotas", "label": "Nova linha Pure em gotas (lançamento)" },
+            { "value": "farol", "label": "Farol com oferta (provisória)" },
+            { "value": "lago", "label": "Lago com rotina (provisória)" },
+            { "value": "estante", "label": "Estante com rotina (provisória)" },
+            { "value": "piscina", "label": "Piscina com 27 suplementos (provisória)" }
+          ],
+          "default": "nenhuma"
+        },
+        {
+          "type": "textarea",
+          "id": "alt",
+          "label": "Texto alternativo",
+          "info": "O texto inteiro que aparece dentro da imagem."
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link do banner"
+        },
+        {
+          "type": "header",
+          "content": "Celular sem arte própria: banner em HTML"
+        },
+        {
+          "type": "paragraph",
+          "content": "Vale só quando não há imagem para celular nem versão de celular da arte guardada. Até 760 px o slide mostra este banner em HTML (os mesmos ajustes do Banner promocional), 4:5, no lugar da imagem do computador, que ficava com 130 px de altura. Preencha o título ou o produto 1 para ligar."
+        },
+        {
+          "type": "select",
+          "id": "tema",
+          "label": "Cor do banner",
+          "options": [
+            { "value": "vermelho", "label": "Vermelho (texto branco)" },
+            { "value": "claro", "label": "Claro (texto azul-marinho)" },
+            { "value": "branco", "label": "Branco com borda (texto azul-marinho)" },
+            { "value": "amarelo", "label": "Amarelo (texto azul-marinho)" },
+            { "value": "marinho", "label": "Azul-marinho (texto branco)" }
+          ],
+          "default": "claro"
+        },
+        {
+          "type": "text",
+          "id": "selo",
+          "label": "Selo"
+        },
+        {
+          "type": "checkbox",
+          "id": "selo_no_celular",
+          "label": "Mostrar o selo no celular",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "titulo",
+          "label": "Título"
+        },
+        {
+          "type": "text",
+          "id": "titulo_destaque",
+          "label": "Título em destaque",
+          "info": "Segunda linha do título, na cor de destaque."
+        },
+        {
+          "type": "text",
+          "id": "titulo_celular",
+          "label": "Título para celular",
+          "info": "Opcional. Vazio: o celular usa o título e o destaque acima."
+        },
+        {
+          "type": "text",
+          "id": "destaque_celular",
+          "label": "Destaque do título para celular",
+          "info": "Opcional. Segunda linha do título do celular, na cor de destaque. Só vale com o título para celular."
+        },
+        {
+          "type": "textarea",
+          "id": "apoio",
+          "label": "Texto de apoio",
+          "info": "Aceita o marcador [preco]: na loja vira o menor preço entre os produtos escolhidos abaixo, como R$ 29,90."
+        },
+        {
+          "type": "textarea",
+          "id": "apoio_celular",
+          "label": "Texto de apoio para celular",
+          "info": "Opcional. Vazio: o celular usa o texto de apoio acima."
+        },
+        {
+          "type": "text",
+          "id": "botao_rotulo",
+          "label": "Texto do botão"
+        },
+        {
+          "type": "url",
+          "id": "botao_link",
+          "label": "Link do botão"
+        },
+        {
+          "type": "product",
+          "id": "produto_1",
+          "label": "Produto 1",
+          "info": "Aparece a foto principal, inteira."
+        },
+        {
+          "type": "product",
+          "id": "produto_2",
+          "label": "Produto 2"
+        },
+        {
+          "type": "product",
+          "id": "produto_3",
+          "label": "Produto 3 (opcional)"
+        }
+      ]
+    },
+    {
+      "type": "capa",
+      "name": "Capa com texto",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem da capa",
+          "info": "Formato 3:1 (2172 x 724 px), usada inteira. Deixe o terço da esquerda livre para o texto."
+        },
+        {
+          "type": "select",
+          "id": "arte",
+          "label": "Arte provisória",
+          "options": [
+            { "value": "nenhuma", "label": "Nenhuma (usar a imagem escolhida acima)" },
+            { "value": "folhas", "label": "Folhas (provisória)" }
+          ],
+          "default": "nenhuma"
+        },
+        {
+          "type": "text",
+          "id": "alt",
+          "label": "Texto alternativo da imagem"
+        },
+        {
+          "type": "text",
+          "id": "selo",
+          "label": "Selo amarelo"
+        },
+        {
+          "type": "text",
+          "id": "titulo",
+          "label": "Título"
+        },
+        {
+          "type": "textarea",
+          "id": "texto",
+          "label": "Texto"
+        },
+        {
+          "type": "text",
+          "id": "fato_1",
+          "label": "Item 1"
+        },
+        {
+          "type": "text",
+          "id": "fato_2",
+          "label": "Item 2"
+        },
+        {
+          "type": "text",
+          "id": "fato_3",
+          "label": "Item 3"
+        },
+        {
+          "type": "text",
+          "id": "botao_1_rotulo",
+          "label": "Botão principal"
+        },
+        {
+          "type": "url",
+          "id": "botao_1_link",
+          "label": "Link do botão principal"
+        },
+        {
+          "type": "text",
+          "id": "botao_2_rotulo",
+          "label": "Segundo botão"
+        },
+        {
+          "type": "url",
+          "id": "botao_2_link",
+          "label": "Link do segundo botão"
+        }
+      ]
+    },
+    {
+      "type": "promo",
+      "name": "Banner promocional",
+      "settings": [
+        {
+          "type": "select",
+          "id": "tema",
+          "label": "Cor do banner",
+          "options": [
+            { "value": "vermelho", "label": "Vermelho (texto branco)" },
+            { "value": "claro", "label": "Claro (texto azul-marinho)" },
+            { "value": "branco", "label": "Branco com borda (texto azul-marinho)" },
+            { "value": "amarelo", "label": "Amarelo (texto azul-marinho)" },
+            { "value": "marinho", "label": "Azul-marinho (texto branco)" }
+          ],
+          "default": "vermelho"
+        },
+        {
+          "type": "text",
+          "id": "selo",
+          "label": "Selo"
+        },
+        {
+          "type": "checkbox",
+          "id": "selo_no_celular",
+          "label": "Mostrar o selo no celular",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "titulo",
+          "label": "Título"
+        },
+        {
+          "type": "text",
+          "id": "titulo_destaque",
+          "label": "Título em destaque",
+          "info": "Segunda linha do título, na cor de destaque."
+        },
+        {
+          "type": "text",
+          "id": "titulo_celular",
+          "label": "Título para celular",
+          "info": "Opcional. Vazio: o celular usa o título e o destaque do computador."
+        },
+        {
+          "type": "text",
+          "id": "destaque_celular",
+          "label": "Destaque do título para celular",
+          "info": "Opcional. Segunda linha do título do celular, na cor de destaque. Só vale com o título para celular."
+        },
+        {
+          "type": "textarea",
+          "id": "apoio",
+          "label": "Texto de apoio",
+          "info": "Aceita o marcador [preco]: na loja vira o menor preço entre os produtos escolhidos abaixo, como R$ 29,90."
+        },
+        {
+          "type": "textarea",
+          "id": "apoio_celular",
+          "label": "Texto de apoio para celular",
+          "info": "Opcional. Vazio: o celular usa o texto de apoio do computador."
+        },
+        {
+          "type": "text",
+          "id": "item_1",
+          "label": "Item 1",
+          "info": "Opcional. Com algum item preenchido, o computador mostra os itens (com sinal de certo) no lugar do texto de apoio; o celular mostra o texto de apoio para celular."
+        },
+        {
+          "type": "text",
+          "id": "item_2",
+          "label": "Item 2"
+        },
+        {
+          "type": "text",
+          "id": "item_3",
+          "label": "Item 3"
+        },
+        {
+          "type": "text",
+          "id": "botao_rotulo",
+          "label": "Texto do botão"
+        },
+        {
+          "type": "url",
+          "id": "botao_link",
+          "label": "Link do botão"
+        },
+        {
+          "type": "product",
+          "id": "produto_1",
+          "label": "Produto 1",
+          "info": "Aparece a foto principal, inteira."
+        },
+        {
+          "type": "product",
+          "id": "produto_2",
+          "label": "Produto 2"
+        },
+        {
+          "type": "product",
+          "id": "produto_3",
+          "label": "Produto 3 (opcional)"
+        },
+        {
+          "type": "product",
+          "id": "produto_4",
+          "label": "Produto 4 (opcional)",
+          "info": "Com 5 produtos, o primeiro fica grande no centro e os outros quatro menores dos lados. No celular, só os três primeiros."
+        },
+        {
+          "type": "product",
+          "id": "produto_5",
+          "label": "Produto 5 (opcional)"
+        },
+        {
+          "type": "image_picker",
+          "id": "imagem_produtos",
+          "label": "Imagem única dos produtos",
+          "info": "Se escolhida, aparece no lugar dos cards dos produtos acima (que continuam valendo para o [preco])."
+        },
+        {
+          "type": "checkbox",
+          "id": "primeiro_menor",
+          "label": "Primeiro pote menor",
+          "info": "Deixa o primeiro pote menor, para destacar o segundo.",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Topo: carrossel",
+      "blocks": [
+        { "type": "banner", "settings": { "arte": "farol" } },
+        { "type": "banner", "settings": { "arte": "lago" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

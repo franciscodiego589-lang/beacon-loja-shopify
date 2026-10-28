@@ -1,0 +1,537 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "topo": {
+      "type": "ajuda-topo",
+      "blocks": {
+        "destaque-frete": {
+          "type": "destaque",
+          "settings": {
+            "icon": "truck",
+            "text": "Frete grátis no Brasil a partir de R$ 179,00"
+          }
+        },
+        "destaque-postagem": {
+          "type": "destaque",
+          "settings": {
+            "icon": "clock",
+            "text": ""
+          }
+        },
+        "botao-rastreio": {
+          "type": "botao",
+          "settings": {
+            "label": "Rastrear meu pedido",
+            "link": "shopify://pages/rastreie-seu-pedido",
+            "style": "primary",
+            "icon": "none"
+          }
+        },
+        "botao-atendimento": {
+          "type": "botao",
+          "settings": {
+            "label": "Falar com o atendimento",
+            "link": "shopify://pages/contact",
+            "style": "secondary",
+            "icon": "chat"
+          }
+        }
+      },
+      "block_order": [
+        "destaque-frete",
+        "destaque-postagem",
+        "botao-rastreio",
+        "botao-atendimento"
+      ],
+      "settings": {
+        "show_breadcrumbs": true,
+        "icon": "none",
+        "eyebrow": "",
+        "heading": "Entregas",
+        "heading_tag": "h1",
+        "text": "<p>Como o seu pedido chega até você, como acompanhar a entrega e o que fazer se ela atrasar.</p>",
+        "updated": "",
+        "aside": "cartao",
+        "search_label": "Buscar nas páginas e no blog",
+        "search_placeholder": "Ex.: troca, entrega, rastreio",
+        "search_scope": "conteudo",
+        "shortcuts_heading": "Acesso rápido",
+        "aside_heading": "Já fez seu pedido?",
+        "aside_text": "<p>Acompanhe a entrega ou fale com a gente.</p>",
+        "aside_note": "",
+        "padding": "small"
+      }
+    },
+    "prazos": {
+      "type": "ajuda-tabela",
+      "blocks": {
+        "regiao-sudeste": {
+          "type": "regiao",
+          "settings": {
+            "nome": "Sudeste",
+            "ufs": "ES, MG, RJ e SP",
+            "capitais": "",
+            "interior": "",
+            "frete": ""
+          }
+        },
+        "regiao-sul": {
+          "type": "regiao",
+          "settings": {
+            "nome": "Sul",
+            "ufs": "PR, RS e SC",
+            "capitais": "",
+            "interior": "",
+            "frete": ""
+          }
+        },
+        "regiao-centro-oeste": {
+          "type": "regiao",
+          "settings": {
+            "nome": "Centro-Oeste",
+            "ufs": "DF, GO, MS e MT",
+            "capitais": "",
+            "interior": "",
+            "frete": ""
+          }
+        },
+        "regiao-nordeste": {
+          "type": "regiao",
+          "settings": {
+            "nome": "Nordeste",
+            "ufs": "AL, BA, CE, MA, PB, PE, PI, RN e SE",
+            "capitais": "",
+            "interior": "",
+            "frete": ""
+          }
+        },
+        "regiao-norte": {
+          "type": "regiao",
+          "settings": {
+            "nome": "Norte",
+            "ufs": "AC, AM, AP, PA, RO, RR e TO",
+            "capitais": "",
+            "interior": "",
+            "frete": ""
+          }
+        },
+        "inicio-pix": {
+          "type": "inicio",
+          "settings": {
+            "icon": "coin",
+            "forma": "Pix",
+            "texto": ""
+          }
+        },
+        "inicio-cartao": {
+          "type": "inicio",
+          "settings": {
+            "icon": "card",
+            "forma": "Cartão de crédito",
+            "texto": ""
+          }
+        },
+        "inicio-boleto": {
+          "type": "inicio",
+          "settings": {
+            "icon": "file-text",
+            "forma": "Boleto",
+            "texto": ""
+          }
+        }
+      },
+      "block_order": [
+        "regiao-sudeste",
+        "regiao-sul",
+        "regiao-centro-oeste",
+        "regiao-nordeste",
+        "regiao-norte",
+        "inicio-pix",
+        "inicio-cartao",
+        "inicio-boleto"
+      ],
+      "settings": {
+        "heading": "Prazos e custos por região",
+        "text": "",
+        "caption": "Prazo de entrega e valor do frete por região do Brasil",
+        "col_regiao": "Região",
+        "col_capitais": "Capitais e regiões metropolitanas",
+        "col_capitais_curto": "Capitais",
+        "col_interior": "Interior",
+        "col_frete": "Frete",
+        "col_frete_curto": "Frete",
+        "info_icon": "truck",
+        "info_title": "",
+        "info_text": "",
+        "inicio_title": "Quando o prazo começa",
+        "note": "",
+        "padding": "normal"
+      }
+    },
+    "passos": {
+      "type": "ajuda-passos",
+      "blocks": {
+        "passo-1": {
+          "type": "passo",
+          "settings": {
+            "title": "Pedido confirmado",
+            "text": "<p>Ao concluir a compra, o pedido fica registrado com um número. Ele aparece em Minha conta, em Pedidos.</p>"
+          }
+        },
+        "passo-2": {
+          "type": "passo",
+          "settings": {
+            "title": "Separação e envio",
+            "text": "<p>Com o pagamento confirmado, o pedido é separado e enviado.</p>"
+          }
+        },
+        "passo-3": {
+          "type": "passo",
+          "settings": {
+            "title": "A caminho",
+            "text": "<p>Depois do envio, acompanhe a entrega na página <a href=\"/pages/rastreie-seu-pedido\">Rastreie seu pedido</a> ou em Minha conta, em Pedidos.</p>"
+          }
+        },
+        "passo-4": {
+          "type": "passo",
+          "settings": {
+            "title": "Entregue",
+            "text": "<p>Confira o pedido ao receber. Veio produto errado, faltando ou com defeito? Avise em até 30 dias, pela página <a href=\"/pages/contact\">Contato</a>.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "passo-1",
+        "passo-2",
+        "passo-3",
+        "passo-4"
+      ],
+      "settings": {
+        "heading": "Do pedido à sua porta",
+        "text": "<p>O caminho do seu pedido, etapa por etapa.</p>",
+        "badge": "",
+        "step_label": "Etapa",
+        "anchor": "",
+        "layout": "cartoes",
+        "note_icon": "shield-check",
+        "note": "",
+        "note_source": "",
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "rastreio": {
+      "type": "ajuda-cartoes",
+      "blocks": {
+        "cartao-rastreio": {
+          "type": "cartao",
+          "settings": {
+            "icon": "map-pin",
+            "destaque": "",
+            "title": "Rastreie seu pedido",
+            "text": "<p>Acompanhe cada etapa da entrega. Você pode rastrear de dois jeitos:</p>",
+            "list_style": "marcadores",
+            "anchor": "",
+            "button_label": "Abrir o rastreio",
+            "button_link": "shopify://pages/rastreie-seu-pedido",
+            "button_anchor": "",
+            "button_style": "primary",
+            "button2_label": "Ver meus pedidos",
+            "button2_link": "/account"
+          }
+        },
+        "item-conta": {
+          "type": "item",
+          "settings": {
+            "icon": "user",
+            "title": "Em Minha conta",
+            "text": "Entre na sua conta e abra Pedidos para ver o status."
+          }
+        },
+        "item-pagina": {
+          "type": "item",
+          "settings": {
+            "icon": "map-pin",
+            "title": "Na página Rastreie seu pedido",
+            "text": "Com as orientações para acompanhar a entrega."
+          }
+        },
+        "nota-numero": {
+          "type": "nota",
+          "settings": {
+            "icon": "help-circle",
+            "title": "Onde está o número do pedido?",
+            "text": "<p>Em Minha conta, na lista de Pedidos.</p>",
+            "source": ""
+          }
+        },
+        "cartao-atraso": {
+          "type": "cartao",
+          "settings": {
+            "icon": "alert-triangle",
+            "destaque": "",
+            "title": "Se o pedido atrasar",
+            "text": "",
+            "list_style": "numerada",
+            "anchor": "",
+            "button_label": "Falar com o atendimento",
+            "button_link": "shopify://pages/contact",
+            "button_anchor": "",
+            "button_style": "secondary",
+            "button2_label": "",
+            "button2_link": ""
+          }
+        },
+        "item-atraso-1": {
+          "type": "item",
+          "settings": {
+            "icon": "none",
+            "title": "Confira o rastreio.",
+            "text": "Ele mostra o status mais recente do pedido."
+          }
+        },
+        "item-atraso-2": {
+          "type": "item",
+          "settings": {
+            "icon": "none",
+            "title": "Confirme o endereço de entrega",
+            "text": "nos detalhes do pedido, em Minha conta. Viu algum erro? Avise a gente logo."
+          }
+        },
+        "item-atraso-3": {
+          "type": "item",
+          "settings": {
+            "icon": "none",
+            "title": "Passou do prazo informado na compra?",
+            "text": "Fale com o atendimento e informe o número do pedido."
+          }
+        },
+        "nota-direitos": {
+          "type": "nota",
+          "settings": {
+            "icon": "shield-check",
+            "title": "Seus direitos",
+            "text": "<p>O prazo de entrega faz parte das condições da oferta, e a entrega deve respeitar o prazo informado (Decreto nº 7.962/2013, art. 2º, V, e art. 6º). Se o fornecedor recusar cumprimento à oferta, o Código de Defesa do Consumidor permite escolher entre exigir o cumprimento, aceitar outro produto equivalente ou desfazer a compra, com a devolução do valor pago antecipadamente, atualizado, e perdas e danos (art. 35).</p>",
+            "source": ""
+          }
+        }
+      },
+      "block_order": [
+        "cartao-rastreio",
+        "item-conta",
+        "item-pagina",
+        "nota-numero",
+        "cartao-atraso",
+        "item-atraso-1",
+        "item-atraso-2",
+        "item-atraso-3",
+        "nota-direitos"
+      ],
+      "settings": {
+        "heading": "",
+        "text": "",
+        "link_label": "",
+        "link": "",
+        "region_label": "Rastreio e atrasos",
+        "anchor": "",
+        "style": "padrao",
+        "columns_desktop": 2,
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "duvidas": {
+      "type": "faq-list",
+      "blocks": {
+        "q-endereco": {
+          "type": "question",
+          "settings": {
+            "question": "Posso mudar o endereço depois de comprar?",
+            "answer": "<p>Pode. Peça a mudança ao nosso atendimento, pela página <a href=\"/pages/contact\">Contato</a>, com o número do pedido e o endereço completo. Na mesma cidade, a entrega pode levar até 3 dias úteis a mais. Em outra cidade ou estado, fazemos um novo envio, com a diferença de frete cobrada ou devolvida, e o novo prazo chega por e-mail. Se você ainda não concluiu a compra, basta informar o endereço novo na finalização do pedido.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-ausente": {
+          "type": "question",
+          "settings": {
+            "question": "Ninguém estava em casa na entrega. E agora?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-avaria": {
+          "type": "question",
+          "settings": {
+            "question": "O pacote chegou aberto ou amassado. O que faço?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-brasil": {
+          "type": "question",
+          "settings": {
+            "question": "Vocês entregam em todo o Brasil?",
+            "answer": "<p>Sim. Enviamos para todos os estados e para o Distrito Federal.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-volumes": {
+          "type": "question",
+          "settings": {
+            "question": "Comprei vários produtos. Eles chegam juntos?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-retirada": {
+          "type": "question",
+          "settings": {
+            "question": "Posso retirar o pedido pessoalmente?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-arrependi": {
+          "type": "question",
+          "settings": {
+            "question": "Recebi e me arrependi. Posso devolver?",
+            "answer": "<p>Pode. Você tem 7 dias corridos, contados do recebimento, para desistir da compra feita pela internet (Código de Defesa do Consumidor, art. 49). O produto volta em perfeito estado, na embalagem original lacrada, o frete de volta é por nossa conta e você recebe de volta todos os valores pagos.</p>",
+            "link_label": "Ver Trocas e devoluções",
+            "link": "shopify://pages/trocas-e-devolucoes",
+            "anchor": ""
+          }
+        },
+        "q-frete": {
+          "type": "question",
+          "settings": {
+            "question": "Quanto custa o frete?",
+            "answer": "<p>No Brasil, o frete custa R$ 22,00 em pedidos de até R$ 178,99 e é grátis em pedidos a partir de R$ 179,00. Para fora do Brasil, o frete é de R$ 99,00, sem frete grátis.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        },
+        "q-exterior": {
+          "type": "question",
+          "settings": {
+            "question": "Vocês enviam para fora do Brasil?",
+            "answer": "<p>Sim, para 28 países e territórios, com frete de R$ 99,00: Alemanha, Austrália, Áustria, Bélgica, Canadá, Coreia do Sul, Dinamarca, Emirados Árabes Unidos, Espanha, Estados Unidos, Finlândia, França, Hong Kong, Irlanda, Israel, Itália, Japão, Malásia, Noruega, Nova Zelândia, Países Baixos, Polônia, Portugal, Reino Unido, Singapura, Suécia, Suíça e Tchéquia. O frete grátis a partir de R$ 179,00 vale só para entregas no Brasil.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": ""
+          }
+        }
+      },
+      "block_order": [
+        "q-frete",
+        "q-brasil",
+        "q-exterior",
+        "q-endereco",
+        "q-ausente",
+        "q-avaria",
+        "q-volumes",
+        "q-retirada",
+        "q-arrependi"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "Dúvidas sobre entrega",
+        "heading_tag": "h2",
+        "text": "<p>Situações que podem acontecer entre a compra e a chegada do pedido.</p>",
+        "intro_align": "left",
+        "layout": "lado",
+        "link_label": "Ver todas as perguntas frequentes",
+        "link": "shopify://pages/perguntas-frequentes",
+        "nav_heading": "Categorias",
+        "nav_all_label": "Todas as perguntas",
+        "show_counts": true,
+        "count_singular": "pergunta",
+        "count_plural": "perguntas",
+        "nav_help_text": "",
+        "nav_help_link_label": "",
+        "nav_help_link": "",
+        "open_first": true,
+        "color_scheme": "default",
+        "padding": "normal"
+      }
+    },
+    "contato": {
+      "type": "ajuda-contato",
+      "blocks": {
+        "canal-email": {
+          "type": "canal",
+          "settings": {
+            "icon": "message",
+            "rotulo": "E-mail",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        },
+        "canal-whatsapp": {
+          "type": "canal",
+          "settings": {
+            "icon": "chat",
+            "rotulo": "WhatsApp",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        },
+        "canal-horario": {
+          "type": "canal",
+          "settings": {
+            "icon": "clock",
+            "rotulo": "Horário",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        }
+      },
+      "block_order": [
+        "canal-email",
+        "canal-whatsapp",
+        "canal-horario"
+      ],
+      "settings": {
+        "anchor": "contato",
+        "icon": "none",
+        "heading": "Ainda precisa de ajuda?",
+        "text": "<p>Fale com o nosso time. Tenha o número do pedido em mãos.</p>",
+        "button_label": "Ir para Contato",
+        "button_link": "shopify://pages/contact",
+        "button_style": "primary",
+        "padding": "normal"
+      }
+    }
+  },
+  "order": [
+    "topo",
+    "prazos",
+    "passos",
+    "rastreio",
+    "duvidas",
+    "contato"
+  ]
+}

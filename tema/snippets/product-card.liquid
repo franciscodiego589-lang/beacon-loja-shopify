@@ -1,0 +1,202 @@
+{%- comment -%}
+  Card de produto (vitrines, coleção, busca, sugestões, relacionados).
+  Parâmetros:
+  - product: produto (obrigatório)
+  - show_ribbon: mostra a etiqueta no alto da foto (padrão false)
+  - ribbon_label: texto da etiqueta (opcional; sem ele usa o metafield beacon.selo)
+  - ribbon_tone: 'offer' (amarela), 'new' (vidro fino), 'best' ou 'discount' (padrão 'best')
+  - show_rating: mostra estrelas se houver metafield reviews.rating (padrão true)
+  - lazy: carregamento preguiçoso da foto (padrão true; use false na primeira dobra)
+  - priority: true na foto que é o maior elemento da primeira tela (fetchpriority high); padrão false
+  - section_id: id da seção que renderiza o card (para ids únicos de formulário)
+  - heading_tag: tag do nome do produto (padrão 'h3')
+  - sizes: atributo sizes da foto (opcional). O padrão descreve o trilho; quem renderiza o card em
+    outro formato (grade, relacionados, busca) deve passar o seu, medido no layout real.
+
+  Redesenho v3 (spec 2.4; alvo.css linhas 174 a 187): o card é um bloco claro (--color-photo-bg, raio
+  --radius-card), sem vidro. De cima para baixo: faixa reservada para a etiqueta (a etiqueta nunca
+  encosta na tampa do pote), foto inteira, nome, linha com o trecho que o título traz depois do
+  " – " (por exemplo "60 cápsulas"), preço com "A partir de" e o botão "Adicionar" pequeno em vidro.
+  O card inteiro leva ao produto: o único link é o do nome, que se estica sobre o card. A foto não
+  tem link e leva alt vazio, porque o nome ao lado já a descreve (antes ela ficava num link com
+  aria-hidden, e o leitor de tela também a ignorava). Esgotado: o botão fica desabilitado com o
+  texto "Esgotado" e a foto esmaece; ele nunca some.
+
+  Nome (emenda 1 da tarefa 3, C1 e G1; emenda 15 da tarefa 8): o nome visível sai de
+  snippets/v3-nome-visivel, a fonte única da regra: o título antes de " – ", com a dose, já
+  escapado (regra S1: não passa por | escape de novo). Sem " – " no título, vale o título inteiro.
+  Cada palavra com hífen ("Beta-Alanina", "L-Cisteína") vai num <span class="v3-junto">
+  (white-space: nowrap, regra única em assets/base.css), então o text-wrap: balance (emenda V9)
+  nunca a parte no hífen e o texto não leva caractere invisível (antes havia o U+2060, que ia
+  para o nome acessível e para o texto copiado). O modo 'texto' do mesmo snippet alimenta o rótulo
+  oculto do botão. A linha de baixo é o trecho depois de " – " e só aparece quando existe. O
+  snippet produto-nome-curto não é usado aqui: ele corta a dose.
+
+  Foto (emenda 3, C9): a classe vem de snippets/v3-classe-foto (capture e escape): lg-pote-solto
+  (máscara de borda) para pote de cápsula, v3-foto-quadro (quadro arredondado, sem máscara) para o
+  resto. Sem foto, aparece o espaço reservado do tema, no mesmo bloco claro e sem máscara.
+
+  O selo de % OFF usa a mesma variante do preço exibido (a de menor preço quando os preços
+  variam), igual ao snippet price, para selo e preço nunca divergirem. Só uma etiqueta cabe na
+  faixa: a do parâmetro ribbon_label ou metafield; sem ela, o % OFF. O botão adiciona a variante
+  selecionada ou a primeira disponível.
+
+  Variante de 1 pote esgotada (Ruling 22, emenda 16 da tarefa 8): a spec 2.4 manda o botão
+  adicionar o pote único, que é a primeira variante do produto. Se ele esgotou e algum kit ainda
+  não (o produto segue disponível), o botão vira o link "Ver opções" para a página do produto: o
+  card nunca adiciona um kit que o cliente não viu. Produto todo esgotado continua com o botão
+  desabilitado "Esgotado".
+
+  Medidas e layout em assets/component-product-card.css (largura do card por @container).
+{%- endcomment -%}
+{%- if product != blank -%}
+  {%- liquid
+    assign card_variant = product.selected_or_first_available_variant
+    assign card_section = section_id | default: 'card'
+    assign card_id = 'ProductCard-' | append: card_section | append: '-' | append: product.id
+    assign card_form_id = 'ProductCardForm-' | append: card_section | append: '-' | append: product.id
+    assign card_heading = 'h3'
+    case heading_tag
+      when 'h2', 'h3', 'h4', 'p'
+        assign card_heading = heading_tag
+    endcase
+
+    assign card_loading = 'lazy'
+    if lazy == false
+      assign card_loading = 'eager'
+    endif
+
+    assign card_sizes = sizes | default: '(min-width: 1281px) 250px, (min-width: 1081px) calc((100vw - 148px) / 4), (min-width: 761px) calc((100vw - 68px) / 2.4 - 40px), calc((100vw - 40px) * 0.72 - 40px)'
+
+    # Nome visível (fonte única, snippets/v3-nome-visivel): 'html' vai entre tags, 'texto' no rótulo
+    # oculto do botão (o filtro t não escapa de novo). Os dois já saem escapados (S1).
+    capture card_nome_html
+      render 'v3-nome-visivel', produto: product, modo: 'html'
+    endcapture
+    assign card_nome_html = card_nome_html | strip
+    capture card_nome_texto
+      render 'v3-nome-visivel', produto: product, modo: 'texto'
+    endcapture
+    assign card_nome_texto = card_nome_texto | strip
+
+    # A linha de baixo é o trecho do título depois de " – ".
+    assign card_meta = ''
+    if product.title contains ' – '
+      assign card_meta = product.title | split: ' – ' | last | strip
+    endif
+
+    # Classe da foto (emenda 3, C9), por capture e escape (S1).
+    capture card_photo_class
+      render 'v3-classe-foto', product: product
+    endcapture
+    assign card_photo_class = card_photo_class | strip | escape
+    assign card_image_class = 'product-card__image ' | append: card_photo_class
+
+    assign card_ribbon = ''
+    if show_ribbon
+      assign card_ribbon = ribbon_label | default: product.metafields.beacon.selo.value
+    endif
+
+    assign card_price_variant = card_variant
+    if product.price_varies
+      for candidate in product.variants
+        if candidate.price == product.price_min
+          assign card_price_variant = candidate
+          break
+        endif
+      endfor
+    endif
+    assign card_discount_label = ''
+    if card_price_variant.compare_at_price > card_price_variant.price
+      assign card_discount = card_price_variant.compare_at_price | minus: card_price_variant.price | times: 100 | divided_by: card_price_variant.compare_at_price
+      if card_discount > 0
+        assign card_discount_label = 'fundacao.product_card.discount_badge' | t: percent: card_discount
+      endif
+    endif
+
+    # Ruling 22: pote único (primeira variante) esgotado com o produto ainda disponível.
+    assign card_ver_opcoes = false
+    if product.available and product.variants.first.available == false
+      assign card_ver_opcoes = true
+    endif
+
+    assign card_rating = product.metafields.reviews.rating.value
+    assign card_rating_count = product.metafields.reviews.rating_count.value | plus: 0
+  -%}
+  <article class="product-card{% unless product.available %} product-card--sold-out{% endunless %}" aria-labelledby="{{ card_id }}-title" data-product-id="{{ product.id }}">
+    <div class="product-card__media">
+      {%- if product.featured_media -%}
+        {%- if priority and lazy == false -%}
+          {{ product.featured_media | image_url: width: 960 | image_tag: widths: '160, 240, 320, 400, 480, 600, 720, 960', sizes: card_sizes, loading: card_loading, fetchpriority: 'high', alt: '', class: card_image_class }}
+        {%- else -%}
+          {{ product.featured_media | image_url: width: 960 | image_tag: widths: '160, 240, 320, 400, 480, 600, 720, 960', sizes: card_sizes, loading: card_loading, alt: '', class: card_image_class }}
+        {%- endif -%}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'product-card__placeholder' }}
+      {%- endif -%}
+      {%- if card_ribbon != blank or card_discount_label != blank -%}
+        <div class="product-card__badges">
+          {%- if card_ribbon != blank -%}
+            {% render 'badge-ribbon', label: card_ribbon, tone: ribbon_tone, class: 'product-card__ribbon' %}
+          {%- else -%}
+            {% render 'badge-ribbon', label: card_discount_label, tone: 'discount', class: 'product-card__discount' %}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="product-card__body">
+      <{{ card_heading }} class="product-card__title" id="{{ card_id }}-title">
+        <a href="{{ product.url }}" class="product-card__link"><span class="product-card__name">{{ card_nome_html }}</span></a>
+      </{{ card_heading }}>
+
+      {%- if card_meta != blank -%}
+        <p class="product-card__meta">{{ card_meta | escape }}</p>
+      {%- endif -%}
+
+      {%- if show_rating != false and card_rating != blank -%}
+        {% render 'rating-stars',
+          value: card_rating.rating,
+          scale_max: card_rating.scale_max,
+          count: card_rating_count,
+          size: 14,
+          class: 'product-card__rating'
+        %}
+      {%- endif -%}
+
+      {%- if product.available and card_ver_opcoes == false -%}
+        <product-form class="product-card__footer" data-section-id="{{ card_section }}">
+          {%- form 'product', product, id: card_form_id, class: 'product-card__add-form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+            {% render 'price', product: product, class: 'product-card__price' %}
+            <input type="hidden" name="id" value="{{ card_variant.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" name="add" class="button button--secondary button--small product-card__add" data-product-form-submit>
+              <span class="button__label">{{ 'fundacao.product_card.add' | t }}</span>
+              <span class="visually-hidden">{{ 'fundacao.product_card.add_suffix' | t: title: card_nome_texto }}</span>
+            </button>
+            <p class="product-card__error form-message form-message--error" role="alert" hidden data-product-form-error></p>
+          {%- endform -%}
+        </product-form>
+      {%- elsif card_ver_opcoes -%}
+        <div class="product-card__footer">
+          <div class="product-card__add-form">
+            {% render 'price', product: product, class: 'product-card__price' %}
+            <a href="{{ product.url }}" class="button button--secondary button--small product-card__add product-card__options">
+              <span class="button__label">{{ 'fundacao.product_card.view_options' | t }}</span>
+              <span class="visually-hidden">{{ 'fundacao.product_card.view_options_suffix' | t: title: card_nome_texto }}</span>
+            </a>
+          </div>
+        </div>
+      {%- else -%}
+        <div class="product-card__footer">
+          <div class="product-card__add-form">
+            {% render 'price', product: product, class: 'product-card__price' %}
+            <button type="button" class="button button--secondary button--small product-card__add product-card__sold-out" disabled aria-disabled="true">
+              <span class="button__label">{{ 'fundacao.product_card.sold_out' | t }}</span>
+            </button>
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </article>
+{%- endif -%}

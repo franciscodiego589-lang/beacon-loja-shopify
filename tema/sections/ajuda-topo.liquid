@@ -1,0 +1,456 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'ajuda-secoes.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Topo das páginas de ajuda (Perguntas frequentes, Entregas, Trocas e devoluções), como na
+  maquete de 29/09/2026: cartão de vidro com selo, título, texto, destaques em pílula e uma
+  coluna ao lado, que pode ser:
+  - busca: formulário que leva à busca da loja (páginas e blog, ou tudo), com atalhos em
+    chip logo abaixo. Não filtra as perguntas da página: isso exigiria JavaScript novo;
+  - cartao: cartão de preenchimento com título, texto e botões (ex.: "Já fez seu pedido?");
+  - botoes: só os botões e uma nota curta.
+  Blocos:
+  - destaque: pílula com ícone e texto. Sem texto, não aparece;
+  - botao: texto, link e estilo. Sem texto ou sem link, não aparece;
+  - atalho: chip abaixo da busca, com link ou âncora da própria página. Sem texto, ou sem
+    link e sem âncora, não aparece.
+  Título vazio usa o título da página. Trilha de navegação opcional, acima do cartão.
+  Etapa 8e, item 9 (03/10/2026): o topo é o da coleção. O cartão de vidro da v2 (.glass .glass--card, com a
+  busca, as fichas e o cartão do lado dentro: moldura sobre moldura) saiu. A trilha, o título e o lado ficam
+  direto sobre um campo claro (#ECF3F9) de ponta a ponta, pintado no invólucro da seção
+  (.section-ajuda-topo, em ajuda-secoes.css). A busca em cápsula, as fichas de acesso rápido, a pílula de
+  destaque e os botões são controles claros sobre o campo. O ajuste "Espaçamento vertical" só acrescenta
+  folga embaixo do campo ("Normal"); o espaço de cima e do meio vem da trilha e do título.
+{%- endcomment -%}
+
+{%- liquid
+  assign at_heading = section.settings.heading
+  if at_heading == blank and page != blank
+    assign at_heading = page.title
+  endif
+
+  assign at_tag = 'h1'
+  if section.settings.heading_tag == 'h2'
+    assign at_tag = 'h2'
+  endif
+
+  assign at_destaques = 0
+  assign at_botoes = 0
+  assign at_atalhos = 0
+  for block in section.blocks
+    case block.type
+      when 'destaque'
+        if block.settings.text != blank
+          assign at_destaques = at_destaques | plus: 1
+        endif
+      when 'botao'
+        if block.settings.label != blank and block.settings.link != blank
+          assign at_botoes = at_botoes | plus: 1
+        endif
+      when 'atalho'
+        if block.settings.label != blank
+          if block.settings.link != blank or block.settings.anchor != blank
+            assign at_atalhos = at_atalhos | plus: 1
+          endif
+        endif
+    endcase
+  endfor
+
+  assign at_aside = section.settings.aside
+  assign at_has_aside = false
+  case at_aside
+    when 'busca'
+      assign at_has_aside = true
+    when 'cartao'
+      if section.settings.aside_heading != blank or section.settings.aside_text != blank or at_botoes > 0
+        assign at_has_aside = true
+      endif
+    when 'botoes'
+      if at_botoes > 0 or section.settings.aside_note != blank
+        assign at_has_aside = true
+      endif
+  endcase
+
+  assign at_aside_tag = 'h2'
+  if at_tag == 'h2'
+    assign at_aside_tag = 'h3'
+  endif
+-%}
+
+{%- capture at_buttons -%}
+  {%- for block in section.blocks -%}
+    {%- if block.type == 'botao' and block.settings.label != blank and block.settings.link != blank -%}
+      <a href="{{ block.settings.link }}" class="button button--large button--{{ block.settings.style }} ajuda-topo__botao" {{ block.shopify_attributes }}>
+        {%- if block.settings.icon != 'none' -%}
+          {%- render 'icon', name: block.settings.icon, size: 18 -%}
+        {%- endif -%}
+        <span>{{ block.settings.label | escape }}</span>
+      </a>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+
+<div class="ajuda-topo pb-pad--{{ section.settings.padding }}">
+  <div class="page-width">
+    {%- if section.settings.show_breadcrumbs -%}
+      {% render 'paginas-blog-breadcrumbs', class: 'ajuda-topo__trilha' %}
+    {%- endif -%}
+
+    <div class="ajuda-topo__cartao{% if at_has_aside %} ajuda-topo__cartao--com-lado{% endif %}{% if section.settings.icon != 'none' %} ajuda-topo__cartao--com-icone{% endif %}">
+      {%- if section.settings.icon != 'none' -%}
+        <span class="ajuda-topo__icone">{%- render 'icon', name: section.settings.icon, size: 28 -%}</span>
+      {%- endif -%}
+
+      <div class="ajuda-topo__conteudo">
+        {%- if section.settings.eyebrow != blank -%}
+          <span class="v3-eyebrow ajuda-topo__selo">{{ section.settings.eyebrow | escape }}</span>
+        {%- endif -%}
+
+        {%- if at_heading != blank -%}
+          <{{ at_tag }} class="ajuda-topo__titulo">{{ at_heading | escape }}</{{ at_tag }}>
+        {%- endif -%}
+
+        {%- if section.settings.text != blank -%}
+          <div class="ajuda-topo__texto rte">{{ section.settings.text }}</div>
+        {%- endif -%}
+
+        {%- if at_destaques > 0 -%}
+          <ul class="ajuda-topo__destaques" role="list">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'destaque' and block.settings.text != blank -%}
+                <li class="ajuda-topo__destaque" {{ block.shopify_attributes }}>
+                  {%- if block.settings.icon != 'none' -%}
+                    {%- render 'icon', name: block.settings.icon, size: 18 -%}
+                  {%- endif -%}
+                  <span>{{ block.settings.text | escape }}</span>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if section.settings.updated != blank -%}
+          <p class="ajuda-topo__atualizado">
+            {%- render 'icon', name: 'calendar', size: 16 -%}
+            <span>{{ section.settings.updated | escape }}</span>
+          </p>
+        {%- endif -%}
+      </div>
+
+      {%- if at_has_aside -%}
+        {%- case at_aside -%}
+          {%- when 'busca' -%}
+            <div class="ajuda-topo__lado ajuda-topo__lado--busca">
+              <form action="{{ routes.search_url }}" method="get" role="search" class="ajuda-topo__busca">
+                <label class="ajuda-topo__busca-rotulo" for="AjudaBusca-{{ section.id }}">
+                  {{- section.settings.search_label | default: 'Buscar' | escape -}}
+                </label>
+                <div class="ajuda-topo__campo">
+                  <input
+                    id="AjudaBusca-{{ section.id }}"
+                    class="ajuda-topo__input lg-field-input"
+                    type="search"
+                    name="q"
+                    placeholder="{{ section.settings.search_placeholder | escape }}"
+                    autocomplete="off"
+                  >
+                  {%- if section.settings.search_scope == 'conteudo' -%}
+                    <input type="hidden" name="type" value="page,article">
+                  {%- endif -%}
+                  <input type="hidden" name="options[prefix]" value="last">
+                  <button type="submit" class="ajuda-topo__enviar" aria-label="{{ 'fundacao.search.submit' | t }}">
+                    {%- render 'icon', name: 'search', size: 20 -%}
+                  </button>
+                </div>
+              </form>
+
+              {%- if at_atalhos > 0 -%}
+                <div class="ajuda-topo__atalhos">
+                  {%- if section.settings.shortcuts_heading != blank -%}
+                    <p class="eyebrow ajuda-topo__atalhos-titulo">{{ section.settings.shortcuts_heading | escape }}</p>
+                  {%- endif -%}
+                  <ul class="ajuda-topo__chips" role="list">
+                    {%- for block in section.blocks -%}
+                      {%- if block.type == 'atalho' and block.settings.label != blank -%}
+                        {%- liquid
+                          assign at_href = block.settings.link
+                          if at_href == blank and block.settings.anchor != blank
+                            assign at_href = '#' | append: block.settings.anchor
+                          endif
+                        -%}
+                        {%- if at_href != blank -%}
+                          <li {{ block.shopify_attributes }}>
+                            <a href="{{ at_href | escape }}" class="chip chip--outline ajuda-topo__chip">{{ block.settings.label | escape }}</a>
+                          </li>
+                        {%- endif -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              {%- endif -%}
+            </div>
+
+          {%- when 'cartao' -%}
+            <div class="ajuda-topo__lado ajuda-topo__lado--cartao">
+              {%- if section.settings.aside_heading != blank -%}
+                <{{ at_aside_tag }} class="ajuda-topo__lado-titulo">{{ section.settings.aside_heading | escape }}</{{ at_aside_tag }}>
+              {%- endif -%}
+              {%- if section.settings.aside_text != blank -%}
+                <div class="ajuda-topo__lado-texto rte">{{ section.settings.aside_text }}</div>
+              {%- endif -%}
+              {%- if at_botoes > 0 -%}
+                <div class="ajuda-topo__botoes">{{ at_buttons }}</div>
+              {%- endif -%}
+            </div>
+
+          {%- when 'botoes' -%}
+            <div class="ajuda-topo__lado ajuda-topo__lado--botoes">
+              {%- if at_botoes > 0 -%}
+                <div class="ajuda-topo__botoes">{{ at_buttons }}</div>
+              {%- endif -%}
+              {%- if section.settings.aside_note != blank -%}
+                <p class="ajuda-topo__nota">{{ section.settings.aside_note | escape }}</p>
+              {%- endif -%}
+            </div>
+        {%- endcase -%}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Ajuda: topo",
+  "tag": "section",
+  "class": "section-ajuda-topo",
+  "max_blocks": 12,
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Mostrar trilha de navegação",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "icon",
+      "label": "Ícone ao lado do título",
+      "options": [
+        { "value": "none", "label": "Sem ícone" },
+        { "value": "help-circle", "label": "Ajuda" },
+        { "value": "truck", "label": "Entrega" },
+        { "value": "refresh", "label": "Troca" },
+        { "value": "map-pin", "label": "Localização" },
+        { "value": "chat", "label": "Conversa" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "info": "Vazio usa o título da página."
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Nível do título",
+      "info": "Use h1 quando esta for a primeira seção da página.",
+      "options": [
+        { "value": "h1", "label": "h1" },
+        { "value": "h2", "label": "h2" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "updated",
+      "label": "Linha de atualização",
+      "info": "Ex.: Atualizado em 29/09/2026. Vazio, não aparece."
+    },
+    {
+      "type": "header",
+      "content": "Coluna ao lado"
+    },
+    {
+      "type": "select",
+      "id": "aside",
+      "label": "Conteúdo ao lado",
+      "options": [
+        { "value": "none", "label": "Nada" },
+        { "value": "busca", "label": "Busca e atalhos" },
+        { "value": "cartao", "label": "Cartão com título, texto e botões" },
+        { "value": "botoes", "label": "Botões e nota" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "text",
+      "id": "search_label",
+      "label": "Rótulo da busca",
+      "default": "Buscar nas páginas e no blog"
+    },
+    {
+      "type": "text",
+      "id": "search_placeholder",
+      "label": "Exemplo dentro do campo",
+      "default": "Ex.: troca, entrega, rastreio"
+    },
+    {
+      "type": "select",
+      "id": "search_scope",
+      "label": "O que a busca procura",
+      "info": "A busca da loja não lê as perguntas desta página, só páginas, artigos e produtos.",
+      "options": [
+        { "value": "conteudo", "label": "Páginas e artigos do blog" },
+        { "value": "tudo", "label": "Tudo, inclusive produtos" }
+      ],
+      "default": "conteudo"
+    },
+    {
+      "type": "text",
+      "id": "shortcuts_heading",
+      "label": "Título dos atalhos",
+      "default": "Acesso rápido"
+    },
+    {
+      "type": "text",
+      "id": "aside_heading",
+      "label": "Título do cartão"
+    },
+    {
+      "type": "richtext",
+      "id": "aside_text",
+      "label": "Texto do cartão"
+    },
+    {
+      "type": "text",
+      "id": "aside_note",
+      "label": "Nota abaixo dos botões"
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        { "value": "none", "label": "Nenhum" },
+        { "value": "small", "label": "Pequeno" },
+        { "value": "normal", "label": "Normal" }
+      ],
+      "default": "small"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "destaque",
+      "name": "Destaque em pílula",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            { "value": "none", "label": "Sem ícone" },
+            { "value": "truck", "label": "Entrega" },
+            { "value": "clock", "label": "Relógio" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "check-circle", "label": "Confirmado" },
+            { "value": "map-pin", "label": "Localização" }
+          ],
+          "default": "truck"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texto",
+          "info": "Vazio, não aparece."
+        }
+      ]
+    },
+    {
+      "type": "botao",
+      "name": "Botão",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Texto do botão"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Sem link, o botão não aparece."
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Estilo",
+          "options": [
+            { "value": "primary", "label": "Azul" },
+            { "value": "dark", "label": "Azul-marinho" },
+            { "value": "accent", "label": "Amarelo-limão" },
+            { "value": "secondary", "label": "Contorno" }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            { "value": "none", "label": "Sem ícone" },
+            { "value": "truck", "label": "Entrega" },
+            { "value": "chat", "label": "Conversa" },
+            { "value": "refresh", "label": "Troca" },
+            { "value": "arrow-right", "label": "Seta" }
+          ],
+          "default": "none"
+        }
+      ]
+    },
+    {
+      "type": "atalho",
+      "name": "Atalho abaixo da busca",
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Texto"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "anchor",
+          "label": "Âncora nesta página",
+          "info": "Usada quando o link está vazio. Ex.: p-desistir leva à pergunta com essa âncora."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Ajuda: topo"
+    }
+  ]
+}
+{% endschema %}

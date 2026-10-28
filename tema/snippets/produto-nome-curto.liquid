@@ -1,0 +1,45 @@
+{%- comment -%}
+  Área produto. Imprime o nome curto do produto, usado nos títulos da página de produto
+  (maquete Produto-Desktop e Produto-Mobile, 29/09/2026: "O que é Pure Taurina?", "Como tomar
+  Pure Taurina", "Perguntas frequentes sobre Pure Taurina"). Nenhum texto é inventado: é o
+  próprio título do produto, cortado em duas etapas.
+  1. Tudo antes de " – " (travessão curto com espaços), que separa o nome do conteúdo do pote:
+     "Pure Vitamina C 1000mg – 60 cápsulas" vira "Pure Vitamina C 1000mg".
+  2. Tudo antes da primeira palavra (a partir da 2ª) que começa com algarismo, que é a dose:
+     "Pure Vitamina C 1000mg" vira "Pure Vitamina C"; "Pure Vitamina D3 2.000 UI" vira
+     "Pure Vitamina D3" (o "D3" começa com letra e fica).
+  Sem resultado, imprime o título inteiro. A saída não é escapada: quem usa aplica | escape.
+
+  Parâmetros:
+  - product: o produto (obrigatório)
+
+  Uso:
+    capture nome_curto
+      render 'produto-nome-curto', product: product
+    endcapture
+    assign nome_curto = nome_curto | strip
+{%- endcomment -%}
+{%- liquid
+  assign nc_title = product.title | split: ' – ' | first | strip
+  assign nc_digits = '0123456789'
+  assign nc_words = nc_title | split: ' '
+  assign nc_result = ''
+  for nc_word in nc_words
+    assign nc_first_char = nc_word | slice: 0
+    if nc_first_char == blank
+      continue
+    endif
+    if forloop.index > 1 and nc_digits contains nc_first_char
+      break
+    endif
+    if nc_result == blank
+      assign nc_result = nc_word
+    else
+      assign nc_result = nc_result | append: ' ' | append: nc_word
+    endif
+  endfor
+  if nc_result == blank
+    assign nc_result = product.title
+  endif
+  echo nc_result
+-%}

@@ -1,0 +1,130 @@
+/*
+  Beacon Labs · seção Imagem com texto (sections/image-with-text.liquid)
+  Duas colunas no computador (imagem 45 %, texto 55 %), com a imagem à esquerda ou à direita.
+  No celular a imagem vem antes do texto.
+  Etapa 8e, leva C (03/10/2026): com "Mostrar em cartão", a caixa é o bloco sólido #ECF3F9 (.pb-bloco na
+  marcação; sem borda e sem sombra), raio --radius-tile (28 px; 24 no celular); no esquema escuro, a caixa é
+  o campo noite. Antes era cartão de vidro de conteúdo da v2 (.glass .glass--card, raio 32). Sem caixa, o
+  fundo é a página branca (ou o campo noite, paginas-blog.css). Os círculos dos ícones são brancos dentro do
+  bloco (o tom do bloco os apagava). Contraste sobre o bloco: tinta 15,44:1, apoio #566472 5,42:1.
+*/
+
+.image-with-text__grid {
+  display: grid;
+  gap: 24px;
+}
+
+.image-with-text__grid--boxed {
+  padding: 20px;
+  border-radius: var(--radius-tile);
+}
+
+.image-with-text__media {
+  width: 100%;
+}
+
+.image-with-text__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-with-text__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.image-with-text__heading {
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.image-with-text__text {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.image-with-text__items {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.image-with-text__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.image-with-text__item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-chip-bg);
+  color: var(--color-chip-text);
+}
+
+.pb-bloco .image-with-text__item-icon {
+  background: #FFFFFF;
+}
+
+.pb-scheme--ink .image-with-text__item-icon {
+  background: var(--glass-dark-card-bg, var(--color-footer-surface));
+  color: var(--color-accent);
+}
+
+.image-with-text__item-text {
+  padding-top: 9px;
+}
+
+.image-with-text__actions {
+  margin-top: 8px;
+}
+
+@media screen and (min-width: 990px) {
+  .image-with-text__grid {
+    grid-template-columns: minmax(0, 9fr) minmax(0, 11fr);
+    gap: 64px;
+  }
+
+  .image-with-text--image-right .image-with-text__grid {
+    grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+  }
+
+  .image-with-text--image-right .image-with-text__media {
+    order: 2;
+  }
+
+  .image-with-text__grid--center {
+    align-items: center;
+  }
+
+  .image-with-text__grid--top {
+    align-items: start;
+  }
+
+  .image-with-text__grid--boxed {
+    padding: 56px 48px;
+  }
+
+  .image-with-text__heading {
+    font-size: 32px;
+  }
+
+  .image-with-text__text {
+    font-size: 16px;
+  }
+}

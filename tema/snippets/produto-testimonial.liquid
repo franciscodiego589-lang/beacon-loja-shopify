@@ -1,0 +1,62 @@
+{%- comment -%}
+  Área produto. Bloco "depoimento_destaque" da seção main-product: até 3 depoimentos num
+  <carousel-slider> em modo "fade". Sem nenhum texto preenchido, só mostra um aviso no editor.
+  Extraído de sections/main-product.liquid (auditoria de arquitetura, 28/09/2026).
+  Parâmetros:
+  - block: o bloco "depoimento_destaque" (ajustes text_1..3, author_1..3, show_verified)
+{%- endcomment -%}
+{%- liquid
+  assign quote_count = 0
+  for i in (1..3)
+    assign quote_key = 'text_' | append: i
+    if block.settings[quote_key] != blank
+      assign quote_count = quote_count | plus: 1
+    endif
+  endfor
+-%}
+{%- if quote_count > 0 -%}
+  <div class="main-product__block testimonial glass glass--card" role="group" aria-label="{{ 'produto.testimonial.label' | t }}" {{ block.shopify_attributes }}>
+    <carousel-slider class="testimonial__carousel" data-mode="fade" data-loop="true">
+      <div class="testimonial__viewport">
+        <ul class="testimonial__track" role="list" data-carousel-track>
+          {%- for i in (1..3) -%}
+            {%- liquid
+              assign quote_key = 'text_' | append: i
+              assign author_key = 'author_' | append: i
+              assign quote_text = block.settings[quote_key]
+              assign quote_author = block.settings[author_key]
+            -%}
+            {%- if quote_text != blank -%}
+              <li class="testimonial__slide" data-carousel-slide{% unless forloop.first %} hidden{% endunless %}>
+                <span class="testimonial__avatar" aria-hidden="true">
+                  {%- render 'icon', name: 'user', size: 28 -%}
+                </span>
+                <figure class="testimonial__body">
+                  {%- if block.settings.show_verified -%}
+                    <span class="testimonial__verified">
+                      {%- render 'icon', name: 'check-circle', size: 16 -%}
+                      {{ 'produto.testimonial.verified' | t }}
+                    </span>
+                  {%- endif -%}
+                  <blockquote class="testimonial__quote">
+                    <p>{{ quote_text | escape }}</p>
+                  </blockquote>
+                  {%- if quote_author != blank -%}
+                    <figcaption class="testimonial__author">{{ quote_author | escape }}</figcaption>
+                  {%- endif -%}
+                </figure>
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </div>
+      {%- if quote_count > 1 -%}
+        <button type="button" class="testimonial__next lg-focus-dual" aria-label="{{ 'produto.testimonial.next' | t }}" data-carousel-next>
+          {%- render 'icon', name: 'chevron-right', size: 22 -%}
+        </button>
+      {%- endif -%}
+    </carousel-slider>
+  </div>
+{%- elsif request.design_mode -%}
+  <p class="main-product__block main-product__editor-note" {{ block.shopify_attributes }}>{{ 'produto.editor.testimonial_empty' | t }}</p>
+{%- endif -%}

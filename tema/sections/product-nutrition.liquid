@@ -1,0 +1,46 @@
+{{ 'component-produto-nutrition.css' | asset_url | stylesheet_tag }}
+{{ 'section-product-nutrition.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Área produto. "Informação nutricional" como seção própria (fora do conteúdo rico), a partir
+  do metafield beacon.tabela_nutricional. Reaproveita snippets/produto-nutrition-table.liquid
+  (mesmo snippet usado dentro de sections/product-rich-content.liquid, no bloco "Como tomar"),
+  para a tabela nunca divergir entre os dois lugares. Sem o metafield, não renderiza nada.
+{%- endcomment -%}
+{%- if product.metafields.beacon.tabela_nutricional.value != blank -%}
+  <section class="product-nutrition-section section" id="{{ section.settings.anchor | default: 'nutricao' | handle }}">
+    <div class="page-width product-nutrition-section__inner">
+      {% render 'produto-nutrition-table', product: product, heading_tag: 'h2', id_prefix: section.id %}
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <p class="home-editor-note page-width">{{ 'produto.editor.empty' | t: field: 'beacon.tabela_nutricional' }}</p>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Informação nutricional",
+  "tag": "div",
+  "class": "section-product-nutrition",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "A tabela vem do metafield beacon.tabela_nutricional. Sem esse metafield, a seção não aparece."
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Âncora (link direto)",
+      "default": "nutricao"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Informação nutricional"
+    }
+  ]
+}
+{% endschema %}

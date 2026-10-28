@@ -1,0 +1,117 @@
+{%- comment -%}
+  Gaveta de menu (botão "Menu" do cabeçalho, que aparece onde o menu não cabe na barra:
+  abaixo de 1240 px). Fica dentro da seção header.
+  Parâmetros:
+  - menu: link_list do admin (até 3 níveis; submenus em <details>)
+  - show_highlight / highlight_label / highlight_link: item destacado (ex.: Super ofertas)
+  - show_tracking / tracking_url: link "Rastreie seu pedido". Ele só existe aqui: a gaveta não abre
+    a partir de 1240 px (o botão Menu some quando o menu cabe na barra), então no computador largo
+    o link não aparece. O ajuste da seção do cabeçalho avisa isso no editor (emenda 11, etapa 8b).
+  - show_account: link de conta
+
+  Estrutura: <menu-drawer id="MenuDrawer"> > <dialog id="MenuDrawerDialog">.
+  Fechar: [data-menu-drawer-close]. Esc e foco preso ficam a cargo do <dialog> modal.
+  Liquid Glass: o <dialog> é vidro funcional espesso (.glass .glass--thick, spec 8.8); desde
+  01/10/2026 (Apple v2) COM desfoque (.glass--blur), porque há conteúdo da página por trás.
+  Forma e lugar em component-drawer.css, cores em component-menu-drawer.css.
+{%- endcomment -%}
+<menu-drawer id="MenuDrawer" class="menu-drawer">
+  <dialog id="MenuDrawerDialog" class="drawer drawer--left menu-drawer__dialog glass glass--thick glass--blur" aria-labelledby="MenuDrawerTitle">
+    <div class="drawer__inner menu-drawer__inner">
+      <div class="drawer__header menu-drawer__header">
+        <h2 id="MenuDrawerTitle" class="drawer__title menu-drawer__title">{{ 'fundacao.menu_drawer.title' | t }}</h2>
+        <button type="button" class="drawer__close menu-drawer__close" aria-label="{{ 'fundacao.menu_drawer.close' | t }}" data-menu-drawer-close>
+          {% render 'icon', name: 'close', size: 22 %}
+        </button>
+      </div>
+
+      {%- if show_account and shop.customer_accounts_enabled -%}
+        <a href="{% if customer %}{{ routes.account_url }}{% else %}{{ routes.account_login_url }}{% endif %}" class="menu-drawer__account">
+          {% render 'icon', name: 'user', size: 20 %}
+          <span>
+            {%- if customer -%}
+              {{ 'fundacao.header.greeting_customer' | t: name: customer.first_name }} · {{ 'fundacao.header.my_account' | t }}
+            {%- else -%}
+              {{ 'fundacao.header.login' | t }}
+            {%- endif -%}
+          </span>
+        </a>
+      {%- endif -%}
+
+      <nav class="menu-drawer__nav" aria-label="{{ 'fundacao.menu_drawer.nav_label' | t }}">
+        <ul class="menu-drawer__list" role="list">
+          {%- if show_highlight and highlight_label != blank and highlight_link != blank -%}
+            <li class="menu-drawer__item menu-drawer__item--highlight">
+              <a href="{{ highlight_link }}" class="menu-drawer__link menu-drawer__link--highlight">
+                {% render 'icon', name: 'tag', size: 18 %}
+                <span>{{ highlight_label | escape }}</span>
+              </a>
+            </li>
+          {%- endif -%}
+          {%- for link in menu.links -%}
+            <li class="menu-drawer__item">
+              {%- if link.links != blank -%}
+                <details class="menu-drawer__details">
+                  <summary class="menu-drawer__link menu-drawer__summary">
+                    <span>{{ link.title | escape }}</span>
+                    {% render 'icon', name: 'chevron-down', size: 18, class: 'menu-drawer__chevron' %}
+                  </summary>
+                  <ul class="menu-drawer__sublist" role="list">
+                    <li class="menu-drawer__subitem">
+                      <a href="{{ link.url }}" class="menu-drawer__sublink menu-drawer__sublink--all">{{ 'fundacao.menu_drawer.view_all' | t: title: link.title }}</a>
+                    </li>
+                    {%- for child in link.links -%}
+                      <li class="menu-drawer__subitem">
+                        {%- if child.links != blank -%}
+                          <details class="menu-drawer__details menu-drawer__details--nested">
+                            <summary class="menu-drawer__sublink menu-drawer__summary">
+                              <span>{{ child.title | escape }}</span>
+                              {% render 'icon', name: 'chevron-down', size: 16, class: 'menu-drawer__chevron' %}
+                            </summary>
+                            <ul class="menu-drawer__sublist menu-drawer__sublist--nested" role="list">
+                              <li class="menu-drawer__subitem">
+                                <a href="{{ child.url }}" class="menu-drawer__sublink menu-drawer__sublink--all">{{ 'fundacao.menu_drawer.view_all' | t: title: child.title }}</a>
+                              </li>
+                              {%- for grandchild in child.links -%}
+                                <li class="menu-drawer__subitem">
+                                  <a href="{{ grandchild.url }}" class="menu-drawer__sublink"{% if grandchild.current %} aria-current="page"{% endif %}>{{ grandchild.title | escape }}</a>
+                                </li>
+                              {%- endfor -%}
+                            </ul>
+                          </details>
+                        {%- else -%}
+                          <a href="{{ child.url }}" class="menu-drawer__sublink"{% if child.current %} aria-current="page"{% endif %}>{{ child.title | escape }}</a>
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </details>
+              {%- else -%}
+                <a href="{{ link.url }}" class="menu-drawer__link"{% if link.current %} aria-current="page"{% endif %}>{{ link.title | escape }}</a>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+
+      {%- if show_tracking -%}
+        <a href="{{ tracking_url | default: routes.account_url }}" class="menu-drawer__utility">
+          {% render 'icon', name: 'truck', size: 20 %}
+          <span>{{ 'fundacao.header.track_full' | t }}</span>
+        </a>
+      {%- endif -%}
+
+      {%- liquid
+        assign has_social = false
+        if settings.social_instagram_link != blank or settings.social_youtube_link != blank or settings.social_facebook_link != blank or settings.social_tiktok_link != blank
+          assign has_social = true
+        endif
+      -%}
+      {%- if has_social -%}
+        <div class="menu-drawer__social">
+          {% render 'social-links', class: 'menu-drawer__social-list' %}
+        </div>
+      {%- endif -%}
+    </div>
+  </dialog>
+</menu-drawer>

@@ -1,0 +1,479 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-search.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Página de busca (templates/search.json), área busca-carrinho.
+
+  Estados:
+  1. Sem termo (search.performed = false): título, campo de busca e sugestões.
+  2. Com resultados: contagem, ordenação, grade (product-card para produtos; cartão simples
+     para artigos e páginas) e paginação.
+  3. Sem resultado: mensagem e as mesmas sugestões do estado 1.
+  Sugestões: buscas populares (menu), coleções sugeridas e produtos de uma coleção,
+  todos escolhidos no editor. Sem escolha, nada aparece (nenhum conteúdo inventado).
+
+  Rastro (etapa 8b da tarefa 8, emenda 14): o mesmo snippet da coleção (snippets/colecao-breadcrumb,
+  estilo em assets/component-colecao-breadcrumb.css): texto de apoio de 12 px, separador "/" feito
+  pelo CSS, sem azul e com alvo de toque de 44 px no próprio link. O respiro de cima e de baixo
+  fica em section-main-search.css. O resto da página (grade e paginação) segue como estava.
+
+  Liquid Glass (spec 7.3, 8.1, 8.5 e 8.6), como a página de categoria: página sobre o campo
+  maré (.lg-field--mare) só com a cor de base, que é a da névoa, sem a arte (.lg-field--art):
+  a seção abre a página e, medida no Chromium em 28/09/2026, a arte dela virou o elemento de LCP
+  no celular (spec 7.1); cartões de artigo, página e coleção em vidro de conteúdo com estados de
+  link (.glass--interactive).
+
+  Topo (etapa 8e, item 8, 03/10/2026): o topo da busca é o da coleção. A trilha e a faixa de título
+  ficam num campo claro de ponta a ponta (#ECF3F9, .main-search__top), sem cartão: o título (h1) e o
+  campo em cápsula (.lg-field-input, controle em vidro) ficam direto sobre o campo, como o título da
+  coleção (sections/main-collection-banner.liquid). Antes a faixa era um cartão de vidro da v2
+  (.glass .glass--card) com o campo dentro: caixa dentro de caixa. Os resultados vêm depois do campo,
+  na página branca.
+
+  Cartões (etapa 8e, leva C, 03/10/2026): os cartões de página e de artigo dos resultados e as coleções sugeridas
+  são blocos sólidos #ECF3F9, sem borda e sem sombra, de raio --radius-card, como o card de produto ao lado
+  deles; antes eram cartões de vidro de conteúdo da v2 (.glass .glass--card .glass--interactive). O vidro
+  fica nos controles (campo de busca, ordenação, botão e paginação). A coleção sugerida, que é o link
+  inteiro, leva o anel de foco duplo do sistema (.lg-focus-dual). O resumo dos cartões ganhou um espaço depois de
+  cada título, parágrafo e item antes de tirar as marcas (strip_html cola as palavras: "FreteNo Brasil").
+  Leva E, item 8: depois de cada título (h1 a h4) entra " · " em vez de só um espaço, para o título da seção
+  e o primeiro parágrafo não lerem como uma frase quebrada ("Frete · No Brasil, o frete custa...").
+
+  Segurança:
+  - search.terms só sai com | escape.
+  - sort_by: o <select> lista só search.sort_options (lista fechada da Shopify) e o valor
+    marcado é comparado com essa lista; o parâmetro da URL nunca é impresso.
+  - type: só 'product', 'article' ou 'page' são repassados na ordenação.
+  - page: os links vêm de paginate (gerados pela Shopify); o número da página nunca é impresso
+    a partir da URL.
+{%- endcomment -%}
+
+{%- liquid
+  assign ms_per_page = section.settings.results_per_page
+  assign ms_columns = section.settings.columns_desktop
+  assign ms_current_sort = search.sort_by | default: search.default_sort_by
+
+  assign ms_types = ''
+  if search.types.size > 0 and search.types.size < 3
+    for ms_type in search.types
+      if ms_type == 'product' or ms_type == 'article' or ms_type == 'page'
+        if ms_types == ''
+          assign ms_types = ms_type
+        else
+          assign ms_types = ms_types | append: ',' | append: ms_type
+        endif
+      endif
+    endfor
+  endif
+
+  assign ms_popular = section.settings.popular_menu
+  if ms_popular == blank
+    assign ms_popular = linklists['buscas-populares']
+  endif
+  assign ms_popular_count = ms_popular.links.size | default: 0
+
+  assign ms_sug_collection = section.settings.suggested_products_collection
+  assign ms_sug_section = section.id | append: '-sugestoes'
+  assign ms_card_sizes = '(min-width: 1440px) 300px, (min-width: 990px) calc((100vw - 232px) / 4), (min-width: 750px) calc((100vw - 96px) / 3), calc((100vw - 48px) / 2)'
+-%}
+
+{%- capture ms_suggestions -%}
+  {%- if ms_popular_count > 0 -%}
+    <div class="main-search__suggest">
+      <h2 class="main-search__suggest-title" id="MainSearchPopular-{{ section.id }}">{{ 'busca_carrinho.search.popular_heading' | t }}</h2>
+      <ul class="main-search__chips" role="list" aria-labelledby="MainSearchPopular-{{ section.id }}">
+        {%- for link in ms_popular.links -%}
+          <li>
+            <a href="{{ link.url }}" class="chip chip--outline main-search__chip">
+              {%- render 'icon', name: 'search', size: 16 -%}
+              {{- link.title | escape -}}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+
+  {%- if section.settings.suggested_collections != blank -%}
+    <div class="main-search__suggest">
+      <h2 class="main-search__suggest-title" id="MainSearchCollections-{{ section.id }}">{{ 'busca_carrinho.search.collections_heading' | t }}</h2>
+      <ul class="main-search__collections" role="list" aria-labelledby="MainSearchCollections-{{ section.id }}">
+        {%- for collection in section.settings.suggested_collections -%}
+          <li class="main-search__collection-item">
+            <a href="{{ collection.url }}" class="main-search__collection lg-focus-dual">
+              <span class="main-search__collection-media">
+                {%- if collection.featured_image -%}
+                  {%- assign ms_collection_alt = collection.featured_image.alt | default: collection.title -%}
+                  {{ collection.featured_image | image_url: width: 480 | image_tag: widths: '120, 180, 240, 320, 480', sizes: '(min-width: 990px) 200px, (min-width: 750px) 25vw, 40vw', loading: 'lazy', alt: ms_collection_alt, class: 'main-search__collection-image' }}
+                {%- else -%}
+                  {{ 'collection-1' | placeholder_svg_tag: 'main-search__collection-placeholder' }}
+                {%- endif -%}
+              </span>
+              <span class="main-search__collection-title">{{ collection.title | escape }}</span>
+              {% render 'icon', name: 'arrow-right', size: 18, class: 'main-search__collection-icon' %}
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+
+  {%- if ms_sug_collection != blank and ms_sug_collection.products_count > 0 -%}
+    <div class="main-search__suggest">
+      <h2 class="main-search__suggest-title" id="MainSearchProducts-{{ section.id }}">{{ 'busca_carrinho.search.products_heading' | t }}</h2>
+      <ul class="grid grid--{{ ms_columns }} main-search__grid" role="list" aria-labelledby="MainSearchProducts-{{ section.id }}">
+        {%- for product in ms_sug_collection.products limit: section.settings.suggested_products_limit -%}
+          <li class="main-search__item">
+            {% render 'product-card',
+              product: product,
+              show_ribbon: section.settings.show_ribbon,
+              ribbon_tone: section.settings.ribbon_tone,
+              show_rating: section.settings.show_rating,
+              lazy: true,
+              section_id: ms_sug_section,
+              heading_tag: 'h3',
+              sizes: ms_card_sizes
+            %}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+<div class="main-search lg-field--mare{% if search.performed %} main-search--performed{% endif %}" data-section-id="{{ section.id }}">
+  <div class="main-search__top{% unless section.settings.show_breadcrumb %} main-search__top--sem-trilha{% endunless %}">
+    {%- if section.settings.show_breadcrumb -%}
+      {%- assign ms_trail_current = 'busca_carrinho.search.breadcrumb_current' | t -%}
+      {% render 'colecao-breadcrumb', current: ms_trail_current, class: 'main-search__breadcrumb page-width' %}
+    {%- endif -%}
+
+    <div class="main-search__top-inner page-width">
+      <header class="main-search__hero">
+        <div class="main-search__hero-copy">
+          <h1 class="main-search__title">
+            {%- if search.performed -%}
+              {{- 'busca_carrinho.search.results_for' | t }}
+              <span class="main-search__term">“{{ search.terms | escape }}”</span>
+            {%- else -%}
+              {{- 'busca_carrinho.search.title' | t -}}
+            {%- endif -%}
+          </h1>
+          {%- if search.performed == false -%}
+            <p class="main-search__intro">{{ 'busca_carrinho.search.intro' | t }}</p>
+          {%- elsif search.results_count == 0 -%}
+            <p class="main-search__intro">{{ 'busca_carrinho.search.no_results' | t }}</p>
+          {%- endif -%}
+        </div>
+
+        {%- if section.settings.show_search_form -%}
+          <form action="{{ routes.search_url }}" method="get" role="search" class="main-search__form">
+            <label for="MainSearchInput-{{ section.id }}" class="visually-hidden">{{ 'fundacao.search.label' | t }}</label>
+            <input
+              type="search"
+              id="MainSearchInput-{{ section.id }}"
+              class="main-search__input lg-field-input"
+              name="q"
+              value="{{ search.terms | escape }}"
+              placeholder="{{ 'fundacao.search.placeholder' | t }}"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
+              enterkeyhint="search"
+            >
+            <input type="hidden" name="options[prefix]" value="last">
+            <button type="submit" class="main-search__submit" aria-label="{{ 'fundacao.search.submit' | t }}">
+              {%- render 'icon', name: 'search', size: 20 -%}
+            </button>
+          </form>
+        {%- endif -%}
+      </header>
+    </div>
+  </div>
+
+  <div class="main-search__inner page-width">
+    {%- if search.performed -%}
+      {%- paginate search.results by ms_per_page -%}
+        {%- if search.results_count > 0 -%}
+          <div class="main-search__toolbar">
+            <p class="main-search__count">{{ 'busca_carrinho.search.results_count' | t: count: search.results_count }}</p>
+
+            {%- if section.settings.show_sort and search.sort_options.size > 0 -%}
+              <form action="{{ routes.search_url }}" method="get" class="main-search__sort">
+                <input type="hidden" name="q" value="{{ search.terms | escape }}">
+                <input type="hidden" name="options[prefix]" value="last">
+                {%- if ms_types != '' -%}
+                  <input type="hidden" name="type" value="{{ ms_types | escape }}">
+                {%- endif -%}
+                <label for="MainSearchSort-{{ section.id }}" class="main-search__sort-label">{{ 'busca_carrinho.search.sort_label' | t }}</label>
+                <select id="MainSearchSort-{{ section.id }}" name="sort_by" class="main-search__sort-select lg-field-input">
+                  {%- for option in search.sort_options -%}
+                    <option value="{{ option.value | escape }}"{% if option.value == ms_current_sort %} selected{% endif %}>
+                      {{- option.name | escape -}}
+                    </option>
+                  {%- endfor -%}
+                </select>
+                <button type="submit" class="button button--secondary main-search__sort-submit">
+                  {%- render 'icon', name: 'sort', size: 18 -%}
+                  <span>{{ 'busca_carrinho.search.sort_apply' | t }}</span>
+                </button>
+              </form>
+            {%- endif -%}
+          </div>
+
+          <h2 class="visually-hidden" id="MainSearchResults-{{ section.id }}">{{ 'busca_carrinho.search.results_heading' | t }}</h2>
+          <ul class="grid grid--{{ ms_columns }} main-search__grid main-search__results" role="list" aria-labelledby="MainSearchResults-{{ section.id }}">
+            {%- for item in search.results -%}
+              {%- case item.object_type -%}
+                {%- when 'product' -%}
+                  {%- liquid
+                    assign ms_lazy = true
+                    if paginate.current_page == 1 and forloop.index <= ms_columns
+                      assign ms_lazy = false
+                    endif
+                  -%}
+                  <li class="main-search__item">
+                    {% render 'product-card',
+                      product: item,
+                      show_ribbon: section.settings.show_ribbon,
+                      ribbon_tone: section.settings.ribbon_tone,
+                      show_rating: section.settings.show_rating,
+                      lazy: ms_lazy,
+                      section_id: section.id,
+                      heading_tag: 'h3',
+                      sizes: ms_card_sizes
+                    %}
+                  </li>
+                {%- when 'article' -%}
+                  {%- assign ms_card_id = 'MainSearchArticle-' | append: section.id | append: '-' | append: forloop.index -%}
+                  <li class="main-search__item">
+                    <article class="main-search__content-card" aria-labelledby="{{ ms_card_id }}">
+                      <a href="{{ item.url }}" class="main-search__content-media" tabindex="-1" aria-hidden="true">
+                        {%- if item.image -%}
+                          {%- assign ms_article_alt = item.image.alt | default: item.title -%}
+                          {{ item.image | image_url: width: 720 | image_tag: widths: '240, 360, 480, 600, 720', sizes: ms_card_sizes, loading: 'lazy', alt: ms_article_alt, class: 'main-search__content-image' }}
+                        {%- else -%}
+                          <span class="main-search__content-icon">{% render 'icon', name: 'image', size: 32 %}</span>
+                        {%- endif -%}
+                      </a>
+                      <span class="chip main-search__content-type">{{ 'busca_carrinho.search.article_label' | t }}</span>
+                      <h3 class="main-search__content-title" id="{{ ms_card_id }}">
+                        <a href="{{ item.url }}" class="main-search__content-link">{{ item.title | escape }}</a>
+                      </h3>
+                      {%- assign ms_excerpt = item.excerpt_or_content | replace: '</h1>', '</h1> · ' | replace: '</h2>', '</h2> · ' | replace: '</h3>', '</h3> · ' | replace: '</h4>', '</h4> · ' | replace: '</p>', '</p> ' | replace: '</li>', '</li> ' | replace: '</div>', '</div> ' | replace: '<br>', '<br> ' | replace: '<br/>', '<br/> ' | replace: '<br />', '<br /> ' | strip_html | truncatewords: 20 -%}
+                      {%- if ms_excerpt != blank -%}
+                        <p class="main-search__content-excerpt">{{ ms_excerpt }}</p>
+                      {%- endif -%}
+                    </article>
+                  </li>
+                {%- when 'page' -%}
+                  {%- assign ms_card_id = 'MainSearchPage-' | append: section.id | append: '-' | append: forloop.index -%}
+                  <li class="main-search__item">
+                    <article class="main-search__content-card main-search__content-card--page" aria-labelledby="{{ ms_card_id }}">
+                      <span class="chip main-search__content-type">{{ 'busca_carrinho.search.page_label' | t }}</span>
+                      <h3 class="main-search__content-title" id="{{ ms_card_id }}">
+                        <a href="{{ item.url }}" class="main-search__content-link">{{ item.title | escape }}</a>
+                      </h3>
+                      {%- assign ms_excerpt = item.content | replace: '</h1>', '</h1> · ' | replace: '</h2>', '</h2> · ' | replace: '</h3>', '</h3> · ' | replace: '</h4>', '</h4> · ' | replace: '</p>', '</p> ' | replace: '</li>', '</li> ' | replace: '</div>', '</div> ' | replace: '<br>', '<br> ' | replace: '<br/>', '<br/> ' | replace: '<br />', '<br /> ' | strip_html | truncatewords: 24 -%}
+                      {%- if ms_excerpt != blank -%}
+                        <p class="main-search__content-excerpt">{{ ms_excerpt }}</p>
+                      {%- endif -%}
+                    </article>
+                  </li>
+              {%- endcase -%}
+            {%- endfor -%}
+          </ul>
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="main-search-pagination" aria-label="{{ 'busca_carrinho.search.pagination_label' | t }}">
+              <ul class="main-search-pagination__list" role="list">
+                <li>
+                  {%- if paginate.previous -%}
+                    <a href="{{ paginate.previous.url | escape }}" class="main-search-pagination__link main-search-pagination__link--arrow" aria-label="{{ 'busca_carrinho.search.previous' | t }}">
+                      {%- render 'icon', name: 'chevron-left', size: 18 -%}
+                    </a>
+                  {%- else -%}
+                    <span class="main-search-pagination__link main-search-pagination__link--arrow main-search-pagination__link--disabled" aria-hidden="true">
+                      {%- render 'icon', name: 'chevron-left', size: 18 -%}
+                    </span>
+                  {%- endif -%}
+                </li>
+                {%- comment -%}
+                  part.title é "string" na referência da Shopify (objeto part), mas o tema Dawn o
+                  compara com o número paginate.current_page. Os dois viram texto antes da
+                  comparação, para a página atual ser marcada com qualquer um dos dois tipos.
+                {%- endcomment -%}
+                {%- assign ms_current_page = paginate.current_page | append: '' -%}
+                {%- for part in paginate.parts -%}
+                  {%- assign ms_part_title = part.title | append: '' -%}
+                  <li>
+                    {%- if part.is_link -%}
+                      <a href="{{ part.url | escape }}" class="main-search-pagination__link" aria-label="{{ 'busca_carrinho.search.page' | t: page: part.title }}">{{ part.title }}</a>
+                    {%- elsif ms_part_title == ms_current_page -%}
+                      <span class="main-search-pagination__link main-search-pagination__link--current" aria-current="page">
+                        <span class="visually-hidden">{{ 'busca_carrinho.search.page' | t: page: paginate.current_page }}</span>
+                        <span aria-hidden="true">{{ paginate.current_page }}</span>
+                      </span>
+                    {%- else -%}
+                      <span class="main-search-pagination__gap" aria-hidden="true">…</span>
+                    {%- endif -%}
+                  </li>
+                {%- endfor -%}
+                <li>
+                  {%- if paginate.next -%}
+                    <a href="{{ paginate.next.url | escape }}" class="main-search-pagination__link main-search-pagination__link--arrow" aria-label="{{ 'busca_carrinho.search.next' | t }}">
+                      {%- render 'icon', name: 'chevron-right', size: 18 -%}
+                    </a>
+                  {%- else -%}
+                    <span class="main-search-pagination__link main-search-pagination__link--arrow main-search-pagination__link--disabled" aria-hidden="true">
+                      {%- render 'icon', name: 'chevron-right', size: 18 -%}
+                    </span>
+                  {%- endif -%}
+                </li>
+              </ul>
+            </nav>
+          {%- endif -%}
+        {%- else -%}
+          {%- if ms_suggestions != blank -%}
+            <div class="main-search__suggestions">
+              {{ ms_suggestions }}
+            </div>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endpaginate -%}
+    {%- else -%}
+      {%- if ms_suggestions != blank -%}
+        <div class="main-search__suggestions">
+          {{ ms_suggestions }}
+        </div>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Resultados da busca",
+  "class": "section-main-search",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["search"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Topo da página"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumb",
+      "label": "Mostrar trilha de navegação",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search_form",
+      "label": "Mostrar campo de busca no topo",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Resultados"
+    },
+    {
+      "type": "range",
+      "id": "results_per_page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "label": "Resultados por página",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 3,
+      "max": 5,
+      "step": 1,
+      "label": "Colunas no computador",
+      "default": 4
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sort",
+      "label": "Mostrar ordenação",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ribbon",
+      "label": "Mostrar selo do produto",
+      "info": "O texto do selo vem do metafield beacon.selo de cada produto.",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "ribbon_tone",
+      "label": "Estilo do selo",
+      "options": [
+        {
+          "value": "offer",
+          "label": "Fita azul-petróleo"
+        },
+        {
+          "value": "best",
+          "label": "Pílula azul"
+        },
+        {
+          "value": "new",
+          "label": "Pílula amarela"
+        }
+      ],
+      "default": "offer"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Mostrar estrelas de avaliação",
+      "info": "Aparecem só em produtos com avaliações de um app de avaliações.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Sugestões (busca vazia ou sem resultado)"
+    },
+    {
+      "type": "link_list",
+      "id": "popular_menu",
+      "label": "Menu de buscas populares",
+      "info": "Sem escolha, usa o menu com o identificador buscas-populares, se ele existir."
+    },
+    {
+      "type": "collection_list",
+      "id": "suggested_collections",
+      "label": "Coleções sugeridas",
+      "limit": 8
+    },
+    {
+      "type": "collection",
+      "id": "suggested_products_collection",
+      "label": "Coleção dos produtos sugeridos"
+    },
+    {
+      "type": "range",
+      "id": "suggested_products_limit",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "label": "Quantidade de produtos sugeridos",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Resultados da busca"
+    }
+  ]
+}
+{% endschema %}

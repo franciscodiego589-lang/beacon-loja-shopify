@@ -1,0 +1,55 @@
+{%- comment -%}
+  Fundação. Começo do <head> comum aos dois layouts (layout/theme.liquid e
+  layout/password.liquid): charset, viewport, cor do navegador, canonical, pré-conexão com a CDN,
+  ícones, pré-carga das fontes, descrição da página, a troca no-js/js e o importmap dos
+  apelidos @theme/*. Auditoria de arquitetura (28/09/2026): antes os dois layouts tinham cópias
+  deste trecho, e elas já divergiam (o layout de senha não tinha o apple-touch-icon).
+
+  Fica em cada layout o que é só dele: <title>, robots, metadados de compartilhamento
+  (meta-tags), content_for_header, variáveis de CSS, folhas e scripts.
+
+  Parâmetros:
+  - preload_heading_font: true para pré-carregar também a fonte dos títulos (a página de senha
+    não usa a fonte dos títulos e passa false)
+  - default_description: (opcional) descrição para quando page_description vem vazio. O layout
+    principal só a preenche na página inicial (17/10/2026); o layout de senha não passa nada.
+{%- endcomment -%}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="{{ settings.color_ink }}">
+<link rel="canonical" href="{{ canonical_url }}">
+<link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+
+{%- if settings.favicon != blank -%}
+  <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+  <link rel="apple-touch-icon" href="{{ settings.favicon | image_url: width: 180, height: 180 }}">
+{%- endif -%}
+
+{%- unless settings.type_body_font.system? -%}
+  {{ settings.type_body_font | font_url | preload_tag: as: 'font', type: 'font/woff2' }}
+{%- endunless -%}
+{%- if preload_heading_font -%}
+  {%- unless settings.type_heading_font.system? -%}
+    {{ settings.type_heading_font | font_url | preload_tag: as: 'font', type: 'font/woff2' }}
+  {%- endunless -%}
+{%- endif -%}
+
+{%- assign meta_description = page_description | default: default_description -%}
+{%- if meta_description != blank -%}
+  <meta name="description" content="{{ meta_description | strip_html | escape }}">
+{%- endif -%}
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+</script>
+
+<script type="importmap">
+  {
+    "imports": {
+      "@theme/global": "{{ 'global.js' | asset_url }}",
+      "@theme/cart-api": "{{ 'cart.api.js' | asset_url }}",
+      "@theme/search-api": "{{ 'search.api.js' | asset_url }}",
+      "@theme/recommendations-api": "{{ 'recommendations.api.js' | asset_url }}"
+    }
+  }
+</script>

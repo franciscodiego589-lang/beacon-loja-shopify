@@ -1,0 +1,192 @@
+{{ 'section-collection-seo.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Texto de SEO da categoria (maquete Categoria-Desktop/Mobile.dc.html, bloco "Sobre a
+  categoria"). Blocos "paragraph": os marcados "extra" ficam dentro de
+  <details>/<summary> ("Ler texto completo e referências"), sem JavaScript.
+  A seção de perguntas frequentes da maquete é a seção "faq-list" da fundação: veio
+  separada no template (collection.json) para não duplicar o acordeão de perguntas.
+  Sem parágrafo nenhum, a seção não renderiza nada.
+  Redesenho v3 (emenda 17 da tarefa 8; alvo.css, bloco .frase): com o ajuste "Superfície" em bloco
+  claro (padrão), o texto fica num bloco sólido no tom #ECF3F9, sem vidro e sem sombra; a opção
+  "Sem bloco" deixa o texto direto na página branca. O espaço de cima e de baixo é o espaço padrão
+  entre seções (--section-gap), como margem da própria seção.
+  Imagem opcional ao lado do texto (bloco de SEO da coleção na referência, com 1 foto): a foto
+  aparece inteira, na proporção dela (regra global: fotos inteiras, sem recorte). Ao lado do texto
+  só a partir de 1081 px, à esquerda ou à direita; abaixo disso fica embaixo do texto. Sem imagem,
+  a seção fica só com o texto.
+{%- endcomment -%}
+
+{%- liquid
+  assign paragraph_count = 0
+  for block in section.blocks
+    if block.type == 'paragraph' and block.settings.text != blank
+      assign paragraph_count = paragraph_count | plus: 1
+    endif
+  endfor
+
+  assign seo_image = section.settings.image
+  assign seo_alt = seo_image.alt | default: section.settings.heading | default: shop.name
+
+  # Largura da foto: 320 px ao lado do texto (1081 px para cima); abaixo disso ocupa a coluna, até 360 px.
+  # A coluna é a janela menos os recuos: 40 px da página, mais 40 px do bloco claro quando ele existe.
+  assign seo_recuos = 80
+  if section.settings.surface == 'none'
+    assign seo_recuos = 40
+  endif
+  assign seo_largura_max = seo_recuos | plus: 360
+  assign seo_sizes = '(min-width: 1081px) 320px, (min-width: ' | append: seo_largura_max | append: 'px) 360px, calc(100vw - ' | append: seo_recuos | append: 'px)'
+-%}
+
+{%- if paragraph_count > 0 -%}
+  <div class="collection-seo{% if section.settings.surface != 'none' %} collection-seo--panel{% endif %}">
+    <div class="page-width">
+      <div class="collection-seo__bloco">
+        {%- if seo_image != blank -%}
+          <div class="collection-seo__layout collection-seo__layout--image-{{ section.settings.image_position }}">
+        {%- endif -%}
+        <div class="collection-seo__inner">
+          {%- if section.settings.heading != blank -%}
+            <h2 class="collection-seo__heading v3-title">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+
+          <div class="collection-seo__text">
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'paragraph' and block.settings.text != blank and block.settings.extra != true -%}
+                <div class="rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- assign has_extra = false -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'paragraph' and block.settings.text != blank and block.settings.extra == true -%}
+              {%- assign has_extra = true -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- if has_extra -%}
+            <details class="collection-seo__more">
+              <summary class="collection-seo__more-summary">
+                {%- if section.settings.more_label != blank -%}
+                  {{- section.settings.more_label | escape -}}
+                {%- else -%}
+                  {{- 'colecao.seo.read_more' | t -}}
+                {%- endif -%}
+                {%- render 'icon', name: 'chevron-down', size: 16, class: 'collection-seo__more-chevron' -%}
+              </summary>
+              <div class="collection-seo__more-text">
+                {%- for block in section.blocks -%}
+                  {%- if block.type == 'paragraph' and block.settings.text != blank and block.settings.extra == true -%}
+                    <div class="rte" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            </details>
+          {%- endif -%}
+        </div>
+        {%- if seo_image != blank -%}
+            <div class="collection-seo__media">
+              {{ seo_image | image_url: width: 720 | image_tag: widths: '260, 320, 360, 520, 640, 720', sizes: seo_sizes, loading: 'lazy', alt: seo_alt, class: 'collection-seo__image' }}
+            </div>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Texto de SEO da categoria",
+  "tag": "section",
+  "class": "section-collection-seo",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título"
+    },
+    {
+      "type": "text",
+      "id": "more_label",
+      "label": "Texto do botão \"Ler mais\"",
+      "info": "Vazio usa o padrão \"Ler texto completo e referências\". Só aparece com algum parágrafo marcado \"Mostrar só depois de Ler mais\"."
+    },
+    {
+      "type": "select",
+      "id": "surface",
+      "label": "Superfície",
+      "info": "\"Bloco claro\" põe o texto num bloco sólido no tom claro da loja, sem vidro. \"Sem bloco\" deixa o texto direto na página branca.",
+      "options": [
+        { "value": "panel", "label": "Bloco claro" },
+        { "value": "none", "label": "Sem bloco (página branca)" }
+      ],
+      "default": "panel"
+    },
+    {
+      "type": "header",
+      "content": "Imagem"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagem ao lado do texto",
+      "info": "Opcional. A foto aparece inteira, na proporção dela, sem recorte. Ao lado do texto só a partir de 1081 px de largura; abaixo disso, fica embaixo do texto. Sem imagem, a seção mostra só o texto. Preencha o texto alternativo da imagem na biblioteca de arquivos."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Lado da imagem no computador",
+      "options": [
+        { "value": "left", "label": "Esquerda" },
+        { "value": "right", "label": "Direita" }
+      ],
+      "default": "left"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "paragraph",
+      "name": "Parágrafo",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texto"
+        },
+        {
+          "type": "checkbox",
+          "id": "extra",
+          "label": "Mostrar só depois de \"Ler mais\"",
+          "info": "Use para o texto de referências e fontes, mais longo.",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Texto de SEO da categoria",
+      "blocks": [
+        {
+          "type": "paragraph"
+        },
+        {
+          "type": "paragraph"
+        },
+        {
+          "type": "paragraph"
+        },
+        {
+          "type": "paragraph",
+          "settings": {
+            "extra": true
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

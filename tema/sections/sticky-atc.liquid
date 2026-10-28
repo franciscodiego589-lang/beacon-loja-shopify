@@ -1,0 +1,144 @@
+{{ 'section-sticky-atc.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'sticky-atc.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Área produto. Barra fixa de compra, que aparece (por IntersectionObserver, em sticky-atc.js)
+  quando o botão principal de compra ([data-main-product-submit], em sections/main-product.liquid)
+  sai da tela. Usa a mesma variante inicial do bloco principal (snippets/produto-initial-variant)
+  e acompanha as trocas de kit pelo evento 'variant:change'.
+  Enquanto a barra está visível, o JS define --sticky-atc-space em :root (altura real da barra)
+  e o <body> ganha essa folga embaixo (section-sticky-atc.css): o fim do rodapé não fica
+  escondido atrás da barra. Antes havia um espaçador dentro do <main>, que ficava ANTES do
+  rodapé e não protegia o fim dele (medido no Chromium em 27/09/2026). Enquanto a barra aparece, o JS define
+  --chat-offset em :root (altura da barra), e o botão de atendimento do rodapé sobe junto.
+
+  Liquid Glass (spec 8.8, D22, D31, D34; redesenho v3, emenda V2): o próprio <sticky-atc> é a barra
+  de vidro funcional regular com desfoque (.glass-layer .glass--regular .glass--blur, branco a 0,74,
+  vidro no ::before: o vidro se vê sobre a foto que passa por baixo), flutuante com recuo de 16 px
+  (8 no celular) da base (.lg-sticky-atc), centrada com no máximo 760 px (alvo.css linha 345) e raio
+  32 (28). O vidro fica no host porque o sticky-atc.js mede a altura dele (offsetHeight) para o
+  --chat-offset: com a barra flutuante, o botão de atendimento sobe para 16 px acima dela.
+  Aparece quando o botão principal sai da tela e some enquanto o "Compre junto" está na tela (U4).
+  O nome é o do snippets/v3-nome-visivel (com a dose, sem " – ").
+  Parcelamento sem juros (29/09/2026): desligado por padrão (ajuste show_installments), até o
+  número de parcelas ser confirmado no meio de pagamento.
+  Entrada por .lg-materialize: na .glass-layer, só transform (deslocamento de 16 px e escala de
+  0,98 a partir de bottom center), sem opacidade, para o desfoque existir desde o primeiro quadro.
+{%- endcomment -%}
+
+{%- if product != blank -%}
+  {%- liquid
+    capture sticky_initial_index
+      render 'produto-initial-variant', product: product
+    endcapture
+    assign sticky_initial_index = sticky_initial_index | strip | plus: 0
+    assign sticky_variant = product.variants[sticky_initial_index]
+
+    assign sticky_kit_option = product.options_by_name['Kit']
+    if sticky_kit_option == blank
+      assign sticky_kit_option = product.options_by_name['Quantidade']
+    endif
+    assign sticky_kit_index = -1
+    if sticky_kit_option != blank
+      assign sticky_kit_index = sticky_kit_option.position | minus: 1
+    endif
+
+    # Mesmo texto do botão principal (snippets/produto-buy-label, regra única).
+    capture sticky_label
+      render 'produto-buy-label', variant: sticky_variant, kit_index: sticky_kit_index
+    endcapture
+
+    # Nome visível (fonte única, v3-nome-visivel): 'html' já sai escapado, sem outro | escape.
+    capture sticky_nome
+      render 'v3-nome-visivel', produto: product, modo: 'html'
+    endcapture
+    assign sticky_nome = sticky_nome | strip
+  -%}
+  <sticky-atc
+    class="sticky-atc glass-layer glass--regular glass--blur lg-sticky-atc lg-materialize"
+    hidden
+    data-variant-id="{{ sticky_variant.id }}"
+    {% if section.settings.reserve_chat_space %}data-reserve-chat-space{% endif %}
+  >
+    <div class="sticky-atc__bar">
+      <a href="{{ product.url }}" class="sticky-atc__media" tabindex="-1" aria-hidden="true">
+        {%- if product.featured_media -%}
+          {{ product.featured_media | image_url: width: 120 | image_tag: widths: '60, 90, 120', sizes: '56px', loading: 'lazy', alt: '', class: 'sticky-atc__image' }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'sticky-atc__placeholder' }}
+        {%- endif -%}
+      </a>
+
+      <div class="sticky-atc__info">
+        <p class="sticky-atc__title">{{ sticky_nome }}</p>
+        {%- comment -%}
+          Um preço por variante, escrito pelo mesmo snippets/price.liquid; o JS só mostra o da
+          variante ativa. Assim preço de comparação, selo de % OFF e parcelamento de cada kit
+          saem exatamente como no Liquid, sem conta repetida no JS.
+        {%- endcomment -%}
+        {%- for price_variant in product.variants -%}
+          <div class="sticky-atc__price-slot" data-sticky-atc-price="{{ price_variant.id }}"{% unless price_variant.id == sticky_variant.id %} hidden{% endunless %}>
+            {% render 'price', variant: price_variant, size: 'sm', show_installments: section.settings.show_installments, class: 'sticky-atc__price' %}
+          </div>
+        {%- endfor -%}
+      </div>
+
+      <button type="button" class="button button--primary sticky-atc__add" data-sticky-atc-submit{% unless sticky_variant.available %} disabled{% endunless %}>
+        <span data-sticky-atc-label>{{ sticky_label }}</span>
+      </button>
+    </div>
+    <p class="form-message form-message--error sticky-atc__error" role="alert" hidden data-sticky-atc-error></p>
+
+    {%- comment -%}
+      Marcadores em variáveis: o Liquid da Shopify encerra um {{ ... }} no primeiro "}".
+    {%- endcomment -%}
+    {%- liquid
+      assign ph_kit = '{kit}'
+      assign ph_price = '{price}'
+    -%}
+    <script type="application/json" data-sticky-atc-strings>
+      {
+        "addKit": {{ 'produto.buy.add_kit' | t: kit: ph_kit, price: ph_price | json }},
+        "add": {{ 'produto.buy.add' | t: price: ph_price | json }},
+        "soldOut": {{ 'produto.buy.sold_out' | t | json }},
+        "addError": {{ 'fundacao.js.add_error' | t | json }}
+      }
+    </script>
+  </sticky-atc>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Compra fixa",
+  "tag": "div",
+  "class": "section-sticky-atc",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Barra fixa no fim da tela, que aparece quando o botão principal de compra sai da tela. Some quando ele volta a aparecer e enquanto o bloco Compre junto está na tela."
+    },
+    {
+      "type": "checkbox",
+      "id": "reserve_chat_space",
+      "label": "Reservar espaço para o botão de chat",
+      "info": "Deixa uma folga à direita, no celular, para o balão de chat flutuante não cobrir o botão de comprar (quando houver um app de chat instalado).",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_installments",
+      "label": "Mostrar parcelamento sem juros",
+      "info": "Só ative depois de confirmar no meio de pagamento o número de parcelas sem juros configurado no tema.",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Compra fixa"
+    }
+  ]
+}
+{% endschema %}

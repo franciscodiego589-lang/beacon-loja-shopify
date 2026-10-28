@@ -1,0 +1,290 @@
+/*
+  Beacon Labs · seção Lista de artigos (sections/main-blog.liquid)
+  Abertura em duas colunas (texto e imagem com cantos inferiores de 24 px) e grade de cartões:
+  1 coluna no celular, 2 no tablet e 2, 3 ou 4 no computador, com espaço de 32 px entre linhas.
+  Imagem do cartão em 3:2, raio 16 px, como a maquete ("Do nosso blog").
+  Liquid Glass (spec 8.5): cartões sem moldura sobre a página branca, capa com raio 20 (16 no celular),
+  zoom de 1,03 no hover e título sublinhado; tags em chip de vidro fino (base.css, .chip--outline)
+  e a atual em preenchimento ink.
+
+  Etapa 8e, leva C (03/10/2026): a abertura é o topo da coleção, da busca e da ajuda (.pb-topo, em
+  paginas-blog.css: campo claro de ponta a ponta, trilha única, título de 56 px, 36 px até 760 px); a imagem da
+  abertura é inteira, sem corte, num bloco de raio --radius-tile; e o estado vazio é um bloco sólido #ECF3F9
+  (.pb-bloco: sem borda, sem sombra), de raio --radius-tile (28 px; 24 no celular), no lugar do cartão de vidro
+  da v2 (.glass .glass--card, raio 32). O vão até o rodapé é o do `.main-content::after` (104 px; 68 px).
+  Contraste sobre o bloco: tinta 15,44:1 e apoio #566472 5,42:1.
+*/
+
+.main-blog__hero {
+  display: grid;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.main-blog__hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.main-blog__title {
+  font-size: 30px;
+  line-height: 1.12;
+}
+
+.main-blog__hero-text {
+  max-width: 600px;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.main-blog__hero-media {
+  order: -1;
+  aspect-ratio: 16 / 9;
+  border-radius: 0 0 24px 24px;
+}
+
+.main-blog__hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Com o topo (abertura ligada): o espaço de dentro é o do topo, a imagem vem depois do texto e é inteira. Os
+   seletores levam duas classes para não perderem para as regras de cima, que valem sem o topo. */
+.main-blog--topo .main-blog__hero {
+  margin-bottom: 0;
+  padding-block: 12px 28px;
+}
+
+.main-blog--topo .main-blog__hero-content {
+  gap: 10px;
+}
+
+.main-blog--topo .main-blog__hero-media {
+  order: 0;
+  overflow: hidden;
+  aspect-ratio: auto;
+  border-radius: var(--radius-tile);
+  background: var(--color-photo-bg);
+}
+
+.main-blog--topo .main-blog__hero-image {
+  display: block;
+  height: auto;
+}
+
+.main-blog--topo .main-blog__corpo {
+  padding-top: 32px;
+}
+
+@media screen and (min-width: 761px) {
+  .main-blog--topo .main-blog__corpo {
+    padding-top: 40px;
+  }
+}
+
+/* Filtro por tag */
+
+.main-blog__tags {
+  margin-bottom: 24px;
+}
+
+/* Lista de tags: 8 px em cima e embaixo e 6 px nas laterais, com margem negativa, para o anel
+   de foco dos chips não ser cortado pela rolagem horizontal (spec 5.10). */
+.main-blog__tags-list {
+  display: flex;
+  gap: 8px;
+  margin: -8px -6px -4px;
+  padding: 8px 6px;
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.main-blog__tag {
+  white-space: nowrap;
+}
+
+.main-blog__tag--active,
+a.main-blog__tag--active:hover {
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+}
+
+/* Grade */
+
+.main-blog__grid {
+  --grid-columns-mobile: 1;
+  --grid-columns-tablet: 2;
+
+  row-gap: 32px;
+}
+
+.main-blog__grid--2 {
+  --grid-columns-desktop: 2;
+}
+
+.main-blog__grid--3 {
+  --grid-columns-desktop: 3;
+}
+
+.main-blog__grid--4 {
+  --grid-columns-desktop: 4;
+}
+
+.blog-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+}
+
+.blog-card__media {
+  display: block;
+  border-radius: var(--lg-radius-tile, var(--radius-card-sm));
+}
+
+.blog-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--duration-base) var(--ease-out);
+}
+
+.blog-card:hover .blog-card__image {
+  transform: scale(1.03);
+}
+
+.blog-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* Tag: o texto corta com reticências no span interno, para o link não ter overflow e o .lg-hit
+   (área de toque de 44 px por ::after) funcionar. */
+.blog-card__tag {
+  position: relative;
+  z-index: 1;
+  max-width: 160px;
+  text-decoration: none;
+}
+
+.blog-card__tag-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+a.blog-card__tag:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+
+.blog-card__title {
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.blog-card__link {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.blog-card__link:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.blog-card__author {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.blog-card__excerpt {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--color-text-muted);
+}
+
+/* Estado vazio: bloco sólido #ECF3F9 (.pb-bloco na marcação), com o ícone num círculo branco. */
+
+.main-blog__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 48px 20px;
+  border-radius: var(--radius-tile);
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.main-blog__empty-icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  color: var(--color-chip-text);
+}
+
+.main-blog__empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+@media screen and (min-width: 990px) {
+  .main-blog--topo .main-blog__hero {
+    padding-block: 22px 48px;
+  }
+
+  .main-blog__hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 48px;
+    margin-bottom: 48px;
+  }
+
+  .main-blog__hero--no-image {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .main-blog__hero-media {
+    order: 0;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--radius-card-lg);
+  }
+
+  .main-blog__title {
+    font-size: 48px;
+  }
+
+  .main-blog__hero-text {
+    font-size: 16px;
+  }
+
+  .main-blog__tags-list {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .blog-card__title {
+    font-size: 18px;
+  }
+}

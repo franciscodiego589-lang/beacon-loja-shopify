@@ -1,0 +1,147 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "layout": "banner",
+        "image": "shopify://shop_images/qualidade-topo-2520x1080.png",
+        "eyebrow": "Linha Pure",
+        "heading_tag": "h1",
+        "text": "<p>O que vai em cada pote da linha Pure, o que está escrito no rótulo e onde conferir as informações de cada produto.</p>",
+        "text_align": "left"
+      }
+    },
+    "porcao": {
+      "type": "image-with-text",
+      "blocks": {
+        "p1": {
+          "type": "item",
+          "settings": {
+            "icon": "capsule",
+            "text": "2 cápsulas ao dia"
+          }
+        },
+        "p2": {
+          "type": "item",
+          "settings": {
+            "icon": "calendar",
+            "text": "Rende 30 dias"
+          }
+        },
+        "p3": {
+          "type": "item",
+          "settings": {
+            "icon": "user",
+            "text": "Adultos com 19 anos ou mais"
+          }
+        }
+      },
+      "block_order": ["p1", "p2", "p3"],
+      "settings": {
+        "image": "shopify://shop_images/produto-comum-mesa-rotina-1254x1254.png",
+        "image_position": "left",
+        "image_ratio": "square",
+        "image_shape": "rounded",
+        "eyebrow": "Porção e dose",
+        "heading": "2 cápsulas por dia, 1 g por porção",
+        "text": "<p>Todos os produtos da linha Pure têm a mesma porção: 2 cápsulas por dia, que somam 1 g. Nos produtos com dose definida, a quantidade escrita no nome e na frente do pote é o total dessas 2 cápsulas.</p><p>A forma de tomar de cada produto está na página dele.</p>",
+        "button_label": "Ver a linha Pure",
+        "button_link": "/collections/linha-beacon-labs",
+        "button_style": "dark",
+        "boxed": true,
+        "color_scheme": "default"
+      }
+    },
+    "rotulo": {
+      "type": "image-with-text",
+      "blocks": {
+        "r1": {
+          "type": "item",
+          "settings": {
+            "icon": "jar",
+            "text": "60 cápsulas por pote"
+          }
+        },
+        "r2": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "text": "Peso líquido: 30 g"
+          }
+        },
+        "r3": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "text": "NÃO CONTÉM GLÚTEN."
+          }
+        }
+      },
+      "block_order": ["r1", "r2", "r3"],
+      "settings": {
+        "image": "shopify://shop_images/produto-comum-pote-aberto-vista-de-cima-1254x1254.png",
+        "image_position": "right",
+        "image_ratio": "square",
+        "image_shape": "rounded",
+        "eyebrow": "Rótulo",
+        "heading": "O que está escrito no pote",
+        "text": "<p>Na frente: a marca, o nome do produto, a forma do insumo quando a ficha técnica informa e, nos produtos com dose definida, a quantidade do dia. A faixa de baixo traz 60 CÁPSULAS e SUPLEMENTO ALIMENTAR EM CÁPSULAS.</p><p>Frase sobre o nutriente só entra com o texto exato da lista de alegações da IN 28/2018 da Anvisa (Anexo V), e só no produto cuja dose atende ao requisito da frase.</p>",
+        "boxed": true,
+        "color_scheme": "default"
+      }
+    },
+    "advertencias": {
+      "type": "image-with-text",
+      "blocks": {
+        "a1": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "text": "Este produto não é um medicamento"
+          }
+        },
+        "a2": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "text": "Não exceder a recomendação diária de consumo indicada na embalagem"
+          }
+        },
+        "a3": {
+          "type": "item",
+          "settings": {
+            "icon": "check-circle",
+            "text": "Mantenha fora do alcance de crianças"
+          }
+        }
+      },
+      "block_order": ["a1", "a2", "a3"],
+      "settings": {
+        "image": "shopify://shop_images/produto-comum-capsulas-close-1254x1254.png",
+        "image_position": "left",
+        "image_ratio": "square",
+        "image_shape": "rounded",
+        "eyebrow": "Advertências",
+        "heading": "Avisos que valem para todos os produtos",
+        "text": "<p>Cada página de produto tem uma seção Advertências. Alguns produtos têm avisos a mais, por exemplo para gestantes, lactantes e crianças. As três frases abaixo estão em todos:</p>",
+        "boxed": true,
+        "color_scheme": "default"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "porcao",
+    "rotulo",
+    "advertencias"
+  ]
+}

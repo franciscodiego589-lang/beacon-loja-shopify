@@ -1,0 +1,77 @@
+/*
+  Beacon Labs · trilha de navegação da coleção (component-colecao-breadcrumb.css)
+  Usado por snippets/colecao-breadcrumb.liquid (topo da coleção, em
+  sections/main-collection-banner.liquid).
+
+  Redesenho v3 (alvo.css linhas 263 a 266, .trilha): texto de apoio de 12 px sobre o campo claro
+  (#566472, 5,42:1 sobre #ECF3F9), separador "/" de 6 px de cada lado e página atual na mesma cor,
+  como no alvo (a página atual se distingue por não ser link e por aria-current). Sem azul: o link
+  tem a cor do texto de apoio e, ao passar o mouse, vai para a tinta com sublinhado (o texto
+  nunca some).
+
+  Alvo de toque: o link mede 44 × 44 px no mínimo (spec 4.2). A linha da trilha tem só 17,6 px de
+  altura (12 px, linha 25/17), então o link cresce com margem negativa igual ao que passa de
+  17,6 px (13,2 px em cima e embaixo, e 8 px dos lados), como o `.trilha a` do alvo: a trilha não
+  ocupa mais espaço e o texto não sai do lugar.
+*/
+
+.colecao-breadcrumb {
+  display: block;
+}
+
+.colecao-breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: calc(25 / 17);
+  letter-spacing: 0;
+}
+
+.colecao-breadcrumb__item {
+  display: flex;
+  align-items: center;
+}
+
+/* Separador decorativo: a trilha já é um <ol>, a ordem chega ao leitor de tela sem ele. A segunda
+   declaração (texto alternativo vazio) esconde o "/" de quem lê o conteúdo gerado; navegador que
+   não entende a sintaxe ignora a linha e fica com a primeira. */
+.colecao-breadcrumb__item:not(:first-child)::before {
+  content: "/";
+  content: "/" / "";
+  margin-inline: 6px;
+}
+
+.colecao-breadcrumb__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -13.2px -8px;
+  padding-inline: 8px;
+  border-radius: var(--radius-pill);
+  color: inherit;
+  text-decoration: none;
+}
+
+.colecao-breadcrumb__link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Anel de foco duplo do sistema de vidro (o contorno vem do tema; este é o anel interno). A trilha única
+   (etapa 8e, item 17) herdou do produto a regra que lá existia. */
+.colecao-breadcrumb__link:focus-visible {
+  box-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.colecao-breadcrumb__current {
+  color: inherit;
+}

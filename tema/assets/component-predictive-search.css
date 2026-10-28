@@ -1,0 +1,700 @@
+/*
+  Beacon Labs · busca preditiva em modal (component-predictive-search.css)
+  Estrutura em snippets/predictive-search-modal.liquid.
+  Aqui ficam o modal, o campo e o contêiner dos resultados e, no fim do arquivo, os resultados
+  (seção 'predictive-search', área de busca). Auditoria de arquitetura, 28/09/2026: o CSS dos
+  resultados vinha de section-predictive-search.css, por um <link> dentro do HTML que a Section
+  Rendering API devolve; a cada digitação o <link> era tirado e posto de novo, e na primeira
+  abertura a folha só chegava junto com o primeiro resultado. Agora tudo carrega uma vez, no
+  layout (layout/theme.liquid, com a busca preditiva ligada). A ordem das regras não mudou: as
+  dos resultados continuam depois das do modal.
+
+  Liquid Glass (spec 8.1, D22, D28; redesenho v3): o <dialog> leva .glass .glass--thick
+  .glass--blur (vidro espesso a 0,90 COM desfoque, porque há conteúdo da página por trás; o
+  desfoque real só existe aqui, nas gavetas e na barra fixa de compra, spec 8, item 3; fundo,
+  borda de luz e sombra vêm de assets/liquid-glass.css). Flutua com recuo de 12 px (8 no
+  celular) no topo e nas laterais, raio 32 (24), sobre escurecimento rgba(ink, 0,55) sem
+  desfoque. Entrada: materialização de translateY(-8 px) e escala 0,98 em 280 ms a partir do topo.
+  Os resultados viram preenchimento (.glass-fill: branco a 0,72, raio 16) só dentro do modal,
+  pelas regras "no modal" no fim deste arquivo; links e hover de título na tinta
+  (--lg-link-glass lê --color-ink), com o sublinhado como sinal do hover.
+  Botão de enviar: tinta sólida; hover e pressionado em --color-primary-hover (#15375A), porque
+  a primária e a tinta são a mesma cor e sem isso o hover ficaria igual ao repouso (emenda C6).
+*/
+
+/* Reserva sem liquid-glass.css (especificidade zero: o material vence). */
+:where(.predictive-search__dialog) {
+  border: 0;
+  background: var(--color-background);
+  box-shadow: var(--shadow-panel);
+}
+
+.predictive-search__dialog {
+  --search-inset: var(--lg-float-inset, 0px);
+
+  position: fixed;
+  top: var(--search-inset);
+  right: var(--search-inset);
+  bottom: auto;
+  left: var(--search-inset);
+  width: auto;
+  max-width: calc(100% - 2 * var(--search-inset));
+  max-height: min(calc(92dvh - var(--search-inset)), 760px);
+  margin: 0;
+  padding: 0;
+  border-radius: var(--lg-radius-sheet, var(--radius-card-lg));
+  overflow: hidden;
+  color: var(--color-text);
+  font-family: var(--font-body-family);
+  font-size: 16px;
+  line-height: 1.5;
+  transform-origin: top center;
+}
+
+.predictive-search__dialog::backdrop {
+  background: rgba(var(--color-ink-rgb, 8, 28, 45), 0.55);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .predictive-search__dialog[open] {
+    animation: predictive-search-in var(--lg-dur-materialize, 280ms) var(--lg-ease-spring, var(--ease-out, ease-out));
+  }
+
+  .predictive-search__dialog[data-closing] {
+    animation: predictive-search-out 180ms ease-in forwards;
+  }
+
+  .predictive-search__dialog[open]::backdrop {
+    animation: backdrop-in var(--duration-base, 250ms) ease-out;
+  }
+
+  .predictive-search__dialog[data-closing]::backdrop {
+    animation: backdrop-out 180ms ease-in forwards;
+  }
+}
+
+@keyframes predictive-search-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+@keyframes predictive-search-out {
+  to {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+.predictive-search__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "form close"
+    "results results";
+  align-items: center;
+  gap: 12px 8px;
+  width: 100%;
+  max-width: 920px;
+  max-height: inherit;
+  margin-inline: auto;
+  padding: 12px var(--page-gutter) 20px;
+}
+
+@media screen and (min-width: 750px) {
+  .predictive-search__inner {
+    padding: 20px var(--page-gutter-tablet) 28px;
+  }
+}
+
+.predictive-search__form {
+  position: relative;
+  grid-area: form;
+  display: flex;
+  align-items: center;
+}
+
+.predictive-search__icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  display: flex;
+  color: var(--color-text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* Campo em cápsula de 52 px: preenchimento branco a 0,90, borda #4A6072 dentro do vidro. */
+.predictive-search__input {
+  width: 100%;
+  min-height: 52px;
+  height: 52px;
+  padding: 0 100px 0 50px;
+  border: 1px solid var(--lg-input-border-glass, var(--color-input-border));
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-white-90, var(--color-surface-1));
+  color: var(--color-text);
+  font-size: 16px;
+}
+
+.predictive-search__input::placeholder {
+  color: var(--lg-input-border-glass, var(--color-text-muted));
+}
+
+.predictive-search__input:focus-visible {
+  box-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.predictive-search__input::-webkit-search-cancel-button,
+.predictive-search__input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.predictive-search__reset,
+.predictive-search__submit {
+  position: absolute;
+  top: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+/* Limpar: transparente de 44 px; hover ink a 6%. */
+.predictive-search__reset {
+  right: 48px;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.predictive-search__reset:hover {
+  color: var(--color-ink);
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+}
+
+.predictive-search__reset:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+  transform: translateY(-50%) scale(var(--lg-press-scale, 0.97));
+}
+
+/* Enviar: preenchimento primário (ação principal do modal), linha de luz, sem sombra colorida
+   por estar sobre vidro (D36). */
+.predictive-search__submit {
+  right: 4px;
+  background: var(--color-primary);
+  color: var(--color-on-dark);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line, 0 0 #0000);
+}
+
+.predictive-search__submit:hover {
+  background: var(--color-primary-hover);
+}
+
+.predictive-search__submit:active {
+  background: var(--color-primary-hover);
+  transform: translateY(-50%) scale(var(--lg-press-scale, 0.97));
+}
+
+.predictive-search__submit:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+/* Fechar: transparente de 44 px. */
+.predictive-search__close {
+  grid-area: close;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.predictive-search__close:hover {
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+}
+
+.predictive-search__close:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.predictive-search__results {
+  grid-area: results;
+  max-height: calc(min(92dvh, 760px) - 120px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.predictive-search__results:empty {
+  display: none;
+}
+
+.predictive-search__results[aria-busy="true"] {
+  opacity: 0.6;
+  transition: opacity var(--duration-fast, 150ms) ease;
+}
+
+/* ---------- Resultados dentro do modal (preenchimentos sobre o vidro) ---------- */
+
+.predictive-search__dialog .predictive-search-product {
+  border: 0;
+  border-radius: 16px;
+  background: var(--glass-fill-bg, var(--color-background));
+  box-shadow: var(--lg-hairline-soft, 0 0 0 1px var(--color-line));
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    box-shadow var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.predictive-search__dialog .predictive-search-product:hover {
+  background: var(--glass-fill-bg-hover, var(--color-background));
+  box-shadow: 0 0 0 1px rgba(var(--color-ink-rgb, 8, 28, 45), 0.14);
+}
+
+.predictive-search__dialog .predictive-search-product:has(.predictive-search-product__title:active) {
+  transform: scale(var(--lg-press-scale-card, 0.99));
+}
+
+.predictive-search__dialog .predictive-search-product__title:hover,
+.predictive-search__dialog .predictive-search-results__link:hover {
+  color: var(--lg-link-glass, var(--color-primary));
+}
+
+.predictive-search__dialog .predictive-search-results__empty {
+  background: var(--lg-fill-ink-04, var(--color-surface-1));
+}
+
+.predictive-search__dialog .predictive-search-results__empty-icon {
+  background: var(--lg-fill-primary-10, var(--color-surface-2));
+}
+
+/* ---------- Modos de reserva ---------- */
+
+@media (prefers-reduced-transparency: reduce) {
+  .predictive-search__input,
+  .predictive-search__dialog .predictive-search-product {
+    background: #FFFFFF;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .predictive-search__input {
+    border-color: var(--color-ink);
+    background: #FFFFFF;
+  }
+
+  .predictive-search__dialog .predictive-search-product {
+    background: #FFFFFF;
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .predictive-search__dialog .predictive-search-product {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ==========================================================================
+   Resultados da busca preditiva (antes em section-predictive-search.css)
+   Estrutura em sections/predictive-search.liquid.
+
+   Celular: produtos em lista (foto 64 px, nome e preço, botão redondo de 44 px).
+   A partir de 750 px: produtos em grade de 3 colunas com cartões e, quando houver,
+   coluna lateral de 240 px com buscas populares, coleções, páginas e artigos.
+   ========================================================================== */
+
+.predictive-search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 4px;
+}
+
+.predictive-search-results__heading {
+  margin: 0 0 12px;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Distribuição ---------- */
+
+.predictive-search-results__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+
+.predictive-search-results__aside {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-line);
+}
+
+.predictive-search-results__aside:only-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .predictive-search-results__layout--aside {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    gap: 32px;
+  }
+
+  .predictive-search-results__aside {
+    padding-top: 0;
+    padding-left: 24px;
+    border-top: 0;
+    border-left: 1px solid var(--color-line);
+  }
+
+  .predictive-search-results__aside:only-child {
+    grid-column: 1 / -1;
+    padding-left: 0;
+    border-left: 0;
+  }
+}
+
+/* ---------- Produtos ---------- */
+
+.predictive-search-results__products {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.predictive-search-product {
+  position: relative;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px 10px 10px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-card-sm);
+  background: var(--color-background);
+  transition: border-color var(--duration-fast, 150ms) ease, box-shadow var(--duration-fast, 150ms) ease;
+}
+
+.predictive-search-product:hover {
+  border-color: var(--color-input-border);
+  box-shadow: var(--shadow-soft);
+}
+
+.predictive-search-product__media {
+  display: block;
+  width: 64px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--color-photo-bg);
+}
+
+.predictive-search-product__image,
+.predictive-search-product__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.predictive-search-product__placeholder {
+  fill: var(--color-text-muted);
+}
+
+.predictive-search-product--sold-out .predictive-search-product__image {
+  opacity: 0.6;
+}
+
+.predictive-search-product__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.predictive-search-product__title {
+  display: -webkit-box;
+  min-height: 24px;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.predictive-search-product__title:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Alvo de toque do próprio link: 44 px até 760 px (a área que responde ao toque já é o cartão
+   inteiro, pelo ::after abaixo, mas a caixa do link também tem de cumprir o mínimo). */
+@media screen and (max-width: 760px) {
+  .predictive-search-product__title {
+    min-height: 44px;
+  }
+}
+
+/* O nome é o link principal: a área de toque cobre o cartão inteiro, menos o botão. */
+.predictive-search-product__title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.predictive-search-product__title:focus-visible {
+  outline: none;
+}
+
+.predictive-search-product__title:focus-visible::after {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+.predictive-search-product__form {
+  position: relative;
+  z-index: 1;
+}
+
+.predictive-search-product__add-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.predictive-search-product__add {
+  gap: 6px;
+}
+
+.predictive-search-product__error {
+  max-width: 180px;
+  margin-top: 6px;
+  font-size: 12px;
+  text-align: right;
+}
+
+@media screen and (max-width: 749px) {
+  /* Botão redondo só com o ícone; o nome acessível continua completo (texto escondido só na tela). */
+  .predictive-search-product__add {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+  }
+
+  .predictive-search-product__add .button__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .predictive-search-results__products {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .predictive-search-product {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    align-items: stretch;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .predictive-search-product__media {
+    width: 100%;
+    border-radius: var(--radius-media);
+  }
+
+  .predictive-search-product__info {
+    align-self: start;
+  }
+
+  .predictive-search-product__add-form {
+    align-items: stretch;
+  }
+
+  .predictive-search-product__add {
+    width: 100%;
+  }
+
+  .predictive-search-product__error {
+    max-width: none;
+    text-align: left;
+  }
+}
+
+/* ---------- Listas laterais (populares, coleções, páginas, artigos) ---------- */
+
+.predictive-search-results__links {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.predictive-search-results__link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 0;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.predictive-search-results__link:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.predictive-search-results__link-icon {
+  color: var(--color-text-muted);
+}
+
+/* ---------- Buscas populares em chips (campo vazio e sem resultado) ---------- */
+
+.predictive-search-results__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.predictive-search-results__chip {
+  font-size: 14px;
+}
+
+.predictive-search-results--idle .predictive-search-results__popular {
+  padding: 4px 0 4px;
+}
+
+/* ---------- Sem resultado ---------- */
+
+.predictive-search-results__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 20px;
+  border-radius: var(--radius-card-sm);
+  background: var(--color-surface-1);
+  text-align: center;
+}
+
+.predictive-search-results__empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-2);
+  color: var(--color-primary);
+}
+
+.predictive-search-results__empty-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.predictive-search-results__empty-text {
+  max-width: 420px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.predictive-search-results__term {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Ver todos ---------- */
+
+.predictive-search-results__footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-line);
+}
+
+.predictive-search-results__view-all {
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.predictive-search-results__view-all-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media screen and (min-width: 750px) {
+  .predictive-search-results__view-all {
+    width: auto;
+    min-width: 320px;
+  }
+}

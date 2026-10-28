@@ -1,0 +1,154 @@
+/*
+  Beacon Labs · seção Prateleira de produtos (sections/product-carousel.liquid)
+  Reutilizada em Mais vendidos, Lançamentos, Combos e Super ofertas.
+
+  Redesenho v3 (spec 2.3; alvo.css linhas 162 a 173, 363 a 372 e 408 a 413). Dois formatos,
+  escolhidos pelo ajuste "Formato da prateleira":
+  - .trilho (padrão): lista que rola de lado, com encaixe, dentro do <carousel-slider
+    data-mode="scroll">. Setas de vidro fino no alto à direita (.icon-button de base.css, sem
+    desfoque). 4 cards por vez, 2,4 até 1080 px e 72% da largura até 760 px (no máximo 320 px).
+  - .grade4: 4 colunas, 2 até 1080 px; até 760 px vira fileira que rola de lado com cards de 72%
+    (no máximo 320 px).
+  Espaço entre seções: --section-gap (104 px; 68 px até 760 px) em cima e embaixo, como o .sec do
+  alvo (alvo.css, margin-top). Duas prateleiras seguidas ficam a 104 px uma da outra (as margens
+  de seções vizinhas se fundem); sem a margem de baixo, a seção seguinte (por exemplo a faixa de
+  vidro "Linha Pure") encostava nos cards.
+  Espaço entre cards: --grid-gap (20 px; 12 px até 760 px). O card é um bloco claro sem sombra e o
+  foco do link fica dentro dele (component-product-card.css), então o trilho não precisa mais da
+  folga de 8 px em cima e 32 px embaixo que a v2 abria para sombra e anel de foco.
+
+  Até 760 px a fileira "sangra" à direita: margem negativa de --page-gutter e o mesmo valor de
+  recuo, como o alvo (margin-right e padding-right), para o último card ainda parar na margem.
+  O indicador de páginas (pontos) saiu: o alvo não o tem e o card da vez já aparece cortado.
+*/
+
+.product-carousel {
+  margin-block: var(--section-gap, 64px);
+}
+
+/* Painel de vidro (ajuste "Superfície"): o painel precisa de ar em volta da prateleira. */
+.product-carousel--panel {
+  padding-block: var(--section-spacing, 40px);
+}
+
+@media screen and (min-width: 990px) {
+  .product-carousel--panel {
+    padding-block: var(--section-spacing-desktop, 64px);
+  }
+}
+
+/* ---------- Cabeçalho: título, "Ver todos" e setas ---------- */
+
+.product-carousel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.product-carousel__title {
+  min-width: 0;
+  margin: 0;
+}
+
+.product-carousel__side {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 18px;
+}
+
+.product-carousel__nav {
+  display: flex;
+  gap: 8px;
+}
+
+/* Sem seta visível (os cards cabem na grade e o carousel-slider.js marca as duas setas com hidden), o grupo
+   das setas some. Vazio, ele continuava a 18 px do "Ver todos" pelo gap do lado e o link terminava 18 px antes
+   da borda direita da grade (1302 contra 1320 px a 1440 px no "Compre também"); na home, onde o grupo nem
+   é impresso, o link encosta na borda (etapa 8e, item 18). */
+.product-carousel__nav:not(:has(.home-carousel-arrow:not([hidden]))) {
+  display: none;
+}
+
+/* ---------- Lista de cards ---------- */
+
+.product-carousel__item {
+  min-width: 0;
+}
+
+/* Grade de 4: o card estica na altura da linha (o card tem height: 100%). */
+.product-carousel .grade4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Trilho: 4 cards por vez. A rolagem, o encaixe e a barra escondida vêm de .home-carousel-track
+   (home-carousel.css, especificidade zero). */
+.product-carousel .trilho {
+  grid-auto-columns: calc((100% - 3 * var(--grid-gap)) / 4);
+  gap: var(--grid-gap);
+}
+
+.product-carousel--empty {
+  padding-block: 24px;
+}
+
+/* ---------- Tela média (até 1080 px) ---------- */
+
+@media screen and (max-width: 1080px) {
+  .product-carousel .grade4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-carousel .trilho {
+    grid-auto-columns: calc((100% - 2 * var(--grid-gap)) / 2.4);
+  }
+}
+
+/* ---------- Celular (até 760 px): fileira que rola de lado, cards de 72% (teto de 320 px) ----------
+   O teto é o ponto 5b da revisão da tarefa 3: sem ele o card de 72% chegava a 518 px perto de
+   760 px (foto de 482 px), grande demais para uma fileira que rola. Em 390 px nada muda (252 px).
+   O sizes da foto, em sections/product-carousel.liquid, acompanha este teto. */
+
+@media screen and (max-width: 760px) {
+  .product-carousel__head {
+    align-items: flex-end;
+    margin-bottom: 14px;
+  }
+
+  /* Sem setas: o dedo rola. */
+  .product-carousel__nav {
+    display: none;
+  }
+
+  .product-carousel .grade4 {
+    display: flex;
+    margin-right: calc(-1 * var(--page-gutter));
+    padding-right: var(--page-gutter);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  .product-carousel .grade4::-webkit-scrollbar {
+    display: none;
+  }
+
+  .product-carousel .grade4 > .product-carousel__item {
+    flex: 0 0 min(72%, 320px);
+    scroll-snap-align: start;
+  }
+
+  .product-carousel .trilho {
+    grid-auto-columns: min(72%, 320px);
+    margin-right: calc(-1 * var(--page-gutter));
+    padding-right: var(--page-gutter);
+  }
+}

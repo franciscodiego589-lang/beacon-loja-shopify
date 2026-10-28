@@ -1,0 +1,111 @@
+/*
+  Beacon Labs · seção Depoimentos (sections/testimonials.liquid)
+  Cartões em superfície clara, com estrelas, citação e identificação do cliente.
+
+  Liquid Glass (spec 8.5): cartão em vidro de conteúdo (.glass .glass--card na marcação;
+  fundo, borda de luz, fio e sombra vêm de liquid-glass.css). Raio 24 com padding 28
+  (celular: 20 e 20). Estrelas #0058B8 (6,087:1 no cartão), citação ink 16 px 500 (15 no
+  celular, 15,824:1), produto em apoio (5,860:1). O trilho ganha 8 px em cima e 32 px
+  embaixo, com margin-block negativa, para o anel de foco e a sombra do cartão não serem
+  cortados (spec 5.10); a altura não muda.
+*/
+
+.testimonials__heading-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.testimonials__summary {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.testimonials__nav {
+  display: none;
+  gap: 8px;
+}
+
+.testimonials__track {
+  gap: 12px;
+  grid-auto-columns: 280px;
+  padding-block: 8px 32px;
+  margin-block: -8px -32px;
+}
+
+.testimonials__figure {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  margin: 0;
+  padding: 20px;
+  border-radius: var(--lg-radius-box, var(--radius-card-lg));
+}
+
+.testimonials__rating {
+  color: var(--color-chip-text);
+}
+
+.testimonials__quote {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  font-weight: 500;
+}
+
+.testimonials__caption {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.testimonials__avatar {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: var(--radius-pill);
+}
+
+.testimonials__identity {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.testimonials__name {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.testimonials__product {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+@media screen and (min-width: 750px) {
+  .testimonials__track {
+    grid-auto-columns: 320px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .testimonials__nav {
+    display: flex;
+  }
+
+  /* Três cartões por página: 2 espaços de 24 px, para o 3º cartão alinhar com a margem. */
+  .testimonials__track {
+    gap: 24px;
+    grid-auto-columns: calc((100% - 48px) / 3);
+  }
+
+  .testimonials__figure {
+    padding: 28px;
+  }
+
+  .testimonials__quote {
+    font-size: 16px;
+  }
+}

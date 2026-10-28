@@ -1,0 +1,247 @@
+/*
+  Beacon Labs · carrinho vazio (section-cart-empty.css)
+  Estrutura em sections/cart-empty.liquid.
+
+  Etapa 8e, leva C (03/10/2026): o estado vazio é o topo da coleção, da busca e da ajuda. O campo claro
+  (#ECF3F9) de ponta a ponta, a trilha única e o título de 56 px (36 px até 760 px) vêm de .pb-topo
+  (paginas-blog.css, carregada pela seção); aqui ficam o arranjo de dentro (ícone em círculo branco, título,
+  texto e botão; o convite para entrar na conta ao lado, no computador, e embaixo, no celular) e as coleções
+  sugeridas, em blocos sólidos #ECF3F9 sem borda e sem sombra, de raio --radius-card (22 px; 20 no celular),
+  como o card de produto. Antes era um painel de vidro da v2 (.glass .glass--card, raio 32, branco a 0,66 com
+  borda e sombra) com tudo dentro e, abaixo, cartões de coleção também em vidro.
+
+  O botão "Continuar comprando" e o link do convite são controles (vidro funcional da fundação, base.css).
+  A bandeja clara do cabeçalho (section-header.css, leva B) sai quando o topo está na página
+  (paginas-blog.css, body:has(.pb-topo)), então a trilha cai no mesmo y das outras páginas: 26 px (18 px no
+  celular) abaixo da cápsula. O vão até o rodapé é o do `.main-content::after` (104 px; 68 px no celular).
+  Contraste sobre o campo e sobre os blocos: tinta 15,44:1 e apoio #566472 5,42:1.
+*/
+
+/* ---------- Topo ---------- */
+
+.cart-empty__corpo {
+  display: grid;
+  gap: 24px;
+  padding-block: 12px 28px;
+}
+
+.cart-empty__principal {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+  min-width: 0;
+}
+
+.cart-empty__icone {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: #FFFFFF;
+  color: var(--color-chip-text);
+}
+
+.cart-empty__textos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cart-empty__text {
+  margin: 0;
+}
+
+.cart-empty__button {
+  margin-top: 12px;
+}
+
+/* Convite para entrar na conta: título, texto e link direto sobre o campo claro, sem caixa; no celular, com um
+   fio em cima separando-o do botão. */
+.cart-empty__login {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  max-width: 420px;
+  padding-top: 20px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.cart-empty__login-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.cart-empty__login-text {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cart-empty__login-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+@media screen and (min-width: 761px) {
+  .cart-empty__principal {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 20px 32px;
+    align-items: center;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .cart-empty__corpo {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+    gap: 48px;
+    align-items: center;
+    padding-block: 22px 48px;
+  }
+
+  .cart-empty__login {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+/* ---------- Coleções sugeridas ---------- */
+
+.cart-empty__collections {
+  margin-top: var(--section-gap);
+}
+
+.cart-empty__collections-title {
+  margin-bottom: 16px;
+  font-size: 20px;
+}
+
+@media screen and (min-width: 990px) {
+  .cart-empty__collections-title {
+    margin-bottom: 20px;
+    font-size: 26px;
+  }
+}
+
+.cart-empty__collection-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .cart-empty__collection-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+.cart-empty__collection-item {
+  display: flex;
+  min-width: 0;
+}
+
+/* Bloco sólido no tom das fotos (#ECF3F9): sem borda, sem sombra e sem vidro. */
+.cart-empty__collection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  box-shadow: none;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.cart-empty__collection:hover {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.cart-empty__collection-media {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius-media);
+  background: var(--color-photo-bg);
+}
+
+.cart-empty__collection-image,
+.cart-empty__collection-placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-empty__collection-image {
+  transition: transform 350ms ease;
+}
+
+@media (hover: hover) {
+  .cart-empty__collection:hover .cart-empty__collection-image {
+    transform: scale(1.03);
+  }
+}
+
+.cart-empty__collection-placeholder {
+  fill: var(--color-text-muted);
+}
+
+.cart-empty__collection-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.cart-empty__collection-title {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.cart-empty__collection-icon {
+  color: var(--color-primary);
+}
+
+@media screen and (max-width: 749px) {
+  .cart-empty__collection {
+    padding: 10px;
+  }
+
+  .cart-empty__collection-title {
+    font-size: 14px;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): os blocos ganham o anel de tinta (como .pb-bloco em paginas-blog.css). */
+@media (prefers-contrast: more) {
+  .cart-empty__collection {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+}
+
+/* Cores forçadas: o fundo some, então a borda mantém o contorno do bloco. */
+@media (forced-colors: active) {
+  .cart-empty__collection {
+    border: 1px solid CanvasText;
+  }
+}

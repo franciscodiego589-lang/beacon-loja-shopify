@@ -1,0 +1,123 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-cart-empty.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Estado vazio da página do carrinho (templates/cart.json), área busca-carrinho.
+  Só aparece com o carrinho vazio: topo com a trilha, o ícone, o título, o texto e o botão "Continuar
+  comprando"; ao lado dele, o convite para entrar na conta (se as contas de cliente estiverem ativas e ninguém
+  estiver logado); e, embaixo, as coleções sugeridas escolhidas no editor (sem escolha, a lista não aparece).
+  Com itens no carrinho, a seção fica vazia e escondida; o JS a renderiza de novo quando o
+  último item sai (gancho [data-cart-page-section="ID"], ver main-cart-items).
+
+  Etapa 8e, leva C (03/10/2026): o estado vazio é o topo da coleção, da busca e da ajuda: campo claro (#ECF3F9) de
+  ponta a ponta (.pb-topo, paginas-blog.css), trilha única (snippet colecao-breadcrumb) e título de 56 px
+  (36 px até 760 px). O painel de vidro da v2 (.glass .glass--card, com o ícone, o título, o texto, o botão e o
+  convite dentro) saiu, e as coleções sugeridas são blocos sólidos #ECF3F9 (sem borda, sem sombra), como o card de
+  produto. O botão é um controle (vidro funcional da fundação). Os ganchos [data-cart-page-section] e
+  .cart-empty__title (foco depois de esvaziar o carrinho, assets/cart-page.js) não mudam.
+{%- endcomment -%}
+
+{%- liquid
+  assign ce_link = section.settings.button_link | default: routes.all_products_collection_url
+  assign ce_trail_current = 'fundacao.cart.title' | t
+-%}
+
+<div class="cart-empty" id="CartEmpty-{{ section.id }}" data-cart-page-section="{{ section.id }}"{% if cart.item_count > 0 %} hidden{% endif %}>
+  {%- if cart.item_count == 0 -%}
+    <div class="cart-empty__topo pb-topo">
+      <div class="page-width">
+        {% render 'colecao-breadcrumb', current: ce_trail_current, class: 'pb-topo__trilha' %}
+
+        <div class="cart-empty__corpo">
+          <div class="cart-empty__principal">
+            <span class="cart-empty__icone" aria-hidden="true">
+              {%- render 'icon', name: 'bag', size: 28 -%}
+            </span>
+            <div class="cart-empty__textos">
+              <h1 class="cart-empty__title pb-topo__titulo">{{ 'fundacao.cart.empty_title' | t }}</h1>
+              <p class="cart-empty__text pb-topo__texto">{{ 'fundacao.cart.empty_text' | t }}</p>
+              <a href="{{ ce_link }}" class="button button--primary button--large cart-empty__button">
+                <span>{{ 'fundacao.cart.continue' | t }}</span>
+                {%- render 'icon', name: 'arrow-right', size: 18 -%}
+              </a>
+            </div>
+          </div>
+
+          {%- if section.settings.show_login and shop.customer_accounts_enabled -%}
+            {%- unless customer -%}
+              <div class="cart-empty__login">
+                <p class="cart-empty__login-title">{{ 'busca_carrinho.cart_empty.login_title' | t }}</p>
+                <p class="cart-empty__login-text">{{ 'busca_carrinho.cart_empty.login_text' | t }}</p>
+                <a href="{{ routes.account_login_url }}" class="link cart-empty__login-link">{{ 'busca_carrinho.cart_empty.login_link' | t }}</a>
+              </div>
+            {%- endunless -%}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+
+    {%- if section.settings.collections != blank -%}
+      <div class="cart-empty__collections page-width">
+        <h2 class="cart-empty__collections-title" id="CartEmptyCollections-{{ section.id }}">{{ 'busca_carrinho.cart_empty.collections_heading' | t }}</h2>
+        <ul class="cart-empty__collection-list" role="list" aria-labelledby="CartEmptyCollections-{{ section.id }}">
+          {%- for collection in section.settings.collections -%}
+            <li class="cart-empty__collection-item">
+              <a href="{{ collection.url }}" class="cart-empty__collection lg-focus-dual">
+                <span class="cart-empty__collection-media">
+                  {%- if collection.featured_image -%}
+                    {%- assign ce_alt = collection.featured_image.alt | default: collection.title -%}
+                    {{ collection.featured_image | image_url: width: 600 | image_tag: widths: '160, 240, 320, 400, 600', sizes: '(min-width: 990px) 280px, (min-width: 750px) 25vw, 45vw', loading: 'lazy', alt: ce_alt, class: 'cart-empty__collection-image' }}
+                  {%- else -%}
+                    {{ 'collection-1' | placeholder_svg_tag: 'cart-empty__collection-placeholder' }}
+                  {%- endif -%}
+                </span>
+                <span class="cart-empty__collection-footer">
+                  <span class="cart-empty__collection-title">{{ collection.title | escape }}</span>
+                  {%- render 'icon', name: 'arrow-right', size: 18, class: 'cart-empty__collection-icon' -%}
+                </span>
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      </div>
+    {%- endif -%}
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Carrinho vazio",
+  "class": "section-cart-empty",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["cart"]
+  },
+  "settings": [
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Link do botão \"Continuar comprando\"",
+      "info": "Sem link, leva para a coleção com todos os produtos."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_login",
+      "label": "Convidar para entrar na conta",
+      "info": "Aparece só quando as contas de cliente estão ativas e o cliente não está logado.",
+      "default": true
+    },
+    {
+      "type": "collection_list",
+      "id": "collections",
+      "label": "Coleções sugeridas",
+      "limit": 8
+    }
+  ],
+  "presets": [
+    {
+      "name": "Carrinho vazio"
+    }
+  ]
+}
+{% endschema %}

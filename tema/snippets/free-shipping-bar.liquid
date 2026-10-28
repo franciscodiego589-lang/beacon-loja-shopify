@@ -1,0 +1,42 @@
+{%- comment -%}
+  Barra de progresso do frete grátis (barra de anúncio e gaveta do carrinho).
+  A meta vem do ajuste global "Meta de frete grátis (em centavos)"; com 0, nada é renderizado.
+  Parâmetros:
+  - class: classe extra (opcional)
+  - hidden: true renderiza com o atributo hidden (o JS mostra quando houver itens)
+
+  O JS (assets/cart-chrome.js, evento cart:updated) atualiza: [data-free-shipping-text],
+  --fs-progress de [data-free-shipping-fill] (0 a 100; o CSS move o preenchimento por transform)
+  e aria-valuenow de [data-free-shipping-track], usando data-threshold e o total do carrinho.
+{%- endcomment -%}
+{%- liquid
+  assign fs_threshold = settings.free_shipping_threshold | plus: 0
+  if fs_threshold > 0
+    assign fs_total = cart.total_price
+    assign fs_remaining = fs_threshold | minus: fs_total
+    if fs_remaining < 0
+      assign fs_remaining = 0
+    endif
+    assign fs_percent = fs_total | times: 100 | divided_by: fs_threshold
+    if fs_percent > 100
+      assign fs_percent = 100
+    endif
+    assign fs_remaining_money = fs_remaining | money
+  endif
+-%}
+{%- if fs_threshold > 0 -%}
+  <div class="free-shipping-bar{% if fs_remaining == 0 %} free-shipping-bar--done{% endif %}{% if class != blank %} {{ class }}{% endif %}" data-free-shipping-bar data-threshold="{{ fs_threshold }}" data-total="{{ fs_total }}"{% if hidden %} hidden{% endif %}>
+    <p class="free-shipping-bar__text" data-free-shipping-text>
+      {%- if fs_remaining == 0 -%}
+        {% render 'icon', name: 'check-circle', size: 16, class: 'free-shipping-bar__icon' %}
+        {{ 'fundacao.free_shipping.unlocked' | t }}
+      {%- else -%}
+        {% render 'icon', name: 'truck', size: 16, class: 'free-shipping-bar__icon' %}
+        {{ 'fundacao.free_shipping.remaining' | t: amount: fs_remaining_money }}
+      {%- endif -%}
+    </p>
+    <div class="free-shipping-bar__track" role="progressbar" aria-label="{{ 'fundacao.free_shipping.progress_label' | t }}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ fs_percent }}" data-free-shipping-track>
+      <span class="free-shipping-bar__fill" style="--fs-progress: {{ fs_percent }};" data-free-shipping-fill></span>
+    </div>
+  </div>
+{%- endif -%}

@@ -1,0 +1,308 @@
+{%- comment -%}
+  Resultados da busca preditiva (área busca-carrinho).
+
+  Uso principal: resposta da Predictive Search API com a Section Rendering API,
+  GET {{ routes.predictive_search_url }}?q=...&resources[type]=product,collection,article,page&section_id=predictive-search
+  (assets/search.api.js, função sugerir). O HTML entra em #PredictiveSearchResults, dentro de
+  snippets/predictive-search-modal.liquid.
+
+  Estados:
+  1. predictive_search.performed e há resultados: produtos (foto, nome, preço e botão Adicionar),
+     coleções, páginas, artigos, buscas populares ao lado e o link "Ver todos os resultados".
+  2. predictive_search.performed sem resultados: mensagem com o termo e as buscas populares.
+  3. Fora da Predictive Search API (predictive_search.performed = false): só as buscas populares.
+     Serve para o campo vazio: renderSection(routes.search_url, 'predictive-search') devolve este estado.
+
+  Buscas populares: menu escolhido no ajuste "popular_menu" quando a seção está num template;
+  na janela do cabeçalho valem os padrões (a Section Rendering API não recebe ajustes), então o
+  menu usado é o de identificador "buscas-populares", criado pelo dono em Conteúdo > Menus.
+  Sem menu e sem resultado, a seção não imprime nada.
+
+  Ganchos para o JS (predictive-search.js):
+  - [data-predictive-search-root]: raiz do conteúdo, com data-results-count e data-status
+    (texto para a região viva #PredictiveSearchStatus, já traduzido).
+  - [data-predictive-search-option]: links de resultado, na ordem visual, para navegação por setas.
+
+  Segurança: o termo digitado só sai com | escape (texto) ou | url_encode (endereço).
+{%- endcomment -%}
+{%- liquid
+  assign ps_performed = predictive_search.performed
+  assign ps_total = 0
+  if ps_performed
+    assign ps_products = predictive_search.resources.products
+    assign ps_collections = predictive_search.resources.collections
+    assign ps_pages = predictive_search.resources.pages
+    assign ps_articles = predictive_search.resources.articles
+    assign ps_total = ps_products.size | plus: ps_collections.size | plus: ps_pages.size | plus: ps_articles.size
+  endif
+
+  assign ps_popular = section.settings.popular_menu
+  if ps_popular == blank
+    assign ps_popular = linklists['buscas-populares']
+  endif
+  assign ps_popular_count = ps_popular.links.size | default: 0
+
+  assign ps_show_popular_aside = false
+  if section.settings.show_popular_with_results and ps_popular_count > 0
+    assign ps_show_popular_aside = true
+  endif
+
+  assign ps_has_aside = false
+  if ps_performed
+    if ps_show_popular_aside or ps_collections.size > 0 or ps_pages.size > 0 or ps_articles.size > 0
+      assign ps_has_aside = true
+    endif
+  endif
+
+  if ps_performed and ps_total > 0
+    assign ps_status = 'busca_carrinho.predictive.status_results' | t: count: ps_total
+  elsif ps_performed
+    assign ps_status = 'busca_carrinho.predictive.status_no_results' | t
+  else
+    assign ps_status = 'busca_carrinho.predictive.status_popular' | t
+  endif
+-%}
+
+{%- if ps_performed or ps_popular_count > 0 -%}
+  {%- comment -%}
+    O CSS dos resultados carrega uma vez no layout (component-predictive-search.css), e não
+    aqui: um <link> dentro da resposta da Section Rendering API seria tirado e posto de novo a
+    cada digitação.
+  {%- endcomment -%}
+  <div
+    class="predictive-search-results{% if ps_performed and ps_total == 0 %} predictive-search-results--empty{% endif %}{% unless ps_performed %} predictive-search-results--idle{% endunless %}"
+    data-predictive-search-root
+    data-results-count="{{ ps_total }}"
+    data-status="{{ ps_status | escape }}"
+  >
+    {%- if ps_performed and ps_total > 0 -%}
+      <div class="predictive-search-results__layout{% if ps_has_aside %} predictive-search-results__layout--aside{% endif %}">
+        {%- if ps_products.size > 0 -%}
+          <div class="predictive-search-results__main">
+            <h3 class="predictive-search-results__heading" id="PredictiveSearchProducts-{{ section.id }}">
+              {{- 'busca_carrinho.predictive.products_heading' | t -}}
+            </h3>
+            <ul class="predictive-search-results__products" role="list" aria-labelledby="PredictiveSearchProducts-{{ section.id }}">
+              {%- for product in ps_products -%}
+                {%- liquid
+                  # Nome sem o trecho depois de " – " (emenda 2 da tarefa 3, G3), pela fonte única
+                  # snippets/v3-nome-visivel (emenda 15 da tarefa 8). Os três já saem escapados (S1):
+                  # 'html' vai entre tags; 'texto' vai ao rótulo (o filtro t não escapa de novo); o alt
+                  # leva | escape_once, porque o image_tag escaparia o texto uma segunda vez.
+                  capture ps_nome_html
+                    render 'v3-nome-visivel', produto: product, modo: 'html'
+                  endcapture
+                  assign ps_nome_html = ps_nome_html | strip
+                  capture ps_nome
+                    render 'v3-nome-visivel', produto: product, modo: 'texto'
+                  endcapture
+                  assign ps_nome = ps_nome | strip
+                  assign ps_nome_alt = ps_nome | escape_once
+                  assign ps_variant = product.selected_or_first_available_variant
+                  assign ps_form_id = 'PredictiveSearchForm-' | append: section.id | append: '-' | append: product.id
+                -%}
+                <li class="predictive-search-product{% unless product.available %} predictive-search-product--sold-out{% endunless %}">
+                  <a href="{{ product.url }}" class="predictive-search-product__media" tabindex="-1" aria-hidden="true">
+                    {%- if product.featured_media -%}
+                      {%- assign ps_alt = product.featured_media.alt | default: ps_nome_alt -%}
+                      {{ product.featured_media | image_url: width: 400 | image_tag: widths: '80, 128, 200, 300, 400', sizes: '(min-width: 750px) 200px, 64px', loading: 'lazy', alt: ps_alt, class: 'predictive-search-product__image' }}
+                    {%- else -%}
+                      {{ 'product-1' | placeholder_svg_tag: 'predictive-search-product__placeholder' }}
+                    {%- endif -%}
+                  </a>
+
+                  <div class="predictive-search-product__info">
+                    <a href="{{ product.url }}" class="predictive-search-product__title" data-predictive-search-option>
+                      {{- ps_nome_html -}}
+                    </a>
+                    {%- if section.settings.show_price -%}
+                      {% render 'price', product: product, size: 'sm', show_installments: false, show_badge: false, class: 'predictive-search-product__price' %}
+                    {%- endif -%}
+                  </div>
+
+                  {%- if section.settings.show_add and product.available -%}
+                    <product-form class="predictive-search-product__form" data-section-id="{{ section.id }}">
+                      {%- form 'product', product, id: ps_form_id, class: 'predictive-search-product__add-form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                        <input type="hidden" name="id" value="{{ ps_variant.id }}">
+                        <input type="hidden" name="quantity" value="1">
+                        <button type="submit" name="add" class="button button--primary button--small predictive-search-product__add" data-product-form-submit>
+                          {% render 'icon', name: 'bag', size: 18, class: 'predictive-search-product__add-icon' %}
+                          <span class="button__label">{{ 'fundacao.product_card.add' | t }}</span>
+                          <span class="visually-hidden">{{ 'fundacao.product_card.add_suffix' | t: title: ps_nome }}</span>
+                        </button>
+                        <p class="predictive-search-product__error form-message form-message--error" role="alert" hidden data-product-form-error></p>
+                      {%- endform -%}
+                    </product-form>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+        {%- endif -%}
+
+        {%- if ps_has_aside -%}
+          <div class="predictive-search-results__aside">
+            {%- if ps_show_popular_aside -%}
+              <div class="predictive-search-results__group">
+                <h3 class="predictive-search-results__heading" id="PredictiveSearchPopular-{{ section.id }}">
+                  {{- 'busca_carrinho.predictive.popular_heading' | t -}}
+                </h3>
+                <ul class="predictive-search-results__links" role="list" aria-labelledby="PredictiveSearchPopular-{{ section.id }}">
+                  {%- for link in ps_popular.links -%}
+                    <li>
+                      <a href="{{ link.url }}" class="predictive-search-results__link" data-predictive-search-option>
+                        {% render 'icon', name: 'search', size: 16, class: 'predictive-search-results__link-icon' %}
+                        <span>{{ link.title | escape }}</span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+            {%- if ps_collections.size > 0 -%}
+              <div class="predictive-search-results__group">
+                <h3 class="predictive-search-results__heading" id="PredictiveSearchCollections-{{ section.id }}">
+                  {{- 'busca_carrinho.predictive.collections_heading' | t -}}
+                </h3>
+                <ul class="predictive-search-results__links" role="list" aria-labelledby="PredictiveSearchCollections-{{ section.id }}">
+                  {%- for collection in ps_collections -%}
+                    <li>
+                      <a href="{{ collection.url }}" class="predictive-search-results__link" data-predictive-search-option>
+                        <span>{{ collection.title | escape }}</span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+            {%- if ps_pages.size > 0 -%}
+              <div class="predictive-search-results__group">
+                <h3 class="predictive-search-results__heading" id="PredictiveSearchPages-{{ section.id }}">
+                  {{- 'busca_carrinho.predictive.pages_heading' | t -}}
+                </h3>
+                <ul class="predictive-search-results__links" role="list" aria-labelledby="PredictiveSearchPages-{{ section.id }}">
+                  {%- for page in ps_pages -%}
+                    <li>
+                      <a href="{{ page.url }}" class="predictive-search-results__link" data-predictive-search-option>
+                        <span>{{ page.title | escape }}</span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+
+            {%- if ps_articles.size > 0 -%}
+              <div class="predictive-search-results__group">
+                <h3 class="predictive-search-results__heading" id="PredictiveSearchArticles-{{ section.id }}">
+                  {{- 'busca_carrinho.predictive.articles_heading' | t -}}
+                </h3>
+                <ul class="predictive-search-results__links" role="list" aria-labelledby="PredictiveSearchArticles-{{ section.id }}">
+                  {%- for article in ps_articles -%}
+                    <li>
+                      <a href="{{ article.url }}" class="predictive-search-results__link" data-predictive-search-option>
+                        <span>{{ article.title | escape }}</span>
+                      </a>
+                    </li>
+                  {%- endfor -%}
+                </ul>
+              </div>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="predictive-search-results__footer">
+        <a
+          href="{{ routes.search_url }}?q={{ predictive_search.terms | url_encode }}&amp;options%5Bprefix%5D=last"
+          class="button button--primary predictive-search-results__view-all"
+          data-predictive-search-option
+        >
+          <span class="predictive-search-results__view-all-text">
+            {{- 'busca_carrinho.predictive.view_all' | t }}
+            <span class="predictive-search-results__term">“{{ predictive_search.terms | escape }}”</span>
+          </span>
+          {% render 'icon', name: 'arrow-right', size: 18 %}
+        </a>
+      </div>
+    {%- elsif ps_performed -%}
+      <div class="predictive-search-results__empty">
+        <span class="predictive-search-results__empty-icon" aria-hidden="true">
+          {%- render 'icon', name: 'search', size: 26 -%}
+        </span>
+        <p class="predictive-search-results__empty-title">
+          {{- 'busca_carrinho.predictive.no_results_title' | t }}
+          <span class="predictive-search-results__term">“{{ predictive_search.terms | escape }}”</span>
+        </p>
+        <p class="predictive-search-results__empty-text">{{ 'busca_carrinho.predictive.no_results_text' | t }}</p>
+      </div>
+    {%- endif -%}
+
+    {%- unless ps_performed and ps_total > 0 -%}
+      {%- if ps_popular_count > 0 -%}
+        <div class="predictive-search-results__popular">
+          <h3 class="predictive-search-results__heading" id="PredictiveSearchPopularChips-{{ section.id }}">
+            {{- 'busca_carrinho.predictive.popular_heading' | t -}}
+          </h3>
+          <ul class="predictive-search-results__chips" role="list" aria-labelledby="PredictiveSearchPopularChips-{{ section.id }}">
+            {%- for link in ps_popular.links -%}
+              <li>
+                <a href="{{ link.url }}" class="chip chip--outline predictive-search-results__chip" data-predictive-search-option>
+                  {{- link.title | escape -}}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    {%- endunless -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Buscas populares",
+  "class": "section-predictive-search",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["search"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Esta seção monta os resultados da janela de busca do cabeçalho. Na janela, os termos populares vêm sempre do menu com o identificador buscas-populares (crie em Conteúdo > Menus, com um link por termo, no formato /search?q=termo)."
+    },
+    {
+      "type": "link_list",
+      "id": "popular_menu",
+      "label": "Menu de buscas populares",
+      "info": "Vale só quando a seção é adicionada à página de busca. Sem escolha, usa o menu buscas-populares."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_popular_with_results",
+      "label": "Mostrar buscas populares ao lado dos resultados",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Mostrar preço dos produtos",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_add",
+      "label": "Mostrar botão Adicionar",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Buscas populares"
+    }
+  ]
+}
+{% endschema %}

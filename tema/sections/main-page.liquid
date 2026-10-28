@@ -1,0 +1,147 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-page.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Título e conteúdo da página (texto cadastrado no admin, em Loja virtual > Páginas).
+  - O título pode ser desligado quando outra seção do template já mostra o título em h1
+    (Destaque da página, Texto com botão ou Rastreio do pedido).
+  - Sem título visível e sem conteúdo, a seção não renderiza nada.
+
+  Etapa 8e, leva C (03/10/2026): com o título ligado, a página começa pelo topo da coleção, da busca e da ajuda:
+  campo claro de ponta a ponta (.pb-topo, paginas-blog.css) com a trilha única (snippet colecao-breadcrumb) e o
+  título de 56 px (36 px até 760 px). O texto cadastrado fica embaixo, na página branca, alinhado à esquerda da
+  coluna, como o título. O ajuste "Espaçamento vertical" vale só sem título (com o topo, o espaço é o do topo).
+  O conteúdo da página é do dono: o tema só dá o recipiente.
+{%- endcomment -%}
+
+{%- liquid
+  assign has_content = false
+  if page.content != blank
+    assign has_content = true
+  endif
+  assign mp_show_title = section.settings.show_title
+-%}
+
+{%- if mp_show_title or has_content -%}
+  <div class="main-page pb-scheme--{{ section.settings.color_scheme }}{% render 'paginas-blog-surface', scheme: section.settings.color_scheme %} pb-pad--{{ section.settings.padding }}{% if mp_show_title %} main-page--topo{% endif %}">
+    {%- if mp_show_title -%}
+      <div class="main-page__topo pb-topo">
+        <div class="page-width">
+          {%- if section.settings.show_breadcrumbs -%}
+            {% render 'paginas-blog-breadcrumbs', class: 'pb-topo__trilha' %}
+          {%- endif -%}
+          <div class="pb-topo__corpo">
+            <h1 class="main-page__title pb-topo__titulo">{{ page.title | escape }}</h1>
+          </div>
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if has_content or mp_show_title == false -%}
+      <div class="page-width">
+        <div class="main-page__inner main-page__inner--{{ section.settings.width }}">
+          {%- unless mp_show_title -%}
+            {%- if section.settings.show_breadcrumbs -%}
+              {% render 'paginas-blog-breadcrumbs' %}
+            {%- endif -%}
+          {%- endunless -%}
+
+          {%- if has_content -%}
+            <div class="main-page__content rte">
+              {{ page.content }}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Conteúdo da página",
+  "tag": "section",
+  "class": "section-main-page",
+  "enabled_on": {
+    "templates": ["page"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Mostra o título e o texto cadastrados em Loja virtual > Páginas."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Mostrar trilha de navegação",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_title",
+      "label": "Mostrar título da página",
+      "info": "Desligue quando outra seção deste template já mostrar o título da página.",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Largura do texto",
+      "options": [
+        {
+          "value": "narrow",
+          "label": "Estreita (leitura)"
+        },
+        {
+          "value": "normal",
+          "label": "Larga"
+        }
+      ],
+      "default": "narrow"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "options": [
+        {
+          "value": "default",
+          "label": "Branco"
+        },
+        {
+          "value": "surface",
+          "label": "Cinza-azulado claro"
+        },
+        {
+          "value": "surface-2",
+          "label": "Azul claro"
+        }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "info": "Vale só sem o título da página. Com o título, o topo em campo claro usa o próprio espaço.",
+      "options": [
+        {
+          "value": "small",
+          "label": "Pequeno"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        }
+      ],
+      "default": "small"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Conteúdo da página"
+    }
+  ]
+}
+{% endschema %}

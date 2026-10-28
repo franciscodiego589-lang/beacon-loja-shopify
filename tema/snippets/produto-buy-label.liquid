@@ -1,0 +1,36 @@
+{%- comment -%}
+  Área produto. Imprime o texto do botão de compra de uma variante. É a mesma regra do JS
+  (buyLabel em assets/global.js, usada por product-form.js e sticky-atc.js quando o kit muda),
+  escrita uma vez para as duas seções (main-product e sticky-atc):
+  - variante esgotada: "produto.buy.sold_out";
+  - com opção "Kit": "produto.buy.add_kit" com o kit e o preço;
+  - sem opção "Kit": "produto.buy.add" com o preço.
+  Kit e preço usam espaço sem quebra ("R$ 239,70", "3 potes"): em tela estreita a linha quebra
+  antes do preço, nunca entre "R$" e o valor.
+
+  Parâmetros:
+  - variant: a variante (obrigatório)
+  - kit_index: posição (0-based) da opção "Kit" no produto, ou -1 quando não existe
+
+  Uso:
+    capture buy_label
+      render 'produto-buy-label', variant: current_variant, kit_index: kit_index
+    endcapture
+{%- endcomment -%}
+{%- liquid
+  assign label_kit = ''
+  if kit_index >= 0
+    assign label_kit = variant.options[kit_index]
+  endif
+  assign label_price = variant.price | money | replace: ' ', ' '
+  assign label_kit_text = label_kit | replace: ' ', ' '
+  if variant.available
+    if label_kit != blank
+      echo 'produto.buy.add_kit' | t: kit: label_kit_text, price: label_price
+    else
+      echo 'produto.buy.add' | t: price: label_price
+    endif
+  else
+    echo 'produto.buy.sold_out' | t
+  endif
+-%}

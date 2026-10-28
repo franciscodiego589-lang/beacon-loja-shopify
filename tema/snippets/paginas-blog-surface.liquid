@@ -1,0 +1,27 @@
+{%- comment -%}
+  Classes do esquema de cor de uma seção da área de páginas e blog
+  (ajuste "Fundo", classes pb-scheme--* de assets/paginas-blog.css).
+  Uso, dentro do atributo class, logo depois de pb-scheme--{{ esquema }}:
+    class="minha-secao pb-scheme--{{ s }}{% render 'paginas-blog-surface', scheme: s %}"
+  A saída já começa com espaço (ou é vazia).
+
+  Parâmetros:
+  - scheme: 'default', 'surface', 'surface-2' ou 'ink'
+
+  Correspondência (spec docs/superpowers/specs/2026-09-27-liquid-glass-sistema.md, 4.2 e 7.1):
+  - default, surface e surface-2: nenhuma classe; a seção fica sobre a página branca.
+    Etapa 8e, leva C (03/10/2026): "surface" e "surface-2" (antes #F5F9FB e #EAF2F6) eram o painel de vidro
+    de conteúdo da v2 (.glass-layer .glass--panel, vidro no ::before, recuo lateral de 24 px e raio 40; no
+    celular 8 px e 28). Conteúdo é sólido e o vidro fica na navegação e nos controles, então a opção do editor
+    deixou de ligar o painel: as duas valem como "Branco". Quem quer um recipiente claro usa o bloco #ECF3F9
+    de cada seção (classe .pb-bloco: "Em bloco" no texto com botão e na imagem com texto; o formulário de
+    contato e o rastreio já vêm em bloco).
+  - ink (antes #001838): campo noite (.lg-field--noite), que também faz o cabeçalho escurecer
+    e o chat clarear enquanto a faixa passa por baixo deles (spec D26). Só a cor de base, sem
+    a arte dos raios (.lg-field--art): estas seções podem ficar em qualquer posição da página e,
+    medida no Chromium em 28/09/2026 em páginas curtas, a arte virou o elemento de LCP com a
+    seção na 1ª, na 2ª e na 3ª posição (spec 7.1).
+{%- endcomment -%}
+{%- if scheme == 'ink' -%}
+  {{- ' lg-field--noite' -}}
+{%- endif -%}

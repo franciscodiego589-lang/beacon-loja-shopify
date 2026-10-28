@@ -1,0 +1,267 @@
+{{ 'home-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'section-product-carousel.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Prateleira de produtos de uma coleção (Mais vendidos, Lançamentos, Combos, Super ofertas:
+  instâncias desta mesma seção, cada uma com sua coleção e sua etiqueta). Usa
+  snippets/product-card.liquid. Sem coleção escolhida ou sem produtos disponíveis, a seção não
+  renderiza nada na loja (no editor, mostra um aviso).
+
+  Redesenho v3 (spec 2.3 e 2.4; alvo.css linhas 162 a 192, 363 a 372 e 408 a 413): a configuração
+  "Formato da prateleira" escolhe entre dois formatos.
+  - trilho (padrão: é o que o templates/index.json já pedia, uma fileira que rola de lado): usa o
+    <carousel-slider data-mode="scroll"> da fundação (assets/carousel-slider.js). Setas de vidro
+    fino, sem desfoque, no alto à direita (só a partir de 761 px; no celular o dedo rola). Quatro
+    cards por vez no computador, 2,4 até 1080 px e 72% da largura até 760 px (teto de 320 px por
+    card, ponto 5b da revisão da tarefa 3, à espera da decisão do dono).
+  - grade: quatro colunas no computador e duas até 1080 px. Até 760 px vira uma fileira que rola
+    de lado, com cards de 72% da largura (também com o teto de 320 px), como o trilho. Sem
+    JavaScript e sem setas.
+  Título em .v3-title (32 px; 26 px até 760 px), com o complemento opcional em cor de apoio, e
+  link "Ver todos" com seta em .v3-link (44 px de altura). Todo texto vem de ajuste da seção e sai
+  com | escape (regra S3), menos o título que vai ao filtro t (texto oculto do "Ver todos"): ele
+  entra cru, porque o próprio t escapa o valor (medido na prévia em 02/10/2026) e um | escape antes
+  dele não duplica nem falha, mas é inútil. O formato nunca vira classe: as classes das duas listas
+  são fixas.
+
+  Liquid Glass (spec 7.3 e 8.5), pelos ajustes "Campo de fundo" e "Superfície" (herdados da v2):
+  o campo mostra só a cor de base, branca, e o card é um bloco claro. "panel" põe a seção num
+  painel de vidro de conteúdo (.glass-layer .glass--panel); o card continua sendo o bloco claro.
+{%- endcomment -%}
+
+{%- liquid
+  assign pc_collection = section.settings.collection
+  assign pc_products = pc_collection.products | where: 'available'
+  if pc_products == blank
+    assign pc_products = pc_collection.products
+  endif
+  assign pc_limit = section.settings.limit | at_least: 4 | at_most: 12
+  assign pc_count = pc_products.size | at_most: pc_limit
+
+  assign pc_ribbon_label = ''
+  assign pc_ribbon_tone = 'best'
+  assign pc_show_ribbon = false
+  case section.settings.ribbon
+    when 'offer'
+      assign pc_ribbon_label = 'home.product_carousel.ribbon_offer' | t
+      assign pc_ribbon_tone = 'offer'
+      assign pc_show_ribbon = true
+    when 'new'
+      assign pc_ribbon_label = 'home.product_carousel.ribbon_new' | t
+      assign pc_ribbon_tone = 'new'
+      assign pc_show_ribbon = true
+  endcase
+
+  assign pc_heading_id = 'ProductCarousel-' | append: section.id | append: '-heading'
+  assign pc_track_id = 'ProductCarousel-' | append: section.id | append: '-track'
+  assign pc_nav_previous = 'home.product_carousel.previous' | t
+  assign pc_nav_next = 'home.product_carousel.next' | t
+  assign pc_lazy = true
+  if section.index == 1
+    assign pc_lazy = false
+  endif
+
+  # sizes da foto do card conforme o formato (emenda 15, M4). A foto mede o card menos a faixa da
+  # etiqueta (40 px no computador, 36 px no celular). Geometria medida na prévia em 02/10/2026:
+  # contêiner de 1200 px a partir de 1248 px, recuo lateral de 24 px de 761 a 1247 px e de 20 px
+  # no celular; espaço entre cards de 20 px. Computador: 4 por vez; de 761 a 1080 px, 2,4 por vez
+  # no trilho e 2 colunas na grade. Celular, nos dois formatos: card de min(72%, 320 px) da largura
+  # útil (se o teto de 320 px sair de section-product-carousel.css, volte este trecho a
+  # calc((100vw - 40px) * 0.72 - 36px)).
+  assign pc_sizes_cel = '(min-width: 485px) 284px, calc((100vw - 40px) * 0.72 - 36px)'
+  assign pc_sizes_pc = '(min-width: 1248px) 245px, (min-width: 1081px) calc((100vw - 268px) / 4), '
+  if section.settings.layout == 'grade'
+    assign pc_sizes = pc_sizes_pc | append: '(min-width: 761px) calc((100vw - 148px) / 2), ' | append: pc_sizes_cel
+  else
+    assign pc_sizes = pc_sizes_pc | append: '(min-width: 761px) calc((100vw - 88px) / 2.4 - 40px), ' | append: pc_sizes_cel
+  endif
+
+  # Formato: duas listas fixas, escolhidas por um ajuste de dois valores (nada do ajuste vira classe).
+  if section.settings.layout == 'grade'
+    assign pc_layout = 'grade'
+    assign pc_inner_tag = 'div'
+    assign pc_inner_attr = ''
+    assign pc_track_class = 'grade4'
+    assign pc_track_attr = ''
+    assign pc_slide_attr = ''
+  else
+    assign pc_layout = 'trilho'
+    assign pc_inner_tag = 'carousel-slider'
+    assign pc_inner_attr = ' data-mode="scroll"'
+    assign pc_track_class = 'home-carousel-track trilho'
+    assign pc_track_attr = ' data-carousel-track'
+    assign pc_slide_attr = ' data-carousel-slide'
+  endif
+
+  assign pc_field = 'mare'
+  case section.settings.field
+    when 'nevoa', 'farol'
+      assign pc_field = section.settings.field
+  endcase
+  # Sem a classe .lg-field--art: liquid-glass.css tira a arte de todo campo claro (maré, farol e
+  # névoa saem brancos), então acrescentá-la não fazia nada.
+  assign pc_surface_class = ''
+  if section.settings.surface == 'panel'
+    assign pc_surface_class = ' product-carousel--panel glass-layer glass--panel'
+  endif
+-%}
+
+{%- if pc_collection != blank and pc_count > 0 -%}
+  <div class="product-carousel product-carousel--{{ pc_layout }} lg-field--{{ pc_field }}{{ pc_surface_class }}">
+    {%- comment -%}
+      No trilho, o <carousel-slider> envolve o título e as setas: o carousel-slider.js só enxerga
+      os controles [data-carousel-prev]/[data-carousel-next] que estão dentro dele.
+    {%- endcomment -%}
+    <{{ pc_inner_tag }} class="page-width product-carousel__inner"{{ pc_inner_attr }}>
+      <div class="product-carousel__head">
+        <h2 class="v3-title product-carousel__title" id="{{ pc_heading_id }}">
+          {{- section.settings.heading | escape -}}
+          {%- if section.settings.subheading != blank %} <span>{{ section.settings.subheading | escape }}</span>{% endif -%}
+        </h2>
+        <div class="product-carousel__side">
+          {%- if section.settings.view_all_label != blank -%}
+            {%- liquid
+              # "Ver todos" com endereço próprio (pedido do dono em 03/10/2026: "quando clico em ver todos tenho
+              # que ver todos"): se o campo view_all_link estiver preenchido, o link vai para ele; senão, para a
+              # coleção do carrossel.
+              assign pc_ver_todos = section.settings.view_all_link | default: pc_collection.url
+            -%}
+            <a href="{{ pc_ver_todos }}" class="v3-link product-carousel__link">
+              {{- section.settings.view_all_label | escape -}}
+              {% render 'icon', name: 'chevron-right', size: 16 %}
+              <span class="visually-hidden"> {{ 'home.general.view_all_suffix' | t: title: section.settings.heading }}</span>
+            </a>
+          {%- endif -%}
+          {%- if pc_layout == 'trilho' and pc_count > 1 -%}
+            <div class="product-carousel__nav">
+              {% render 'home-carousel-arrows', controls: pc_track_id, label_previous: pc_nav_previous, label_next: pc_nav_next, size: 18 %}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+
+      <ul class="product-carousel__track {{ pc_track_class }}" id="{{ pc_track_id }}"{{ pc_track_attr }} role="list" aria-labelledby="{{ pc_heading_id }}">
+        {%- for product in pc_products limit: pc_count -%}
+          <li class="product-carousel__item"{{ pc_slide_attr }}>
+            {% render 'product-card',
+              product: product,
+              show_ribbon: pc_show_ribbon,
+              ribbon_label: pc_ribbon_label,
+              ribbon_tone: pc_ribbon_tone,
+              section_id: section.id,
+              lazy: pc_lazy,
+              sizes: pc_sizes
+            %}
+          </li>
+        {%- endfor -%}
+      </ul>
+    </{{ pc_inner_tag }}>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="product-carousel product-carousel--empty page-width">
+    <p class="home-editor-note">
+      <span class="visually-hidden">{{ 'home.general.editor_only' | t }}</span>
+      {{ 'home.product_carousel.editor_empty' | t }}
+    </p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Carrossel de produtos",
+  "tag": "section",
+  "class": "section-product-carousel",
+  "settings": [
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Coleção"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Mais vendidos"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Complemento do título",
+      "info": "Trecho depois do título, em cor de apoio. Deixe em branco para não mostrar."
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Texto do link \"ver todos\"",
+      "info": "Deixe em branco para escondê-lo.",
+      "default": "Ver todos"
+    },
+    {
+      "type": "url",
+      "id": "view_all_link",
+      "label": "Endereço do link \"ver todos\"",
+      "info": "Em branco, abre a coleção do carrossel."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Formato da prateleira",
+      "info": "\"Trilho\" rola de lado, com setas. \"Grade\" mostra 4 produtos por linha no computador (2 até 1080 px). No celular, os dois formatos rolam de lado.",
+      "options": [
+        { "value": "trilho", "label": "Trilho com setas" },
+        { "value": "grade", "label": "Grade de 4" }
+      ],
+      "default": "trilho"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "min": 4,
+      "max": 12,
+      "step": 1,
+      "label": "Quantidade de produtos",
+      "default": 8
+    },
+    {
+      "type": "select",
+      "id": "ribbon",
+      "label": "Etiqueta sobre a foto",
+      "info": "\"Novo\" é vidro fino e \"Oferta\" é amarela, no alto da foto. \"Nenhuma\" mostra só o selo de desconto, quando houver.",
+      "options": [
+        { "value": "none", "label": "Nenhuma" },
+        { "value": "offer", "label": "Oferta, em todos os cartões" },
+        { "value": "new", "label": "Novo, em todos os cartões" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "field",
+      "label": "Campo de fundo",
+      "info": "Hoje os três campos saem brancos, então este ajuste não muda a aparência da seção.",
+      "options": [
+        { "value": "mare", "label": "Maré" },
+        { "value": "farol", "label": "Farol" },
+        { "value": "nevoa", "label": "Névoa" }
+      ],
+      "default": "mare"
+    },
+    {
+      "type": "select",
+      "id": "surface",
+      "label": "Superfície",
+      "info": "\"Painel\" põe a seção num painel de vidro; os cards continuam sendo blocos claros.",
+      "options": [
+        { "value": "cards", "label": "Cards sobre o campo" },
+        { "value": "panel", "label": "Painel de vidro" }
+      ],
+      "default": "cards"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Carrossel de produtos"
+    }
+  ]
+}
+{% endschema %}

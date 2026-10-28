@@ -1,0 +1,93 @@
+/*
+  Beacon Labs · seção Texto de SEO (sections/seo-text.liquid)
+  "Ler mais" em <details>/<summary>, sem JavaScript: os dois textos do resumo
+  (Ler mais / Ler menos) alternam só por CSS, conforme o atributo [open].
+
+  Liquid Glass (spec 7.3 e 8.5): com o ajuste "Superfície" em painel, a seção é um painel de
+  vidro de conteúdo (.glass-layer .glass--panel na marcação). Texto em apoio (5,554:1 no
+  painel, pior caso controlado). "Ler mais" é um botão transparente de 44 px com seta, texto
+  #0058B8 (5,769:1 no painel); hover em ink sublinhado; pressionado com preenchimento ink a
+  6%.
+*/
+
+.seo-text__inner {
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.seo-text__heading {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.seo-text__intro {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.seo-text__extra {
+  margin-top: 14px;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.seo-text__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-inline: -12px;
+  padding-inline: 12px;
+  border-radius: var(--radius-pill);
+  color: var(--lg-link-glass, var(--color-primary));
+  font-size: 14px;
+  font-weight: 700;
+  list-style: none;
+  cursor: pointer;
+  transition: background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+.seo-text__summary:active {
+  background-color: var(--lg-fill-ink-06, transparent);
+}
+
+.seo-text__summary::-webkit-details-marker {
+  display: none;
+}
+
+.seo-text__summary:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.seo-text__summary-less {
+  display: none;
+}
+
+.seo-text__details[open] .seo-text__summary-more {
+  display: none;
+}
+
+.seo-text__details[open] .seo-text__summary-less {
+  display: inline;
+}
+
+.seo-text__chevron {
+  transition: transform var(--duration-fast) ease;
+}
+
+.seo-text__details[open] .seo-text__chevron {
+  transform: rotate(180deg);
+}
+
+@media screen and (min-width: 990px) {
+  .seo-text__heading {
+    font-size: 26px;
+  }
+}

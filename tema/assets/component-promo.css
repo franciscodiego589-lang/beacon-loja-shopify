@@ -1,0 +1,504 @@
+/*
+  Beacon Labs · Banner promocional em HTML (snippets/v3-promo.liquid), peça reaproveitável, 03/10/2026.
+  Usado pelo carrossel do topo (sections/vitrine-topo.liquid, bloco "promo") e pela faixa de banners entre as
+  prateleiras da home (sections/faixa-promos.liquid). Os estilos saíram de assets/section-vitrine-topo.css sem
+  mudar nenhuma medida; só os nomes das classes mudaram (vitrine-topo__promo* virou v3-promo*).
+
+  REGRA DE MEDIDA: o elemento PAI do .v3-promo tem de ser um container de medida (container-type: inline-size).
+  No carrossel é o slide (.vitrine-topo__slide--promo); na faixa é a célula (.faixa-promos__cel). Os tamanhos
+  são em cqw da largura desse pai.
+
+*/
+
+/* ---- Banner promocional em HTML (banner "promo") ----
+   Copia as maquetes aprovadas (capa/modelos-marketing-2026-10-03/index.html, modelos 2 e 3): .pc de 900 px
+   (proporção 3:1) e .cel de 270 px (4:5). Cada medida da maquete virou cqw da largura do banner (px da maquete
+   dividido por 9 no computador e por 2,7 no celular), então o banner fica igual à maquete em qualquer largura.
+   Pesos 700 (a maquete usa 800 e 900; o portão G6 do testa-v3 recusa letra acima de 700). O fundo sólido
+   (background-color) fica sob o degradê como reserva e é o que as ferramentas de contraste leem.
+   Branco (modelo 5): #081C2D sobre #FFFFFF 17,29:1; #8A0503 sobre #FFFFFF 9,98:1; selo #8A0503 sobre #ECF3F9 8,92:1;
+   itens #566472 sobre #FFFFFF 6,07:1; botão branco sobre #081C2D 17,29:1.
+   Fotos dos produtos inteiras (object-fit: contain) em blocos claros #ECF3F9. Contrastes (calculados, AA;
+   título e destaque são texto grande, mínimo 3:1; o resto, 4,5:1): vermelho: branco sobre #8A0503 9,98:1
+   (sobre #A3120F, o ponto mais claro do degradê, 7,92:1); #E9AD05 sobre #8A0503 4,96:1, sobre #5E0302 7,01:1
+   e sobre #A3120F 3,94:1 (o ponto mais claro fica atrás dos potes); selo #8A0503 sobre branco 9,98:1; botão
+   #081C2D sobre #E9AD05 8,60:1. Claro: #081C2D sobre #FFFFFF 17,29:1 e sobre #ECF3F9 15,44:1; #8A0503 sobre
+   #FFFFFF 9,98:1 e sobre #ECF3F9 8,92:1; selo #081C2D sobre #E9AD05 8,60:1; botão branco sobre #081C2D 17,29:1.
+   Amarelo: #081C2D sobre #F6C437 10,60:1 e sobre #D79A00 7,01:1. Marinho: branco sobre #16324B 13,19:1;
+   #E9AD05 sobre #16324B 6,56:1. */
+.v3-promo {
+  --promo-fundo: radial-gradient(circle at 75% 40%, #A3120F 0%, #8A0503 45%, #5E0302 100%);
+  --promo-fundo-cor: #8A0503;
+  --promo-cor: #FFFFFF;
+  --promo-selo-fundo: #FFFFFF;
+  --promo-selo-cor: #8A0503;
+  --promo-destaque: #E9AD05;
+  --promo-botao-fundo: #E9AD05;
+  --promo-botao-cor: #081C2D;
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  aspect-ratio: 3 / 1;
+  overflow: hidden;
+  border-radius: 2.444cqw;
+  background-color: var(--promo-fundo-cor);
+  background-image: var(--promo-fundo);
+  color: var(--promo-cor);
+}
+
+.v3-promo--claro {
+  --promo-fundo: linear-gradient(180deg, #FFFFFF 0%, #ECF3F9 100%);
+  --promo-fundo-cor: #ECF3F9;
+  --promo-cor: #081C2D;
+  --promo-selo-fundo: #E9AD05;
+  --promo-selo-cor: #081C2D;
+  --promo-destaque: #8A0503;
+  --promo-botao-fundo: #081C2D;
+  --promo-botao-cor: #FFFFFF;
+}
+
+.v3-promo--branco {
+  --promo-fundo: #FFFFFF;
+  --promo-fundo-cor: #FFFFFF;
+  --promo-cor: #081C2D;
+  --promo-selo-fundo: #ECF3F9;
+  --promo-selo-cor: #8A0503;
+  --promo-destaque: #8A0503;
+  --promo-botao-fundo: #081C2D;
+  --promo-botao-cor: #FFFFFF;
+  border: 1px solid #D9E1E8;
+}
+
+.v3-promo--amarelo {
+  --promo-fundo: linear-gradient(120deg, #F6C437 0%, #E9AD05 55%, #D79A00 100%);
+  --promo-fundo-cor: #E9AD05;
+  --promo-cor: #081C2D;
+  --promo-selo-fundo: #081C2D;
+  --promo-selo-cor: #FFFFFF;
+  --promo-destaque: #081C2D;
+  --promo-botao-fundo: #081C2D;
+  --promo-botao-cor: #FFFFFF;
+}
+
+.v3-promo--marinho {
+  --promo-fundo: radial-gradient(circle at 80% 30%, #16324B 0%, #081C2D 60%);
+  --promo-fundo-cor: #081C2D;
+  --promo-cor: #FFFFFF;
+  --promo-selo-fundo: #E9AD05;
+  --promo-selo-cor: #081C2D;
+  --promo-destaque: #E9AD05;
+  --promo-botao-fundo: #FFFFFF;
+  --promo-botao-cor: #081C2D;
+}
+
+.v3-promo__texto {
+  position: relative;
+  z-index: 2;
+  width: 52%;
+  padding: 0 0 0 5cqw;
+}
+
+.v3-promo--branco .v3-promo__texto {
+  width: 58%;
+}
+
+/* Modelo 5: título menor (4,444 cqw = 40 px na maquete). No celular a maquete herda esse tamanho por engano e o
+   título estoura o banner; aqui o celular usa 8,4 cqw, o maior tamanho em que "Dossiê técnico" cabe numa linha. */
+@media screen and (min-width: 761px) {
+  .v3-promo--branco .v3-promo__titulo {
+    font-size: clamp(22px, 4.444cqw, 64px);
+  }
+}
+
+.v3-promo__selo {
+  display: inline-block;
+  margin: 0;
+  padding: 0.556cqw 1.556cqw;
+  border-radius: 999px;
+  background: var(--promo-selo-fundo);
+  color: var(--promo-selo-cor);
+  font-size: clamp(10px, 1.667cqw, 24px);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.v3-promo__titulo {
+  margin: 1.111cqw 0 0.667cqw;
+  font-family: var(--font-heading-family);
+  font-size: clamp(26px, 5.778cqw, 84px);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+.v3-promo__destaque {
+  color: var(--promo-destaque);
+}
+
+.v3-promo__apoio {
+  margin: 0 0 1.333cqw;
+  font-size: clamp(11px, 1.667cqw, 24px);
+  font-weight: 700;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+}
+
+.v3-promo__itens {
+  display: grid;
+  gap: 0;
+  margin: 0 0 1.333cqw;
+  padding: 0;
+  list-style: none;
+  color: #566472;
+  font-size: clamp(11px, 1.556cqw, 22px);
+  line-height: 1.45;
+}
+
+.v3-promo__itens li {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.v3-promo__itens svg {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  color: #081C2D;
+}
+
+.v3-promo__botao {
+  display: inline-block;
+  padding: 1cqw 2.444cqw;
+  border-radius: 999px;
+  background: var(--promo-botao-fundo);
+  color: var(--promo-botao-cor);
+  font-size: clamp(11px, 1.556cqw, 22px);
+  font-weight: 700;
+  line-height: 1.45;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+/* O a:hover geral (base.css) pinta o texto de tinta; no botão escuro a palavra sumia (dono, 05/10/2026). */
+.v3-promo__botao:hover {
+  color: var(--promo-botao-cor);
+  text-decoration: none;
+  filter: brightness(1.15);
+}
+
+/* Foco duplo: anel branco por dentro e azul-marinho por fora, legível sobre qualquer cor do banner. */
+.v3-promo__botao:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 5px #081C2D;
+}
+
+.v3-promo__potes {
+  position: absolute;
+  top: 0;
+  right: 3%;
+  bottom: 0;
+  width: 44%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2%;
+  padding-bottom: 4cqw;
+}
+
+.v3-promo__pote {
+  height: 86%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2cqw;
+  background: #ECF3F9;
+  box-shadow: 0 10px 24px rgba(8, 28, 45, 0.22);
+}
+
+.v3-promo__pote--menor {
+  height: 70%;
+}
+
+.v3-promo .v3-promo__pote img,
+.v3-promo__pote svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Frasco de gotas (05/10/2026, pedido do dono: "tem espaço pra aumentar esses frascos"). A foto do frasco é
+   estreita e tem muita margem em volta; ampliada a partir da base, ocupa o card como os potes. */
+.v3-promo .v3-promo__pote--gotas img {
+  transform: scale(1.24);
+  transform-origin: 50% 96%;
+}
+
+.v3-promo__so-cel,
+.v3-promo__so-cel-bloco {
+  display: none;
+}
+
+/* Celular: 4:5 como as capas de celular; texto em cima, centralizado; potes no meio; botão embaixo. */
+@media screen and (max-width: 760px) {
+  .v3-promo {
+    flex-direction: column;
+    justify-content: flex-start;
+    aspect-ratio: 4 / 5;
+    padding: 8.148cqw 5.926cqw 6.667cqw;
+    border-radius: 7.407cqw;
+    text-align: center;
+  }
+
+  .v3-promo .v3-promo__so-pc {
+    display: none;
+  }
+
+  .v3-promo .v3-promo__so-cel {
+    display: inline;
+  }
+
+  .v3-promo .v3-promo__so-cel-bloco {
+    display: block;
+  }
+
+  /* O bloco de texto some da árvore de layout: selo, título, apoio, potes e botão viram filhos da coluna. */
+  .v3-promo__texto {
+    display: contents;
+  }
+
+  .v3-promo__selo { order: 1; }
+  .v3-promo__titulo { order: 2; }
+  .v3-promo__apoio { order: 3; }
+  .v3-promo__potes { order: 4; }
+  .v3-promo__botao { order: 5; }
+
+  .v3-promo__selo {
+    padding: 1.852cqw 5.185cqw;
+    font-size: 5.556cqw;
+  }
+
+  .v3-promo__titulo {
+    margin: 3.704cqw 0 2.222cqw;
+    font-size: 9.63cqw;
+  }
+
+  .v3-promo--branco .v3-promo__titulo {
+    font-size: 8.4cqw;
+  }
+
+  .v3-promo__apoio {
+    margin: 0 0 3.704cqw;
+    font-size: 4.444cqw;
+  }
+
+  .v3-promo__potes {
+    position: static;
+    width: 100%;
+    flex: 1 1 0;
+    min-height: 0;
+    margin: 2.222cqw 0 3.704cqw;
+    padding: 0;
+    gap: 1.481cqw;
+  }
+
+  .v3-promo__pote {
+    height: 100%;
+    max-height: 44.444cqw;
+    border-radius: 5.185cqw;
+  }
+
+  .v3-promo__pote--menor {
+    height: 100%;
+    max-height: 35.556cqw;
+  }
+
+  /* Área de toque de 44 px no celular. */
+  .v3-promo__botao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 3.333cqw 8.148cqw;
+    font-size: 5.185cqw;
+  }
+}
+
+/* Título menor no computador (ajuste "Título menor" da faixa de banners): para títulos longos caberem em duas ou
+   três linhas dentro dos 3:1. 4,2 cqw = 60 px em 1440 px de largura. O carrossel do topo não usa; no celular vale o
+   tamanho do banner (9,63 cqw). */
+@media screen and (min-width: 761px) {
+  .v3-promo--titulo-menor:not(.v3-promo--faixa) .v3-promo__titulo {
+    font-size: clamp(22px, 4.2cqw, 60px);
+    /* 9,6 em: "PAGUE 15% MENOS" (cerca de 8,9 em) cabe e "PAGUE 15% MENOS POR" (cerca de 11 em) não cabe, então "POR POTE"
+       desce junto e nenhuma palavra fica sozinha na última linha; "CAFEÍNA, TAURINA" (cerca de 8,5 em) cabe em uma linha. */
+    max-width: 9.6em;
+  }
+}
+
+/* ---- Variante "faixa" (v3-promo--faixa), 03/10/2026 ----
+   Cartão de uma faixa de 2 colunas (sections/faixa-promos.liquid). No computador o cartão tem perto de 2:1 (o
+   do carrossel tem 3:1), o texto fica à esquerda e os potes à direita, e as letras são em cqw da largura do
+   CARTÃO (metade da do carrossel), então os tamanhos mínimos são menores que os do banner largo. Até 760 px
+   nada muda: vale o leiaute de celular do banner (4:5), com o texto em cima, os potes no meio e o botão
+   embaixo. Tamanho dos potes por quantidade (classe v3-promo__potes--n1, n2 ou n3): um pote grande; dois lado a
+   lado; três em pirâmide (dois em cima, um embaixo no meio), todos em blocos claros quadrados #ECF3F9 com a
+   foto inteira. Contraste: as cores são as mesmas dos temas acima (calculadas no cabeçalho deste arquivo). */
+/* Texto de apoio equilibrado entre as linhas (evita "R$ 29,90." sozinho na segunda linha); vale também no celular. */
+.v3-promo--faixa .v3-promo__apoio {
+  text-wrap: balance;
+}
+
+@media screen and (min-width: 761px) {
+  .v3-promo--faixa {
+    aspect-ratio: 2 / 1;
+    border-radius: var(--radius-tile, 28px);
+  }
+
+  .v3-promo--faixa .v3-promo__texto,
+  .v3-promo--faixa.v3-promo--branco .v3-promo__texto {
+    width: 56%;
+    padding: 0 0 0 5.5cqw;
+  }
+
+  .v3-promo--faixa .v3-promo__selo {
+    padding: 0.8cqw 2.2cqw;
+    font-size: clamp(11px, 2.1cqw, 15px);
+  }
+
+  .v3-promo--faixa .v3-promo__titulo,
+  .v3-promo--faixa.v3-promo--branco .v3-promo__titulo {
+    margin: 1.8cqw 0 1.2cqw;
+    font-size: clamp(18px, 5cqw, 40px);
+  }
+
+  .v3-promo--faixa .v3-promo__apoio {
+    margin: 0 0 2.4cqw;
+    font-size: clamp(11px, 2cqw, 15px);
+  }
+
+  .v3-promo--faixa .v3-promo__itens {
+    margin: 0 0 2.4cqw;
+    font-size: clamp(11px, 2cqw, 15px);
+  }
+
+  .v3-promo--faixa .v3-promo__botao {
+    padding: 1.4cqw 3.6cqw;
+    font-size: clamp(11px, 2cqw, 15px);
+  }
+
+  .v3-promo--faixa .v3-promo__potes {
+    top: 0;
+    right: 3.5cqw;
+    bottom: 0;
+    width: 40cqw;
+    display: grid;
+    align-content: center;
+    justify-content: center;
+    justify-items: center;
+    gap: 1.5cqw;
+    padding: 0;
+  }
+
+  .v3-promo--faixa .v3-promo__potes--n1 { --pote-lado: 38cqw; }
+  .v3-promo--faixa .v3-promo__potes--n2 { --pote-lado: 20cqw; grid-template-columns: repeat(2, var(--pote-lado)); }
+  .v3-promo--faixa .v3-promo__potes--n3 { --pote-lado: 18cqw; grid-template-columns: repeat(2, var(--pote-lado)); }
+
+  .v3-promo--faixa .v3-promo__potes--n3 .v3-promo__pote:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .v3-promo--faixa .v3-promo__pote {
+    width: var(--pote-lado);
+    height: auto;
+    aspect-ratio: 1 / 1;
+    border-radius: 2.4cqw;
+  }
+
+  .v3-promo--faixa .v3-promo__pote--menor {
+    width: calc(var(--pote-lado) * 0.8);
+    height: auto;
+  }
+}
+
+/* Cinco produtos (05/10/2026, pedido do dono no banner do dossiê: "mais pote e gotas"). Computador: o primeiro
+   grande no centro e os outros quatro menores na frente dele, dois de cada lado (2 e 3 à esquerda, 4 e 5 à
+   direita, em cima e embaixo), sem encostar no pote do meio (ajustes do dono em 05/10). Medidas em cqw da largura do banner (a área dos potes tem 44cqw de largura e o
+   banner 33,33cqw de altura). Celular: só os três primeiros, o primeiro no meio e maior. Com 4 produtos, o
+   quarto fica escondido (use 3 ou 5). */
+.v3-promo__potes--n4 .v3-promo__pote:nth-child(4) {
+  display: none;
+}
+
+@media screen and (min-width: 761px) {
+  .v3-promo__potes--n5 {
+    display: block;
+    padding: 0;
+  }
+
+  .v3-promo__potes--n5 .v3-promo__pote {
+    position: absolute;
+    height: auto;
+    width: 9.5cqw;
+    z-index: 2;
+  }
+
+  /* Sem sobreposição: 9,5 + 1,5 + 20 + 1,5 + 9,5 = 42cqw de largura, com 2cqw livres à direita para a seta do
+     carrossel; na altura, os dois cards de cada lado (9,5 + 1 + 9,5) ocupam a mesma altura do pote do meio (20). */
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(1) {
+    width: 20cqw;
+    left: 11cqw;
+    bottom: 3cqw;
+    z-index: 1;
+  }
+
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(2) { left: 0; bottom: 13.5cqw; }
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(3) { left: 0; bottom: 3cqw; }
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(4) { right: 2cqw; bottom: 13.5cqw; }
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(5) { right: 2cqw; bottom: 3cqw; }
+}
+
+@media screen and (max-width: 760px) {
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(n+4) {
+    display: none;
+  }
+
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(2) {
+    order: -1;
+  }
+
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(2),
+  .v3-promo__potes--n5 .v3-promo__pote:nth-child(3) {
+    max-height: 30cqw;
+  }
+}
+
+/* Imagem única dos produtos (05/10/2026): ocupa a área dos potes inteira, sem card. */
+.v3-promo__potes--imagem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v3-promo .v3-promo__potes--imagem img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 2cqw;
+}
+
+@media screen and (max-width: 760px) {
+  .v3-promo .v3-promo__potes--imagem img {
+    border-radius: 5.185cqw;
+  }
+}

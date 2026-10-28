@@ -1,0 +1,134 @@
+/*
+  Beacon Labs · Caixa de informação nutricional (component-produto-nutrition.css)
+  Área produto. Componente compartilhado por snippets/produto-nutrition-table.liquid,
+  usado tanto em sections/product-nutrition.liquid (seção própria) quanto dentro do bloco
+  "Como tomar" de sections/product-rich-content.liquid e do dossiê (sections/produto-dossie-pagina.liquid,
+  classe dp-nutrition). As seções carregam este arquivo.
+
+  Redesenho v3 (emenda 19 c da tarefa 8, etapa 8c): bloco sólido no tom claro, igual aos blocos de seção do
+  dossiê (.dp-card em component-produto-dossie.css): fundo --color-photo-bg (#ECF3F9), raio --radius-tile
+  (28 px; 24 px até 760 px), recuo de 24 px (28 px a partir de 750 px), sem borda, sem sombra, sem margem
+  própria e sem vidro (conteúdo é sólido). Antes era um cartão de vidro com fio, sombra e raio 24, branco,
+  e no dossiê ficava 56 px mais estreito que os blocos vizinhos (ver a regra do invólucro mais abaixo).
+  Contrastes sobre o bloco claro (conta WCAG 2.x, 02/10/2026): tinta #081C2D 15,44:1; apoio #566472 5,42:1.
+  Cabeçalho da tabela com borda inferior de 2 px na tinta; linhas com fio de tinta a 0,12.
+*/
+
+.produto-nutrition {
+  padding: 24px;
+  border-radius: var(--radius-tile);
+  background-color: var(--color-photo-bg);
+}
+
+@media screen and (min-width: 750px) {
+  .produto-nutrition {
+    padding: 28px;
+  }
+}
+
+/* Dossiê: o invólucro .dp-card--flush existe só para não somar recuo nem fundo em volta deste bloco
+   (component-produto-dossie.css), mas a regra .dp-card do computador (padding: 28px) vem depois e
+   vence a dele, e o bloco ficava 56 px mais estreito que os vizinhos (860 px contra 916 px a 1440 px).
+   Aqui o recuo do invólucro volta a zero; se a ordem das regras do dossiê for corrigida, esta linha
+   continua valendo (o mesmo valor). */
+.dp-card--flush:has(> .produto-nutrition) {
+  padding: 0;
+}
+
+/* Título no tamanho dos títulos dos blocos do dossiê (.dp-card__title: 20 px, peso 600), qualquer que
+   seja a tag (h2 no dossiê, h3 ou h4 nos outros usos): antes o h2 do dossiê saía com o tamanho de
+   título de página, bem maior que o dos blocos vizinhos. */
+.produto-nutrition__title {
+  margin-bottom: 4px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.produto-nutrition__serving {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 4px 0 12px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* position: relative: rótulos .visually-hidden das células ficam dentro da área de rolagem
+   (sem isso, somam na largura da página quando a tabela é mais larga que a tela). */
+.produto-nutrition__scroll {
+  position: relative;
+  overflow-x: auto;
+}
+
+.produto-nutrition__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.produto-nutrition__table th,
+.produto-nutrition__table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.12);
+  text-align: left;
+}
+
+.produto-nutrition__table th[scope="row"] {
+  font-weight: 600;
+}
+
+/* Quantidade e %VD alinhadas à direita com algarismos de mesma largura: os números ficam
+   alinhados entre as linhas (como os preços, component-price.css). */
+.produto-nutrition__table td {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.produto-nutrition__table thead th {
+  padding-bottom: 6px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 2px solid var(--color-ink);
+}
+
+/* Cabeçalhos das colunas de número à direita, como os valores logo abaixo (etapa 8e, item 10): antes
+   "Quantidade" e "%VD*" ficavam à esquerda da célula e os números à direita, a 197 px e 95 px de
+   distância a 1440 px no dossiê (8 px e 4 px a 390 px). */
+.produto-nutrition__table thead th:not(:first-child) {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.produto-nutrition__row--indent th {
+  padding-left: 16px;
+  font-weight: 400;
+}
+
+/* Notas: texto de apoio de 12 px, o mínimo do tema (spec 5.8, regra 3). */
+.produto-nutrition__note {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+}
+
+/* Contraste aumentado (spec 9.3): o bloco ganha fio na tinta. */
+@media (prefers-contrast: more) {
+  .produto-nutrition {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+}
+
+/* Cores forçadas (spec 9.4): o bloco é só fundo, então ganha contorno. */
+@media (forced-colors: active) {
+  .produto-nutrition {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+}

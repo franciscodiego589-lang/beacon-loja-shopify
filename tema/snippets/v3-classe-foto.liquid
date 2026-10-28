@@ -1,0 +1,24 @@
+{%- comment -%}
+  Classe da foto de produto (redesenho v3, emenda C9 da revisão de 02/10/2026). Escreve só um
+  nome de classe fixo, sem nenhum dado do lojista na saída:
+  - lg-pote-solto: o produto está na coleção de identificador "capsulas" (pote sobre o fundo
+    #ECF3F9 das 27 fotos). A máscara de assets/liquid-glass.css esfuma a borda do fundo da foto,
+    para o pote ficar solto no bloco claro.
+  - v3-foto-quadro: qualquer outro produto (foto fora do padrão). A foto fica inteira, num quadro
+    arredondado no mesmo bloco claro, sem máscara (assets/component-product-card.css).
+
+  A máscara só vale para a foto principal (primeira mídia) do produto: quem usa este snippet
+  põe a classe só nessa imagem.
+
+  Parâmetros:
+  - product: o produto (obrigatório; sem ele vale a classe do quadro)
+
+  Uso (capture e escape, regra S1; nunca render direto dentro de atributo):
+    capture foto_classe
+      render 'v3-classe-foto', product: product
+    endcapture
+    assign foto_classe = foto_classe | strip
+    ... class="{{ foto_classe | escape }}"
+{%- endcomment -%}
+{%- assign v3_colecoes = product.collections | map: 'handle' -%}
+{%- if v3_colecoes contains 'capsulas' -%}lg-pote-solto{%- else -%}v3-foto-quadro{%- endif -%}

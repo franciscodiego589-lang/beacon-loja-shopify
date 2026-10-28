@@ -1,0 +1,1341 @@
+/*
+  Beacon Labs · Benefícios e Dossiê técnico do produto (component-produto-dossie.css)
+  Área produto. Estilo de snippets/produto-dossie.liquid (os atalhos do painel de compra) e das
+  duas páginas próprias: sections/produto-beneficios-pagina.liquid (/products/x?view=beneficios)
+  e sections/produto-dossie-pagina.liquid (/products/x?view=dossie), que também entram embutidas
+  na página do produto (modo "embutido").
+
+  Redesenho v3, tarefa 6, parte C (02/10/2026): capa em bloco claro #ECF3F9 (sem arte nem
+  gradiente de cor), linha pequena #8A0503 acima do título, título 600 (34 px, 48 px a partir de
+  990 px), texto corrido 17 px com linha de 25 px, abas de benefícios em controle segmentado,
+  benefícios em grade de 3 colunas com filete (sem cartão), blocos de seção sólidos no tom claro
+  (conteúdo não é vidro; vidro só na navegação e nos controles), raios --radius-card e
+  --radius-tile direto (emenda 7 da tarefa 3), botões .button--primary e .button--secondary.
+  Contrastes (fórmula WCAG 2.x, conferidos em 02/10/2026): tinta #081C2D sobre #ECF3F9 15,44:1;
+  apoio #566472 sobre #ECF3F9 5,42:1 e sobre branco 6,07:1; #8A0503 sobre #ECF3F9 8,92:1.
+  Se o dono trocar color_ink, color_text_muted ou color_eyebrow, recalcular.
+*/
+
+/* ---------- Botões em pílula (página do produto) ---------- */
+
+produto-dossie,
+.produto-dossie {
+  display: block;
+}
+
+.produto-dossie__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.produto-dossie__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 12px 28px;
+  border: 0;
+  border-radius: var(--lg-radius-capsule, 999px);
+  background-color: var(--lg-field-claro, #ECF3F9);
+  color: var(--color-ink, #081C2D);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+
+.produto-dossie__pill:hover {
+  background-color: #FFFFFF;
+  color: var(--color-ink, #081C2D);
+  text-decoration: none;
+}
+
+.produto-dossie__pill:focus-visible {
+  outline: var(--lg-focus-width, 3px) solid var(--lg-focus-outer, #081C2D);
+  outline-offset: var(--lg-focus-offset, 2px);
+}
+
+@media screen and (max-width: 749px) {
+  .produto-dossie__pills li {
+    flex: 1 1 calc(50% - 6px);
+  }
+
+  .produto-dossie__pill {
+    width: 100%;
+    padding-inline: 16px;
+  }
+}
+
+/* Atalhos do painel de compra (.atalhos do alvo, redesenho v3, tarefa 6): três linhas com fio
+   embaixo e uma seta à direita, em vez de botões em pílula. Só dentro do painel; as páginas de
+   benefícios e de dossiê seguem com as pílulas. */
+.main-product__info .produto-dossie__pills {
+  flex-direction: column;
+  gap: 0;
+}
+
+.main-product__info .produto-dossie__pills li {
+  flex: none;
+}
+
+.main-product__info .produto-dossie__pill {
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 2px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+  border-radius: 0;
+  background: none;
+  font-size: 17px;
+  font-weight: 500;
+  text-align: left;
+}
+
+.main-product__info .produto-dossie__pills li:last-child .produto-dossie__pill {
+  border-bottom: 0;
+}
+
+.main-product__info .produto-dossie__pill::after {
+  content: "";
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-right: 4px;
+  border: solid currentColor;
+  border-width: 2px 2px 0 0;
+  transform: rotate(45deg);
+}
+
+.main-product__info .produto-dossie__pill:hover {
+  background: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Páginas de benefícios e de dossiê (redesenho v3, tarefa 6, parte C) ---------- */
+
+/* Etapa 8e, item 19: sem recuo de baixo. O vão até o rodapé é o da margem de 104 px (68 px até 760 px) do
+   .main-content::after (section-footer.css); os 72 px que havia aqui somavam a ele e davam 176 px (140 px
+   no celular) no fim das páginas de benefícios e de dossiê. */
+.dp {
+  display: block;
+  padding-bottom: 0;
+  color: var(--color-ink, #081C2D);
+}
+
+/* Âncoras: o cabeçalho não fixa, então a folga é pequena. */
+.dp [id^="dp-"],
+.dp--embutido {
+  scroll-margin-top: 24px;
+}
+
+/* Capa: bloco claro (#ECF3F9), sem arte e sem gradiente de cor. */
+.dp-hero {
+  padding: 12px 0 36px;
+}
+
+.dp-hero__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: center;
+}
+
+.dp-hero__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.dp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--color-text-muted, #566472);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.dp-back:hover {
+  color: var(--color-ink, #081C2D);
+  text-decoration: underline;
+}
+
+/* Linha pequena acima do título (#8A0503, --color-eyebrow): 8,92:1 sobre o campo claro. */
+.dp-eyebrow {
+  display: block;
+  margin: 8px 0 0;
+  padding: 0;
+  color: var(--color-eyebrow, #8A0503);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dp-hero__title {
+  margin: 10px 0 0;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.dp-hero__lead {
+  max-width: 40em;
+  margin: 14px 0 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 17px;
+  line-height: 25px;
+  text-wrap: pretty;
+}
+
+.dp .dp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dp .dp-chip {
+  padding: 8px 14px;
+  border-radius: var(--lg-radius-capsule, 999px);
+  background-color: #FFFFFF;
+  box-shadow: inset 0 0 0 1px rgba(var(--color-ink-rgb, 8, 28, 45), 0.12);
+  color: var(--color-ink, #081C2D);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dp-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.dp-button {
+  gap: 8px;
+  min-height: 48px;
+}
+
+/* Foto principal: pote solto no campo claro (máscara de .lg-pote-solto, liquid-glass.css) ou,
+   para foto fora do padrão, inteira em quadro arredondado. Sem vidro e sem moldura. */
+.dp-hero__media {
+  justify-self: center;
+  width: min(100%, 320px);
+  aspect-ratio: 1;
+}
+
+.dp-hero__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.dp-hero__img.v3-foto-quadro {
+  border-radius: var(--radius-card);
+}
+
+/* Fatos rápidos (dossiê): preenchimento branco na capa, bloco claro quando embutido. */
+.dp-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+  max-width: 640px;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+
+.dp .dp-fact {
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  background-color: #FFFFFF;
+  box-shadow: none;
+}
+
+.dp-embed-head .dp-fact {
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.dp-fact dt {
+  color: var(--color-text-muted, #566472);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dp-fact dd {
+  margin: 2px 0 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+/* Abas (benefícios): controle segmentado do alvo (.abas). São atalhos de rolagem para as seções
+   da página; passar o mouse ou focar acende a aba em branco, com o texto sempre em tinta. */
+.dp-toc {
+  margin-top: 24px;
+}
+
+.dp-toc__list {
+  display: flex;
+  gap: 2px;
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  padding: 4px;
+  border-radius: 980px;
+  background-color: var(--lg-field-claro, #ECF3F9);
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.dp-toc__list::-webkit-scrollbar {
+  display: none;
+}
+
+.dp-toc__list li {
+  flex: none;
+}
+
+.dp-toc__link {
+  display: inline-flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 980px;
+  color: var(--color-text-muted, #566472);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.dp-toc__link:hover,
+.dp-toc__link:focus-visible {
+  background-color: #FFFFFF;
+  color: var(--color-ink, #081C2D);
+  text-decoration: none;
+  box-shadow: 0 0 0 1px rgba(var(--color-ink-rgb, 8, 28, 45), 0.08), 0 1px 2px rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+}
+
+/* O contêiner rola na horizontal e cortaria o anel de fora: o anel vai para dentro (alvo.css 176). */
+.dp-toc__link:focus-visible {
+  outline-offset: -3px;
+}
+
+/* Corpo */
+.dp-body {
+  display: grid;
+  gap: 56px;
+  margin-top: 40px;
+}
+
+.dp-section__head {
+  margin-bottom: 8px;
+}
+
+.dp-section__title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* Grade de benefícios: três colunas, filete em cima de cada item, sem cartão (alvo .benef__grade).
+   O recuo de baixo de 26 px de cada item (.dp-benefit) separa as linhas; na última ele só somava ao vão
+   de 56 px do corpo e deixava 84 px até o bloco seguinte ("Como age"). A margem de baixo negativa de 26 px
+   tira esse excesso (etapa 8e, item 13): o vão entre sub-blocos fica em 56 px, como entre "Como age",
+   "Cuidados", "Insumos" e "Fontes". */
+.dp-benefits {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 40px;
+  margin: 0 0 -26px;
+  padding: 0;
+  list-style: none;
+}
+
+.dp-benefit {
+  padding: 22px 0 26px;
+  border-top: 1px solid var(--color-line, #D7E1E8);
+}
+
+.dp-benefit__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.dp-benefit__text {
+  margin: 8px 0 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Blocos de seção: sólidos, no tom claro #ECF3F9 (conteúdo não é vidro). */
+.dp-card {
+  padding: 24px;
+  border-radius: var(--radius-tile);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.dp-card--flush {
+  padding: 0;
+  background: none;
+}
+
+.dp-card__head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.dp-card__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.dp .dp-card__icon.lg-fill--chip {
+  background-color: #FFFFFF;
+}
+
+/* Ícone de alerta em tinta, não em vermelho: o #8A0503 vale só para a linha pequena acima de título
+   (Ruling 36, etapa 8e, item 12). O ícone e o título são o sinal do aviso. */
+.dp .dp-card__icon--care {
+  background-color: #FFFFFF;
+  color: var(--color-ink, #081C2D);
+}
+
+.dp-card__title {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.dp-card__head .dp-card__title {
+  margin: 0;
+}
+
+.dp-card__note {
+  margin: 4px 0 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Etapa 8e, leva B: a nota "Estas informações não substituem..." sob o subtítulo "Cuidados" encostava na
+   primeira bolinha da lista (a lista não tem margem de cima). Ganha 12 px de respiro, no ritmo do resto da
+   lista (10 px entre os itens). */
+.dp-card__note + .dp-list {
+  margin-top: 12px;
+}
+
+/* .dp-card--care e .dp-card--warn: sem barra lateral. A barra de 4 px em #8A0503 numa borda esquerda
+   de cartão arredondado virava meia-lua nos dois cantos, e o vermelho não é para avisos (Ruling 36,
+   etapa 8e, item 12). As classes ficam na marcação como ganchos; o aviso se marca pelo ícone e pelo título. */
+
+.dp-split {
+  display: grid;
+  gap: 16px;
+}
+
+.dp-subtitle {
+  margin: 20px 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.dp-text {
+  margin: 0;
+  font-size: 17px;
+  line-height: 25px;
+}
+
+.dp-text--strong {
+  font-weight: 600;
+}
+
+/* Listas */
+.dp-checks,
+.dp-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dp-checks li,
+.dp-list li {
+  position: relative;
+  padding-left: 30px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.dp-checks li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #FFFFFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23081C2D' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center / 12px no-repeat;
+}
+
+.dp-list li::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-ink, #081C2D);
+}
+
+.dp-list--warn li {
+  font-weight: 600;
+}
+
+/* Bolinhas dos avisos na tinta, como as das outras listas (a regra .dp-list li::before): sem vermelho
+   (Ruling 36, etapa 8e, item 12). */
+
+.dp-checks--sm li {
+  font-size: 15px;
+}
+
+/* Passos de "Como age" */
+.dp-steps {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dp-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.dp-step__n {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: var(--color-ink, #081C2D);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-step p {
+  margin: 3px 0 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Insumos */
+.dp-insumos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dp-insumo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+  border-radius: var(--radius-tile);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.dp-insumo__head {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.dp-insumo__img {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.dp .dp-insumo__img--icon {
+  background-color: #FFFFFF;
+}
+
+.dp-insumo__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.dp-insumo__name {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.dp-insumo__dose {
+  margin: 4px 0 0;
+  color: var(--color-ink, #081C2D);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-insumo__dose span {
+  color: var(--color-text-muted, #566472);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.dp-insumo__form,
+.dp-insumo__desc,
+.dp-insumo__note {
+  max-width: 80ch;
+  margin: 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.dp-insumo__form strong {
+  color: var(--color-ink, #081C2D);
+  font-weight: 600;
+}
+
+.dp .dp-insumo__claims {
+  padding: 14px;
+  border-radius: var(--radius-card);
+  background-color: #FFFFFF;
+  box-shadow: none;
+}
+
+.dp-insumo__label {
+  margin: 0 0 8px;
+  color: var(--color-text-muted, #566472);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Fontes consultadas */
+.dp-sources {
+  padding: 0;
+  border-radius: var(--radius-tile);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.dp-sources__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 24px;
+  font-size: 16px;
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+
+.dp-sources__summary::-webkit-details-marker {
+  display: none;
+}
+
+.dp-sources__chev {
+  transition: transform 0.2s ease;
+}
+
+.dp-sources[open] .dp-sources__chev {
+  transform: rotate(180deg);
+}
+
+.dp-sources__summary:hover {
+  text-decoration: underline;
+}
+
+.dp-sources__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 24px 24px 44px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.dp-sources__list a {
+  display: inline-block;
+  max-width: 100%;
+  padding-block: 3px;
+  color: var(--color-ink, #081C2D);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  word-break: break-word;
+}
+
+.dp-sources__date {
+  color: var(--color-text-muted, #566472);
+}
+
+.dp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 12px;
+  color: var(--color-ink, #081C2D);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.dp-link:hover {
+  text-decoration: underline;
+}
+
+.dp-source .produto-dossie__source {
+  margin: 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Chamada final */
+.dp-cta {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border-radius: var(--radius-tile);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.dp-cta__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.dp-cta__text {
+  margin: 4px 0 0;
+  color: var(--color-text-muted, #566472);
+  font-size: 15px;
+}
+
+.dp-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Dossiê: índice + conteúdo */
+.dp-layout {
+  display: grid;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.dp-main {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.dp-index {
+  padding: 16px 20px;
+  border-radius: var(--radius-tile);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.dp-index__title {
+  margin: 0 0 8px;
+  color: var(--color-text-muted, #566472);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Etapa 8e, leva E, item 11: abaixo de 990 px o índice é uma grade de duas colunas (os seis links alinhados em
+   três linhas de dois). Em fila que quebra sozinha (flex-wrap) eles caíam em quatro linhas de uma ou duas
+   entradas, sem alinhamento de coluna. Link mais comprido que a célula quebra em duas linhas dentro dos 44 px. */
+.dp-index__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 44 px de altura abaixo de 990 px (toque); 36 px no computador. */
+.dp-index__list a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-ink, #081C2D);
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.dp-index__list a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Tabela de composição: cabeçalho discreto, linhas com filete, dentro de um quadro branco. */
+.dp-table-wrap {
+  overflow-x: auto;
+  border-radius: var(--radius-card);
+  background-color: #FFFFFF;
+}
+
+.dp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 16px;
+}
+
+.dp-table th {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.2);
+  color: var(--color-text-muted, #566472);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-align: left;
+  text-transform: uppercase;
+}
+
+.dp-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+  vertical-align: top;
+}
+
+.dp-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.dp-table th:last-child,
+.dp-table td:last-child {
+  text-align: right;
+}
+
+.dp-table td:last-child {
+  font-weight: 600;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.dp-table__sub {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-text-muted, #566472);
+  font-size: 14px;
+}
+
+.dp-empty {
+  color: var(--color-text-muted, #566472);
+  font-size: 16px;
+}
+
+/* Benefícios e dossiê dentro da página do produto (modo "embutido", 30/09/2026): o rótulo da
+   seção vira título de seção; a página do produto já tem título, foto e compra no topo. */
+/* Vão entre blocos de primeiro nível (etapa 8e, item 13): cada bloco embutido (benefícios, dossiê) deixa
+   --section-gap (104 px; 68 px até 760 px) em cima e embaixo, como margem do próprio invólucro, e as
+   margens de blocos vizinhos se fundem num vão só. Os recuos próprios saíram: 24 px embaixo do bloco e
+   56 px em cima do cabeçalho (.dp-embed-head), que somavam 80 a 86 px entre "Fontes" e "Dossiê técnico". */
+.dp--embutido {
+  margin-block: var(--section-gap);
+  padding-bottom: 0;
+}
+
+.dp-embed-head {
+  padding-top: 0;
+}
+
+.dp-embed-head .dp-eyebrow {
+  margin: 0;
+  color: var(--color-ink, #081C2D);
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-transform: none;
+}
+
+.dp--embutido .dp-facts {
+  max-width: none;
+  margin-top: 16px;
+}
+
+.dp--embutido .dp-toc {
+  margin-top: 16px;
+}
+
+.dp--embutido .dp-body {
+  margin-top: 24px;
+}
+
+.dp--embutido .dp-layout {
+  margin-top: 24px;
+}
+
+/* Celular: abas com rolagem até a borda da tela, alvo de toque de 44 px. A pílula sangra pelo recuo
+   inteiro da coluna (--page-gutter, 20 px) até a borda da janela e arredonda só à esquerda; o recuo da
+   direita, do mesmo valor, deixa a última aba parar na coluna quando a lista rola até o fim. Antes, o
+   max-width: 100% da regra base impedia o sangramento e o recuo negativo era o de 10 px (--bleed-gutter):
+   a pílula parava reta a 20 px da borda e cortava a aba "Dicas de uso" ao meio (etapa 8e, item 11). */
+@media screen and (max-width: 760px) {
+  .dp-toc__list {
+    width: auto;
+    max-width: none;
+    margin-right: calc(-1 * var(--page-gutter));
+    border-radius: 980px 0 0 980px;
+    padding-right: var(--page-gutter);
+  }
+
+  .dp-toc__link {
+    height: 44px;
+  }
+}
+
+/* Tablet e computador */
+@media screen and (min-width: 750px) {
+  .dp-hero {
+    padding: 20px 0 56px;
+  }
+
+  /* Cinco fatos: 3 colunas na capa (3 + 2) e uma coluna por fato quando embutido, sem sobra solta. */
+  .dp-hero .dp-facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dp--embutido .dp-facts {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .dp-hero__inner {
+    grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+    gap: 48px;
+  }
+
+  .dp-hero__media {
+    width: min(100%, 440px);
+  }
+
+  .dp-split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+
+  .dp-card {
+    padding: 28px;
+  }
+
+  .dp-cta {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    padding: 28px 32px;
+  }
+
+  .dp-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .dp-hero__title {
+    font-size: 48px;
+    line-height: 1.08;
+  }
+
+  .dp-hero__lead {
+    font-size: 19px;
+    line-height: 28px;
+  }
+
+  .dp-section__title,
+  .dp-embed-head .dp-eyebrow {
+    font-size: 32px;
+  }
+
+  .dp-benefits {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dp-layout {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: 24px;
+    align-items: start;
+  }
+
+  .dp-index {
+    position: sticky;
+    top: 24px;
+  }
+
+  .dp-index__list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  .dp-index__list a {
+    min-height: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dp-sources__chev,
+  .dp-toc__link {
+    transition: none;
+  }
+}
+
+/* ---------- Impressão (Salvar dossiê em PDF) ---------- */
+
+@media print {
+  body:has(.dp) header:not(.dp-hero),
+  body:has(.dp) footer,
+  body:has(.dp) .dp-back,
+  body:has(.dp) .dp-hero__actions,
+  body:has(.dp) .dp-index,
+  body:has(.dp) .dp-toc,
+  body:has(.dp) .dp-cta,
+  body:has(.dp) .produto-dossie__pill {
+    display: none !important;
+  }
+
+  .dp-hero {
+    background: none !important;
+    padding: 0 0 16px;
+  }
+
+  .dp-layout {
+    display: block;
+  }
+
+  .dp-card,
+  .dp-insumo,
+  .dp-benefit {
+    break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #D6E2EA;
+  }
+}
+
+/* Foto da matéria-prima ao lado da composição (03/10/2026). Conteúdo sólido, foto inteira. */
+.dp-composicao {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.dp-composicao__fotos {
+  display: grid;
+  gap: 16px;
+}
+
+.dp-insumo-foto {
+  margin: 0;
+}
+
+.dp-insumo-foto img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--radius-card);
+  background-color: #FFFFFF;
+}
+
+.dp-insumo-foto figcaption {
+  margin-top: 8px;
+  color: var(--color-text-muted, #566472);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.dp-insumo-foto__nome {
+  display: block;
+  color: var(--color-ink, #081C2D);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media screen and (max-width: 760px) {
+  .dp-composicao {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .dp-composicao__fotos {
+    justify-items: center;
+  }
+
+  .dp-insumo-foto {
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+@media print {
+  .dp-composicao {
+    grid-template-columns: 120px minmax(0, 1fr);
+  }
+}
+
+/* Benefícios embaixo da tabela de composição, em azul-marinho (03/10/2026). */
+.dp-comp-benef {
+  margin-top: 24px;
+  color: var(--color-ink, #081C2D);
+}
+
+.dp-comp-benef__titulo {
+  margin: 0 0 12px;
+  color: var(--color-ink, #081C2D);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.dp-comp-benef__lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dp-comp-benef__item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.dp-comp-benef__icone {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-tile);
+  background-color: var(--ic-fundo, #FFFFFF);
+  color: var(--ic-cor, var(--color-ink, #081C2D));
+}
+
+.dp-icone-benef {
+  width: 30px;
+  height: 30px;
+  stroke-width: 1.9;
+}
+
+.dp-comp-benef__nome {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.dp-comp-benef__texto {
+  display: block;
+  margin-top: 2px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.dp-comp-benef__link {
+  display: inline-block;
+  margin-top: 16px;
+  color: var(--color-ink, #081C2D);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media screen and (max-width: 760px) {
+  .dp-comp-benef__lista {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .dp-comp-benef__link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 8px;
+  }
+}
+
+.dp-composicao__dados {
+  min-width: 0;
+}
+
+/* Cor de cada ícone de benefício, por tema (pedido do dono em 03/10/2026). Contraste do traço sobre o fundo de 3,7:1 a 6,2:1. */
+.dp-ic--gota { --ic-cor: #C62828; --ic-fundo: #FDEAEA; }
+.dp-ic--lampada { --ic-cor: #A86A00; --ic-fundo: #FFF3D6; }
+.dp-ic--escudo { --ic-cor: #16834F; --ic-fundo: #E2F5EA; }
+.dp-ic--raio { --ic-cor: #C75A00; --ic-fundo: #FFEBD9; }
+.dp-ic--osso { --ic-cor: #3F5F8F; --ic-fundo: #E5EDF7; }
+.dp-ic--olho { --ic-cor: #1E63B8; --ic-fundo: #E3EDFA; }
+.dp-ic--lua { --ic-cor: #5B3FB5; --ic-fundo: #ECE8FA; }
+.dp-ic--haltere { --ic-cor: #C23E22; --ic-fundo: #FCE9E4; }
+.dp-ic--ondas { --ic-cor: #0E7C9A; --ic-fundo: #DFF2F7; }
+.dp-ic--camadas { --ic-cor: #C2185B; --ic-fundo: #FBE6EE; }
+.dp-ic--folha { --ic-cor: #2E7D32; --ic-fundo: #E6F4E3; }
+.dp-ic--molecula { --ic-cor: #0B7A6E; --ic-fundo: #DDF3EF; }
+.dp-ic--celula { --ic-cor: #7B3AA0; --ic-fundo: #F2E6F8; }
+.dp-ic--brilho { --ic-cor: #9A6F00; --ic-fundo: #FFF4D2; }
+
+/* Versão 2 dos benefícios com ícone (pedido do dono em 03/10/2026: "pode melhorar"): cada benefício
+   vira um card branco com sombra suave e uma faixa fina da cor do tema à esquerda; o ícone fica branco
+   num círculo cheio, em degradê da cor do tema. Com o mouse, o card sobe 3 px (sem "reduzir movimento").
+   Contraste do ícone branco sobre a cor do tema: de 4,29:1 a 7,44:1 (ícone, mínimo 3:1). */
+.dp-comp-benef__lista {
+  gap: 12px;
+}
+
+.dp-comp-benef__item {
+  position: relative;
+  gap: 14px;
+  padding: 14px 16px 14px 18px;
+  overflow: hidden;
+  border-radius: var(--radius-card, 22px);
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(8, 28, 45, 0.06), 0 8px 22px -12px rgba(8, 28, 45, 0.22);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s ease;
+}
+
+.dp-comp-benef__item::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 4px;
+  background: var(--ic-cor, var(--color-ink, #081C2D));
+}
+
+.dp-comp-benef__icone {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--ic-claro, #3A5068), var(--ic-cor, #081C2D));
+  box-shadow: 0 6px 14px -6px var(--ic-cor, #081C2D);
+  color: #FFFFFF;
+}
+
+.dp-icone-benef {
+  width: 26px;
+  height: 26px;
+  stroke-width: 2;
+}
+
+.dp-comp-benef__nome {
+  color: var(--color-ink, #081C2D);
+}
+
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .dp-comp-benef__item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 2px 4px rgba(8, 28, 45, 0.06), 0 16px 32px -14px rgba(8, 28, 45, 0.3);
+  }
+}
+.dp-comp-benef__item:has(.dp-ic--gota) { --ic-cor: #C62828; --ic-claro: #D66464; }
+.dp-comp-benef__item:has(.dp-ic--lampada) { --ic-cor: #A86A00; --ic-claro: #C09447; }
+.dp-comp-benef__item:has(.dp-ic--escudo) { --ic-cor: #16834F; --ic-claro: #57A680; }
+.dp-comp-benef__item:has(.dp-ic--raio) { --ic-cor: #C75A00; --ic-claro: #D78847; }
+.dp-comp-benef__item:has(.dp-ic--osso) { --ic-cor: #3F5F8F; --ic-claro: #758CAE; }
+.dp-comp-benef__item:has(.dp-ic--olho) { --ic-cor: #1E63B8; --ic-claro: #5D8FCC; }
+.dp-comp-benef__item:has(.dp-ic--lua) { --ic-cor: #5B3FB5; --ic-claro: #8975CA; }
+.dp-comp-benef__item:has(.dp-ic--haltere) { --ic-cor: #C23E22; --ic-claro: #D37460; }
+.dp-comp-benef__item:has(.dp-ic--ondas) { --ic-cor: #0E7C9A; --ic-claro: #51A1B6; }
+.dp-comp-benef__item:has(.dp-ic--camadas) { --ic-cor: #C2185B; --ic-claro: #D35989; }
+.dp-comp-benef__item:has(.dp-ic--folha) { --ic-cor: #2E7D32; --ic-claro: #69A16B; }
+.dp-comp-benef__item:has(.dp-ic--molecula) { --ic-cor: #0B7A6E; --ic-claro: #4F9F97; }
+.dp-comp-benef__item:has(.dp-ic--celula) { --ic-cor: #7B3AA0; --ic-claro: #A071BB; }
+.dp-comp-benef__item:has(.dp-ic--brilho) { --ic-cor: #9A6F00; --ic-claro: #B69747; }
+
+/* 16/10/2026 (checagem de celular da loja): a grade do dossiê não tinha largura de coluna definida e a coluna crescia até o conteúdo mais largo
+   (na vitamina B9, a tabela de composição pedia 475 px em uma tela de 390 px): a página inteira ficava mais larga que a tela e o celular
+   a encolhia (zoom para fora). Com a coluna limitada a 1fr, o quadro da tabela rola por dentro (já tem overflow-x: auto). */
+.dp-main {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.dp-main > * {
+  min-width: 0;
+}
+
+@media screen and (max-width: 749px) {
+  /* a dose longa (vitamina B9: «1.281,5 µg DFE (768,9 µg de ácido fólico)») quebra de linha no celular, em vez de ocupar 335 px e deixar a coluna do insumo com 45 px;
+     a coluna da dose nunca fica mais estreita que 7 caracteres (sem isso «3 g» e «DOSE» quebravam letra por letra) */
+  .dp-table td:last-child {
+    white-space: normal;
+  }
+
+  .dp-table th:last-child,
+  .dp-table td:last-child {
+    min-width: 7ch;
+  }
+}

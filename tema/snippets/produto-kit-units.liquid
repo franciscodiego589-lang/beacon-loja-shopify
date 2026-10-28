@@ -1,0 +1,28 @@
+{%- comment -%}
+  Área produto. Imprime o número de potes de um kit: o primeiro número inteiro maior que zero
+  no valor da opção "Kit" (ex.: "3 potes" -> 3). Sem número no texto, imprime 0.
+  É a única cópia desta regra no tema: main-product, produto-kit-variant, produto-initial-variant,
+  produto-variant-json (dados do kit-selector.js) e kit-card chamam este snippet. Se o padrão de
+  nome das variantes mudar, só este arquivo muda.
+
+  Parâmetro:
+  - kit: texto do valor da opção "Kit" da variante (ex.: variant.options[kit_index])
+
+  Uso (o número sai como texto):
+    capture kit_units
+      render 'produto-kit-units', kit: variant.options[kit_index]
+    endcapture
+    assign kit_units = kit_units | strip | plus: 0
+{%- endcomment -%}
+{%- liquid
+  assign kit_units = 0
+  assign kit_tokens = kit | split: ' '
+  for token in kit_tokens
+    assign token_number = token | plus: 0
+    if token_number > 0
+      assign kit_units = token_number
+      break
+    endif
+  endfor
+  echo kit_units
+-%}

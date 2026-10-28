@@ -1,0 +1,260 @@
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-page-collection-grid.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Grade de coleções ou de produtos, escolhidos à mão (sem app), para a tela inicial da
+  página "Monte seu kit" (o quiz em si é um bloco de app, fora desta seção) e para qualquer
+  outra página institucional que precise de uma vitrine simples.
+  Modo "collections": cartão com imagem, título e nº de produtos, cada um linkando para a
+  coleção. Modo "products": snippet product-card da fundação (mesmo card das vitrines).
+  Sem coleções nem produtos escolhidos, a seção não renderiza nada (só um aviso no editor).
+{%- endcomment -%}
+
+{%- liquid
+  assign pcg_mode = section.settings.mode
+  assign pcg_items_count = 0
+  if pcg_mode == 'products'
+    assign pcg_items_count = section.settings.products.size
+  else
+    assign pcg_items_count = section.settings.collections.size
+  endif
+
+  assign pcg_has_intro = false
+  if section.settings.eyebrow != blank or section.settings.heading != blank or section.settings.text != blank
+    assign pcg_has_intro = true
+  endif
+
+  assign pcg_columns = section.settings.columns_desktop
+  assign pcg_loading = 'lazy'
+  unless section.index > 2
+    assign pcg_loading = 'eager'
+  endunless
+
+  assign pcg_sizes = '(min-width: 1440px) calc(1280px / ' | append: pcg_columns | append: '), (min-width: 990px) calc((100vw - 160px) / ' | append: pcg_columns | append: '), (min-width: 750px) 50vw, 100vw'
+
+  assign pcg_lazy = true
+  if pcg_loading == 'eager'
+    assign pcg_lazy = false
+  endif
+-%}
+
+{%- if pcg_items_count > 0 -%}
+  {% style %}
+    #shopify-section-{{ section.id }} .page-collection-grid__grid {
+      --grid-columns-mobile: {{ section.settings.columns_mobile }};
+      --grid-columns-tablet: 2;
+      --grid-columns-desktop: {{ pcg_columns }};
+    }
+  {% endstyle %}
+
+  <div class="page-collection-grid pb-scheme--{{ section.settings.color_scheme }}{% render 'paginas-blog-surface', scheme: section.settings.color_scheme %} pb-pad--{{ section.settings.padding }}">
+    <div class="page-width">
+      {%- if pcg_has_intro -%}
+        <div class="pb-intro pb-intro--{{ section.settings.intro_align }}">
+          {%- if section.settings.eyebrow != blank -%}
+            <span class="chip pb-intro__eyebrow">{{ section.settings.eyebrow | escape }}</span>
+          {%- endif -%}
+          {%- if section.settings.heading != blank -%}
+            <h2 class="page-collection-grid__heading">{{ section.settings.heading | escape }}</h2>
+          {%- endif -%}
+          {%- if section.settings.text != blank -%}
+            <div class="pb-intro__text rte">{{ section.settings.text }}</div>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      {%- if pcg_mode == 'products' -%}
+        <ul class="grid page-collection-grid__grid" role="list">
+          {%- for product in section.settings.products -%}
+            <li class="page-collection-grid__item">
+              {% render 'product-card',
+                product: product,
+                show_ribbon: section.settings.show_ribbon,
+                ribbon_tone: section.settings.ribbon_tone,
+                show_rating: section.settings.show_rating,
+                lazy: pcg_lazy,
+                section_id: section.id,
+                heading_tag: 'h3',
+                sizes: pcg_sizes
+              %}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- else -%}
+        <ul class="grid page-collection-grid__grid" role="list">
+          {%- for collection in section.settings.collections -%}
+            <li class="page-collection-grid__item">
+              <a href="{{ collection.url }}" class="page-collection-grid__collection">
+                <span class="page-collection-grid__media pb-media pb-media--landscape">
+                  {%- if collection.featured_image != blank -%}
+                    {%- assign pcg_alt = collection.featured_image.alt | default: collection.title -%}
+                    {{ collection.featured_image | image_url: width: 900 | image_tag: widths: '320, 450, 600, 750, 900', sizes: pcg_sizes, loading: pcg_loading, alt: pcg_alt, class: 'page-collection-grid__image' }}
+                  {%- else -%}
+                    {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg page-collection-grid__placeholder' }}
+                  {%- endif -%}
+                </span>
+                <span class="page-collection-grid__body">
+                  <span class="page-collection-grid__title">{{ collection.title | escape }}</span>
+                  {%- if section.settings.show_count -%}
+                    <span class="page-collection-grid__count">{{ 'paginas_blog.collection_grid.count' | t: count: collection.all_products_count }}</span>
+                  {%- endif -%}
+                </span>
+                {%- render 'icon', name: 'arrow-right', size: 18, class: 'page-collection-grid__arrow' -%}
+              </a>
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="page-width pb-pad--small">
+    <p class="page-collection-grid__editor-empty">{{ 'paginas_blog.collection_grid.editor_empty' | t }}</p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Coleções ou produtos",
+  "tag": "section",
+  "class": "section-page-collection-grid",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Selo acima do título"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto de apoio"
+    },
+    {
+      "type": "select",
+      "id": "intro_align",
+      "label": "Alinhamento do título",
+      "options": [
+        { "value": "left", "label": "Esquerda" },
+        { "value": "center", "label": "Centro" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Conteúdo"
+    },
+    {
+      "type": "select",
+      "id": "mode",
+      "label": "Mostrar",
+      "options": [
+        { "value": "collections", "label": "Coleções" },
+        { "value": "products", "label": "Produtos" }
+      ],
+      "default": "collections"
+    },
+    {
+      "type": "collection_list",
+      "id": "collections",
+      "label": "Coleções",
+      "info": "Usado quando \"Mostrar\" é Coleções.",
+      "limit": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Mostrar nº de produtos em cada coleção",
+      "default": true
+    },
+    {
+      "type": "product_list",
+      "id": "products",
+      "label": "Produtos",
+      "info": "Usado quando \"Mostrar\" é Produtos.",
+      "limit": 8
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ribbon",
+      "label": "Mostrar selo do produto (metafield beacon.selo)",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "ribbon_tone",
+      "label": "Cor do selo",
+      "options": [
+        { "value": "offer", "label": "Oferta" },
+        { "value": "new", "label": "Novo" },
+        { "value": "best", "label": "Mais vendido" },
+        { "value": "discount", "label": "Desconto" }
+      ],
+      "default": "best"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_rating",
+      "label": "Mostrar estrelas de avaliação",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Grade"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Colunas no computador",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Colunas no celular",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "options": [
+        { "value": "default", "label": "Branco" },
+        { "value": "surface", "label": "Cinza-azulado claro" },
+        { "value": "surface-2", "label": "Azul claro" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        { "value": "small", "label": "Pequeno" },
+        { "value": "normal", "label": "Normal" }
+      ],
+      "default": "normal"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Coleções ou produtos"
+    }
+  ]
+}
+{% endschema %}

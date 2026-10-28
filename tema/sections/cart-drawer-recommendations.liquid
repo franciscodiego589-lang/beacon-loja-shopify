@@ -1,0 +1,84 @@
+{%- comment -%}
+  Seção técnica das sugestões da gaveta do carrinho.
+  Só é usada via /recommendations/products?product_id=...&limit=...&section_id=cart-drawer-recommendations
+  (recommendations.api.js). Fora dessa rota, recommendations não traz produtos e nada é renderizado.
+  Produtos que já estão no carrinho não são sugeridos; aparecem no máximo
+  settings.cart_recommendations_limit sugestões (o JS pede alguns a mais para compensar).
+{%- endcomment -%}
+{%- liquid
+  assign rec_cart_ids = cart.items | map: 'product_id'
+  assign rec_limit = settings.cart_recommendations_limit | default: 3
+  assign rec_count = 0
+  if recommendations.performed?
+    for product in recommendations.products
+      unless rec_cart_ids contains product.id
+        assign rec_count = rec_count | plus: 1
+      endunless
+    endfor
+  endif
+-%}
+{%- if recommendations.performed? and rec_count > 0 -%}
+  {%- assign rec_shown = 0 -%}
+  <div class="cart-recommendations" data-cart-recommendations-loaded>
+    <h3 class="cart-recommendations__title">{{ 'fundacao.cart.recommendations_title' | t }}</h3>
+    <ul class="cart-recommendations__list" role="list">
+      {%- for product in recommendations.products -%}
+        {%- if rec_cart_ids contains product.id or rec_shown >= rec_limit -%}
+          {%- continue -%}
+        {%- endif -%}
+        {%- assign rec_shown = rec_shown | plus: 1 -%}
+        {%- liquid
+          # Nome sem o trecho depois de " – " (emenda 2 da tarefa 3, G3), pela fonte única
+          # snippets/v3-nome-visivel (emenda 15 da tarefa 8). Os três já saem escapados (S1): 'html'
+          # vai entre tags; 'texto' vai ao rótulo (o filtro t não escapa de novo); o alt leva
+          # | escape_once, porque o image_tag escaparia o texto uma segunda vez.
+          capture rec_nome_html
+            render 'v3-nome-visivel', produto: product, modo: 'html'
+          endcapture
+          assign rec_nome_html = rec_nome_html | strip
+          capture rec_nome
+            render 'v3-nome-visivel', produto: product, modo: 'texto'
+          endcapture
+          assign rec_nome = rec_nome | strip
+          assign rec_nome_alt = rec_nome | escape_once
+          assign rec_variant = product.selected_or_first_available_variant
+          assign rec_form_id = 'CartRecommendationForm-' | append: product.id
+        -%}
+        <li class="cart-recommendations__item">
+          <a href="{{ product.url }}" class="cart-recommendations__media" tabindex="-1" aria-hidden="true">
+            {%- if product.featured_media -%}
+              {%- assign rec_alt = product.featured_media.alt | default: rec_nome_alt -%}
+              {{ product.featured_media | image_url: width: 160 | image_tag: widths: '80, 120, 160', sizes: '80px', loading: 'lazy', alt: rec_alt, class: 'cart-recommendations__image' }}
+            {%- else -%}
+              {{ 'product-1' | placeholder_svg_tag: 'cart-recommendations__placeholder' }}
+            {%- endif -%}
+          </a>
+          <div class="cart-recommendations__info">
+            <a href="{{ product.url }}" class="cart-recommendations__name"><span class="cart-recommendations__name-texto">{{ rec_nome_html }}</span></a>
+            {% render 'price', product: product, size: 'sm', show_installments: false, class: 'cart-recommendations__price' %}
+          </div>
+          {%- if product.available -%}
+            <product-form class="cart-recommendations__form" data-section-id="cart-drawer-recommendations">
+              {%- form 'product', product, id: rec_form_id, class: 'cart-recommendations__add-form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+                <input type="hidden" name="id" value="{{ rec_variant.id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" name="add" class="button button--secondary button--small cart-recommendations__add" data-product-form-submit>
+                  <span class="button__label">{{ 'fundacao.product_card.add' | t }}</span>
+                  <span class="visually-hidden">{{ 'fundacao.product_card.add_suffix' | t: title: rec_nome }}</span>
+                </button>
+                <p class="form-message form-message--error" role="alert" hidden data-product-form-error></p>
+              {%- endform -%}
+            </product-form>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Sugestões do carrinho",
+  "settings": []
+}
+{% endschema %}

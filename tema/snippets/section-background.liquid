@@ -1,0 +1,37 @@
+{%- comment -%}
+  Foto de fundo opcional de uma seção da área de páginas (ajuste "Imagem de fundo" das seções
+  rich-text e multicolumn). Sem imagem, não gera nada e a seção fica exatamente como antes.
+
+  Com imagem:
+  - a foto cobre a seção inteira (object-fit: cover), atrás do conteúdo;
+  - um véu no tom do campo noite (#081C2D) fica entre a foto e o texto;
+  - a seção que chama este snippet passa a usar o esquema "ink" (texto claro) e a classe
+    has-section-bg, que posiciona a camada (assets/section-background.css).
+  A foto é decorativa: alt vazio e aria-hidden. Em contraste aumentado e em cores forçadas ela
+  some e fica só a cor de base, como a arte dos campos (spec Liquid Glass, 7.1, regra 6).
+
+  Contraste medido em 29/09/2026 sobre quem-somos-topo-2560x1016.png, pior pixel da foto:
+  véu de 75% dá 7,71:1 para #FFFFFF e 5,17:1 para #BFD7E6 (texto de apoio no esquema ink);
+  véu de 60% dá só 3,08:1 para #BFD7E6. Por isso o padrão é 75%.
+
+  Parâmetros:
+  - image: o valor do image_picker (pode ser vazio)
+  - veil: opacidade do véu, de 0 a 100
+  - index: section.index, para carregar sem atraso só nas duas primeiras posições
+
+  Uso, logo depois da abertura do elemento raiz da seção:
+    {% render 'section-background', image: section.settings.background_image, veil: section.settings.background_overlay, index: section.index %}
+{%- endcomment -%}
+{%- if image != blank -%}
+  {%- liquid
+    assign sbg_loading = 'lazy'
+    unless index > 2
+      assign sbg_loading = 'eager'
+    endunless
+    assign sbg_veil = veil | default: 75 | divided_by: 100.0
+  -%}
+  {{ 'section-background.css' | asset_url | stylesheet_tag }}
+  <div class="section-bg" style="--section-bg-veil: {{ sbg_veil }};" aria-hidden="true">
+    {{ image | image_url: width: 2560 | image_tag: widths: '750, 1000, 1500, 2000, 2560', sizes: '100vw', loading: sbg_loading, alt: '', class: 'section-bg__image' }}
+  </div>
+{%- endif -%}

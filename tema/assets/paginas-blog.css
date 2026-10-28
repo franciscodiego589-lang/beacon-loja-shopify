@@ -1,0 +1,589 @@
+/*
+  Beacon Labs · estilos compartilhados da área de páginas e blog (paginas-blog.css)
+
+  Carregado pelas seções desta área: main-page, page-hero, rich-text, image-with-text,
+  multicolumn, faq-list, contact-form, order-tracking, main-blog, main-article, main-404,
+  main-password e page-collection-grid.
+
+  Conteúdo:
+  - esquemas de cor por seção (pb-scheme--*), que redefinem as variáveis de texto
+    herdadas da fundação (--color-text, --color-text-muted, --focus-outline);
+  - espaçamento vertical (pb-pad--*);
+  - bloco de abertura (pb-intro), botões em linha (pb-actions);
+  - mensagens de formulário (pb-status), grade de campos (pb-form);
+  - espaço da trilha de navegação (pb-trilha) e paginação (pb-pagination);
+  - mídia com proporção (pb-media).
+  Usa as variáveis de snippets/css-variables.liquid, de base.css e de liquid-glass.css.
+
+  Liquid Glass (spec docs/superpowers/specs/2026-09-27-liquid-glass-sistema.md, 4.2 e 7.1):
+  o esquema "default" (antes branco) fica sobre a página branca; "ink" vira o campo noite
+  (.lg-field--noite, posto na marcação por snippets/paginas-blog-surface.liquid).
+
+  Etapa 8e, leva C (03/10/2026): "surface" e "surface-2" (antes #F5F9FB e #EAF2F6) eram o painel de vidro
+  de conteúdo da v2 (.glass-layer .glass--panel). Conteúdo é sólido e o vidro fica na navegação e nos
+  controles, então os dois esquemas valem como "default" (o snippet não põe mais classe nenhuma). O
+  recipiente claro do conteúdo é o bloco sólido #ECF3F9 (.pb-bloco, abaixo), e o topo das páginas é o
+  campo claro de ponta a ponta (.pb-topo, abaixo), a mesma linguagem das páginas de ajuda (leva B).
+*/
+
+/* ---------- Esquemas de cor ---------- */
+
+/* Cópia do texto de apoio para fundo claro, resolvida em :root, para cartões brancos
+   dentro de uma seção azul-marinho (onde --color-text-muted é redefinido). */
+:root {
+  --pb-text-muted-light: var(--color-text-muted);
+}
+
+/* default, surface e surface-2 não pintam fundo: a página branca aparece (etapa 8e, leva C: o painel
+   de vidro da v2 que "surface" e "surface-2" ligavam saiu; ver snippets/paginas-blog-surface.liquid). */
+
+/* Campo noite (#081C2D, BEACON da logo; .lg-field--noite na marcação). O anel de foco fica
+   em acento (8,34:1 no pior ponto do campo), inclusive no contorno do anel duplo. */
+.pb-scheme--ink {
+  --color-text: var(--color-on-dark);
+  --color-text-muted: var(--color-on-dark-muted);
+  --focus-outline: 3px solid var(--color-accent);
+  --lg-focus-outer: var(--color-accent);
+
+  background: var(--lg-field-noite, var(--color-ink));
+  color: var(--color-text);
+}
+
+.pb-scheme--ink a:not(.button),
+.pb-scheme--ink .rte a {
+  color: var(--color-on-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pb-scheme--ink a:not(.button):hover {
+  color: var(--color-accent);
+}
+
+.pb-scheme--ink .chip {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+/* ---------- Bloco claro sólido (redesenho v3) ---------- */
+
+/* Etapa 8e, leva B (03/10/2026): o cartão das páginas de ajuda, das colunas em cartão, das perguntas
+   frequentes em grupos e do contato é um bloco sólido no tom do fundo das fotos (#ECF3F9), sem borda e sem
+   sombra, como o card de produto e as sugestões do carrinho. Antes era cartão de vidro de conteúdo da v2
+   (.glass .glass--card: branco a 0,66, fio, luz e sombra de cartão). Conteúdo é sólido; o vidro fica nos
+   controles. O raio vem de cada peça (--radius-card ou --radius-tile). Contraste sobre o bloco: tinta
+   15,44:1 e apoio #566472 5,42:1. */
+.pb-bloco {
+  background-color: var(--lg-field-claro, #ECF3F9);
+  border: 0;
+  box-shadow: none;
+}
+
+/* Contraste aumentado (spec 9.3): o bloco ganha um anel de tinta; cores forçadas: o fundo some, então a
+   borda mantém o contorno. */
+@media (prefers-contrast: more) {
+  .pb-bloco {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .pb-bloco {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ---------- Topo em campo claro (redesenho v3, leva C) ---------- */
+
+/* Etapa 8e, leva C (03/10/2026): o topo das páginas de texto (main-page), do blog (main-blog), do rastreio
+   (order-tracking) e do destaque da página (page-hero) é o da coleção, da busca e da ajuda. O campo claro
+   (#ECF3F9, o tom do fundo das fotos) vai de ponta a ponta, pintado no invólucro do topo, e encosta no do
+   cabeçalho (section-header.css) sem emenda. Dentro: trilha única (snippet colecao-breadcrumb) com 26 px de
+   recuo em cima (18 px até 760 px), linha pequena em #8A0503 (.v3-eyebrow de base.css), título de 56 px
+   (36 px até 760 px) em peso 600, linha 1,05 e espaçamento -0,028em, e texto de apoio de 17 px com linha
+   de 25 px. Os seletores levam duas classes para não perderem para .pb-pad--* nem para a ordem das folhas
+   (cada seção põe a sua <link>). Contraste sobre o campo: tinta 15,44:1, apoio #566472 5,42:1 e a linha
+   pequena 8,92:1. */
+.pb-topo {
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.pb-topo .pb-topo__trilha {
+  margin-bottom: 0;
+  padding-top: 26px;
+}
+
+.pb-topo .pb-topo__corpo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  padding-block: 12px 28px;
+}
+
+.pb-topo .pb-topo__titulo {
+  margin: 0;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  text-wrap: balance;
+}
+
+.pb-topo .pb-topo__texto {
+  max-width: 560px;
+  color: var(--color-text-muted);
+  font-size: 17px;
+  line-height: calc(25 / 17);
+}
+
+.pb-topo .pb-topo__texto > :first-child {
+  margin-top: 0;
+}
+
+.pb-topo .pb-topo__texto > :last-child {
+  margin-bottom: 0;
+}
+
+@media screen and (min-width: 761px) {
+  .pb-topo .pb-topo__titulo {
+    font-size: 56px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .pb-topo .pb-topo__trilha {
+    padding-top: 18px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .pb-topo .pb-topo__corpo {
+    padding-block: 22px 48px;
+  }
+}
+
+/* O campo claro do topo continua o do cabeçalho: nessas páginas não entra a bandeja clara de 16 px (12 px até
+   760 px) que a leva B põe sob a cápsula (section-header.css, item 5), senão o topo ficaria 16 px mais alto
+   que o das outras páginas. A regra mora aqui, e não na lista de classes do <body> do cabeçalho, para o
+   cabeçalho não mudar: qualquer página que ganhe um .pb-topo já nasce sem a bandeja. Navegador sem :has()
+   (Firefox antes da 121) mantém a bandeja, que tem a mesma cor do topo: só 16 px de campo a mais. */
+body:has(.main-content .pb-topo) .section-header {
+  padding-bottom: 0;
+}
+
+/* ---------- Espaçamento vertical ---------- */
+
+.pb-pad--none {
+  padding-block: 0;
+}
+
+.pb-pad--small {
+  padding-block: 24px;
+}
+
+.pb-pad--normal {
+  padding-block: var(--section-spacing);
+}
+
+.pb-pad--large {
+  padding-block: 56px;
+}
+
+@media screen and (min-width: 990px) {
+  .pb-pad--small {
+    padding-block: 32px;
+  }
+
+  .pb-pad--normal {
+    padding-block: var(--section-spacing-desktop);
+  }
+
+  .pb-pad--large {
+    padding-block: 96px;
+  }
+}
+
+/* Última seção da página (etapa 8e, item 19): sem recuo de baixo. O vão até o rodapé já é o da margem de
+   104 px (68 px até 760 px) do .main-content::after (section-footer.css); o recuo de baixo da última seção
+   somava a ele (32, 64 ou 96 px) e dava 141 a 199 px (97 a 124 px no celular) em vez de 104 (68). Só vale
+   para seção sem fundo próprio: a em campo noite (ink) precisa do recuo para o conteúdo não encostar na
+   borda do fundo; o topo das páginas de ajuda (.ajuda-topo) é um campo claro com recuo próprio. Na leva C
+   o painel de vidro (surface e surface-2) saiu, e os dois esquemas entram na regra como o "default". */
+.main-content > .shopify-section:last-child > :is(.pb-pad--small, .pb-pad--normal, .pb-pad--large):not(.pb-scheme--ink, .ajuda-topo) {
+  padding-bottom: 0;
+}
+
+/* Ritmo das páginas da leva C (etapa 8e): o vão entre as seções é o --section-gap (104 px; 68 px no
+   celular), como margem do próprio bloco de cada seção; as margens de seções vizinhas se fundem num vão
+   só e, na última, a margem de baixo se funde com a do .main-content::after (vão de 104 px até o rodapé).
+   É o mesmo desenho das páginas de ajuda (ajuda-secoes.css, "Ritmo das páginas de ajuda"). Seção sem fundo
+   próprio troca o recuo pela margem; a faixa em campo noite (ink, com ou sem foto) mantém o recuo de dentro
+   e ganha a margem de fora. A primeira seção (o topo, em campo claro) fica de fora.
+   Modelos: Sobre nós (quem-somos), Qualidade e segurança e os de formulário (contact, contato, prescritores e
+   revendedor). O rastreio tem uma seção só (topo e bloco dentro dela, vão em section-order-tracking.css). A
+   classe vem do <body> (layout/theme.liquid). */
+:is(
+  .template-suffix-quem-somos,
+  .template-suffix-qualidade,
+  .template-suffix-contact,
+  .template-suffix-contato,
+  .template-suffix-prescritores,
+  .template-suffix-revendedor
+) .main-content > .shopify-section:not(:first-child) > [class*="pb-pad--"] {
+  margin-block: var(--section-gap);
+}
+
+:is(
+  .template-suffix-quem-somos,
+  .template-suffix-qualidade,
+  .template-suffix-contact,
+  .template-suffix-contato,
+  .template-suffix-prescritores,
+  .template-suffix-revendedor
+) .main-content > .shopify-section:not(:first-child) > [class*="pb-pad--"]:not(.pb-scheme--ink) {
+  padding-block: 0;
+}
+
+/* ---------- Abertura de seção (selo, título, texto) ---------- */
+
+.pb-intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 760px;
+  margin-bottom: 24px;
+}
+
+.pb-intro--center {
+  align-items: center;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.pb-intro:last-child {
+  margin-bottom: 0;
+}
+
+.pb-intro__eyebrow {
+  align-self: inherit;
+}
+
+.pb-intro--center .pb-intro__eyebrow {
+  align-self: center;
+}
+
+.pb-intro__text {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+@media screen and (min-width: 990px) {
+  .pb-intro {
+    margin-bottom: 36px;
+  }
+
+  .pb-intro__text {
+    font-size: 16px;
+  }
+}
+
+/* Botões em linha */
+.pb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.pb-intro--center .pb-actions,
+.pb-actions--center {
+  justify-content: center;
+}
+
+/* ---------- Mensagens de formulário ---------- */
+
+.pb-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-input);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.pb-status:focus {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+.pb-status .icon {
+  margin-top: 1px;
+}
+
+.pb-status__title {
+  font-weight: 700;
+}
+
+.pb-status__list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.pb-status__list a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.pb-status--success {
+  border-color: var(--color-chip-text);
+  background: var(--color-chip-bg);
+  color: var(--color-chip-text);
+}
+
+/* Erro: borda #C2410C (componente, 3:1) e texto #9B3915 (spec D30): 6,947:1 no branco
+   a 0,90 sobre a névoa e 6,801:1 sobre o maré-2 [calculado]; o #C2410C como texto reprova no
+   painel (4,393:1). */
+.pb-status--error {
+  border-color: var(--color-offer);
+  background: var(--lg-fill-white-90, var(--color-background));
+  color: var(--lg-error-text, var(--color-offer));
+}
+
+/* ---------- Grade de campos ---------- */
+
+.pb-form__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+}
+
+.pb-form__grid .field + .field {
+  margin-top: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .pb-form__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pb-form__field--full {
+    grid-column: 1 / -1;
+  }
+}
+
+.pb-form__required {
+  color: var(--lg-error-text, var(--color-offer));
+}
+
+.pb-scheme--ink .pb-form__required {
+  color: var(--color-accent);
+}
+
+.pb-form__note {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.pb-form__submit {
+  margin-top: 20px;
+}
+
+.pb-form .checkbox {
+  align-items: flex-start;
+  line-height: 1.45;
+}
+
+.pb-form .checkbox input {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Campos sobre fundo escuro mantêm fundo branco e texto azul-marinho. */
+.pb-scheme--ink :where(input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="submit"]), select, textarea) {
+  border-color: var(--color-background);
+  color: var(--color-ink);
+}
+
+.pb-scheme--ink ::placeholder {
+  color: rgba(var(--color-ink-rgb), 0.7);
+}
+
+/* ---------- Trilha de navegação ---------- */
+
+/* A trilha é o snippet único do tema (snippets/colecao-breadcrumb via snippets/paginas-blog-breadcrumbs;
+   estilo em component-colecao-breadcrumb.css): 12 px, peso 400, texto de apoio, separador "/" e link de 44 px.
+   Etapa 8e, item 17: saíram daqui as regras de .pb-breadcrumbs (13 px, peso 600, "Início" em tinta). Aqui só o
+   espaço até o conteúdo e a cor sobre campo noite. */
+.pb-trilha {
+  margin-bottom: 16px;
+}
+
+.pb-scheme--ink .colecao-breadcrumb__link:hover {
+  color: var(--color-on-dark);
+}
+
+/* ---------- Paginação ---------- */
+
+.pb-pagination {
+  margin-top: 40px;
+}
+
+.pb-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Paginação (spec 8.6): cápsulas de 44 px; página atual em preenchimento ink com texto
+   branco 800 (17,680:1); demais transparentes com texto ink; no hover aparece o vidro fino
+   (0,70); pressionado com escala 0,97. Anterior e próxima (a primeira e a última da lista,
+   quando são links) em vidro fino sem desfoque. */
+.pb-pagination__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    box-shadow var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.pb-pagination__item--arrow,
+a.pb-pagination__item:hover {
+  border-color: var(--lg-rim-light-color, var(--color-line));
+  background-color: var(--glass-thin-bg-fallback, var(--color-background));
+  background-image: var(--lg-sheen-functional, none);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .pb-pagination__item--arrow {
+    background-color: var(--glass-thin-bg, var(--color-background));
+  }
+
+  a.pb-pagination__item:hover {
+    background-color: var(--glass-thin-bg-hover, var(--color-background));
+    background-image: var(--lg-sheen-functional-hover, none);
+  }
+}
+
+a.pb-pagination__item:active {
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+a.pb-pagination__item:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.pb-pagination__item--current {
+  border-color: transparent;
+  background: var(--color-ink);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  color: var(--color-on-dark);
+  font-weight: var(--font-heading-weight);
+}
+
+.pb-pagination__item--gap {
+  border-color: transparent;
+  min-width: 24px;
+  padding: 0;
+}
+
+/* ---------- Mídia ---------- */
+
+.pb-media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card-lg);
+  background: var(--color-photo-bg);
+}
+
+.pb-media > img,
+.pb-media > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pb-media--square {
+  aspect-ratio: 1 / 1;
+}
+
+.pb-media--portrait {
+  aspect-ratio: 4 / 5;
+}
+
+.pb-media--landscape {
+  aspect-ratio: 3 / 2;
+}
+
+.pb-media--wide {
+  aspect-ratio: 16 / 9;
+}
+
+.pb-media--adapt > img {
+  height: auto;
+}
+
+/* Cantos assimétricos (raio grande em dois cantos opostos), como nas páginas institucionais da referência. */
+.pb-media--asymmetric {
+  border-radius: var(--radius-card-lg) 64px var(--radius-card-lg) 64px;
+}
+
+.pb-media .placeholder-svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Transparência reduzida (spec 9.2): cada painel volta à sua cor chapada (o .glass--panel já
+   faz isso pelo --glass-solid) e os preenchimentos translúcidos ficam brancos. */
+@media (prefers-reduced-transparency: reduce) {
+  .pb-status--error,
+  .pb-pagination__item--arrow,
+  a.pb-pagination__item:hover {
+    background-color: #FFFFFF;
+    background-image: none;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): branco sólido com borda ink, sem sombra nem luz. */
+@media (prefers-contrast: more) {
+  .pb-pagination__item--arrow,
+  a.pb-pagination__item:hover {
+    border-color: var(--color-ink);
+    background-color: #FFFFFF;
+    background-image: none;
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+}
+
+@media (forced-colors: active) {
+  .pb-status,
+  .pb-pagination__item {
+    border: 1px solid CanvasText;
+  }
+}

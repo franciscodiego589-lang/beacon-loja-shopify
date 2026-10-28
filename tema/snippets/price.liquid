@@ -1,0 +1,102 @@
+{%- comment -%}
+  Bloco de preço. Todos os valores vêm da variante (nunca do código).
+  Parâmetros:
+  - product: produto (usado quando variant não é passado; mostra o menor preço e "a partir de" se os preços variam)
+  - variant: variante específica (opcional; tem prioridade sobre product)
+  - show_from: mostra "a partir de" quando o preço varia (padrão true)
+  - show_installments: mostra o parcelamento sem juros (padrão true; depende também do ajuste global)
+  - show_badge: mostra o selo "% OFF" quando há preço comparativo (padrão true)
+  - show_sold_out: mostra o texto "Esgotado" quando indisponível (padrão false)
+  - size: 'sm', 'md' (padrão) ou 'lg'
+  - class: classe extra (opcional)
+
+  O elemento raiz é <span class="price"> (conteúdo de frase), para poder ficar dentro de <label>
+  (ex.: kit-card). O layout em bloco/flex vem do CSS.
+
+  Cálculos:
+  - % OFF = (preço comparativo - preço) × 100 ÷ preço comparativo, arredondado para baixo.
+  - Parcela = preço ÷ nº de parcelas, arredondada para cima em centavos.
+  - Nº de parcelas = ajuste "Número de parcelas sem juros", limitado pelo valor mínimo da parcela.
+{%- endcomment -%}
+{%- liquid
+  assign price_variant = variant
+  assign price_varies = false
+  assign price_available = true
+
+  if price_variant == blank and product != blank
+    assign price_variant = product.selected_or_first_available_variant
+    if product.price_varies
+      assign price_varies = true
+      for candidate in product.variants
+        if candidate.price == product.price_min
+          assign price_variant = candidate
+          break
+        endif
+      endfor
+    endif
+    assign price_available = product.available
+  elsif price_variant != blank
+    assign price_available = price_variant.available
+  endif
+
+  assign price_size = 'md'
+  case size
+    when 'sm', 'md', 'lg'
+      assign price_size = size
+  endcase
+-%}
+{%- if price_variant != blank -%}
+  {%- liquid
+    assign current_price = price_variant.price
+    assign compare_price = price_variant.compare_at_price | default: 0
+    assign on_sale = false
+    if compare_price > current_price
+      assign on_sale = true
+      assign discount_percent = compare_price | minus: current_price | times: 100 | divided_by: compare_price
+    endif
+
+    assign installments = 0
+    if settings.installments_enabled and show_installments != false
+      assign installments = settings.installments_count | plus: 0
+      assign installment_min = settings.installments_min_value | plus: 0
+      if installment_min > 0
+        assign installments_by_min = current_price | divided_by: installment_min
+        if installments_by_min < installments
+          assign installments = installments_by_min
+        endif
+      endif
+      if installments > 1
+        assign installment_value = current_price | plus: installments | minus: 1 | divided_by: installments
+        assign installment_money = installment_value | money
+      endif
+    endif
+  -%}
+  <span class="price price--{{ price_size }}{% if on_sale %} price--on-sale{% endif %}{% unless price_available %} price--sold-out{% endunless %}{% if class != blank %} {{ class }}{% endif %}" data-price data-installments-count="{{ settings.installments_count }}" data-installments-min="{{ settings.installments_min_value }}">
+    {%- if price_varies and show_from != false -%}
+      <span class="price__from">{{ 'fundacao.price.from' | t }}</span>
+    {%- endif -%}
+    {%- if on_sale -%}
+      <span class="price__compare">
+        <span class="visually-hidden">{{ 'fundacao.price.regular' | t }}</span>
+        <s data-price-compare>{{ compare_price | money }}</s>
+      </span>
+    {%- endif -%}
+    <span class="price__main">
+      {%- if on_sale -%}
+        <span class="visually-hidden">{{ 'fundacao.price.sale' | t }}</span>
+      {%- endif -%}
+      <span class="price__current" data-price-current>{{ current_price | money }}</span>
+      {%- if on_sale and show_badge != false and discount_percent > 0 -%}
+        <span class="price__badge" data-price-badge>{{ 'fundacao.price.percent_off' | t: percent: discount_percent }}</span>
+      {%- endif -%}
+    </span>
+    {%- if installments > 1 -%}
+      <span class="price__installments" data-price-installments>
+        {{- 'fundacao.price.installments' | t: parcelas: installments, amount: installment_money -}}
+      </span>
+    {%- endif -%}
+    {%- if show_sold_out and price_available == false -%}
+      <span class="price__sold-out">{{ 'fundacao.price.sold_out' | t }}</span>
+    {%- endif -%}
+  </span>
+{%- endif -%}

@@ -1,0 +1,264 @@
+/*
+  Beacon Labs · seção Vídeos de clientes (sections/video-reels.liquid)
+  Cards 9:16 em azul-petróleo, com o vídeo carregado só no clique (video-reel.js).
+  O <dialog> abre centralizado, com o player em 9:16 e fundo escuro.
+
+  Liquid Glass (spec 8.3 e 8.5):
+  - card com raio 24 (20 no celular) e fundo #1E3F66 enquanto o pôster carrega;
+  - rótulo do topo em cápsula de vidro escuro sem desfoque (.glass .glass--dark), texto
+    branco sólido 12 px 700 (antes: branco a 85% sem fundo, sobre o pôster);
+  - play: círculo de 56 px (48 no celular) em vidro escuro sem desfoque, ícone branco;
+    hover do card: alfa 0,80 e escala 1,04; pressionado: escala 0,96;
+  - legenda: vidro escuro sem desfoque com recuo de 8 px e raio concêntrico (24 − 8 = 16;
+    no celular 20 − 8 = 12), nome branco 18 px 700 (16 no celular);
+  - setas (só computador): círculo de 56 px em vidro fino COM desfoque, sobre os pôsteres,
+    centradas no trilho; ícone ink (6,206:1 no pior caso livre);
+  - modal: painel ink sólido, raio 32 (24), sobre o escurecimento de 0,55; foco branco
+    dentro dele (liquid-glass.css, .video-reel__dialog).
+  Contraste no pior caso livre (vidro escuro a 0,72 sobre qualquer pôster): branco 7,187:1.
+  O vidro escuro de conteúdo não tem desfoque; nenhuma peça daqui anima opacidade.
+*/
+
+.video-reels__head {
+  margin-bottom: 0;
+}
+
+.video-reels__nav {
+  display: none;
+  gap: 8px;
+}
+
+/* O trilho ocupa a largura toda da página (até 1440 px) com o recuo lateral como padding,
+   para o 1º card alinhar com o título e os outros correrem até a borda. O scroll-padding faz
+   o scroll-snap respeitar esse recuo. (Antes, o padding: 0 do home-carousel.css, repetido
+   mais abaixo na página, zerava o recuo e os cards colavam na borda da tela.) */
+/* padding-block de 8 px com margin-block de −4 px: mesma altura de antes (4 px em cima e
+   embaixo) e espaço para o anel de foco do card (spec 5.10). */
+.video-reels__track {
+  gap: 12px;
+  grid-auto-columns: 146px;
+  padding: 8px var(--page-gutter);
+  margin-block: -4px;
+  scroll-padding-inline: var(--page-gutter);
+}
+
+.video-reel {
+  display: block;
+  height: 100%;
+}
+
+.video-reel__open {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  padding: 0;
+  border: 0;
+  border-radius: var(--lg-radius-box, var(--radius-card-lg));
+  background: var(--color-petroleo);
+  color: var(--color-on-dark);
+  overflow: hidden;
+  cursor: pointer;
+  text-align: left;
+}
+
+.video-reel__poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.85;
+}
+
+/* Rótulo: cápsula de vidro escuro (fundo, borda e luz vêm de .glass .glass--dark). */
+.video-reel__eyebrow {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 1;
+  max-width: calc(100% - 24px);
+  padding: 4px 8px;
+  border-radius: var(--lg-radius-capsule, 999px);
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 700;
+  color: var(--lg-on-dark, #FFFFFF);
+  --glass-shadow: var(--lg-shadow-none); /* sobreposição estática: só a luz de borda (maquete) */
+}
+
+.video-reel__play {
+  position: absolute;
+  top: calc(50% - 24px);
+  left: calc(50% - 24px);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--lg-radius-capsule, 999px);
+  color: var(--lg-on-dark, #FFFFFF);
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+@media (hover: hover) {
+  .video-reel__open:hover .video-reel__play {
+    --glass-bg: var(--glass-dark-bg-hover);
+    --glass-bg-fallback: var(--glass-dark-bg-fallback-hover);
+    transform: scale(1.04);
+  }
+}
+
+.video-reel__open:active .video-reel__play {
+  --glass-bg: var(--glass-dark-bg-press);
+  --glass-bg-fallback: var(--glass-dark-bg-press);
+  transform: scale(0.96);
+}
+
+/* Legenda: vidro escuro com recuo de 8 px e raio concêntrico ao do card. */
+.video-reel__caption {
+  position: absolute;
+  left: var(--lg-legend-inset, 8px);
+  right: var(--lg-legend-inset, 8px);
+  bottom: var(--lg-legend-inset, 8px);
+  z-index: 1;
+  padding: 10px;
+  border-radius: calc(var(--lg-radius-box, 20px) - var(--lg-legend-inset, 8px));
+  color: var(--lg-on-dark, #FFFFFF);
+  font-family: var(--font-heading-family);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.25;
+  overflow-wrap: break-word;
+  --glass-shadow: var(--lg-shadow-none);
+}
+
+.video-reels__item--empty {
+  display: flex;
+  align-items: center;
+  width: 220px;
+}
+
+/* ---------- Modal do vídeo ---------- */
+
+.video-reel__dialog {
+  width: min(92vw, 420px);
+  padding: 16px;
+  border: 0;
+  border-radius: var(--lg-radius-sheet, var(--radius-card-lg));
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+}
+
+.video-reel__dialog::backdrop {
+  background: var(--overlay);
+}
+
+.video-reel__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  border-color: transparent;
+  background: rgba(0, 24, 56, 0.6);
+  color: var(--color-on-dark);
+}
+
+.video-reel__close:hover {
+  background: rgba(0, 24, 56, 0.8);
+}
+
+.video-reel__player {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: var(--radius-media);
+  overflow: hidden;
+  background: #000;
+}
+
+.video-reel__player video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+}
+
+.video-reel__product-link {
+  display: inline-flex;
+  margin-top: 12px;
+  color: var(--color-on-dark);
+}
+
+@media screen and (min-width: 750px) {
+  .video-reels__track {
+    grid-auto-columns: 180px;
+    padding-inline: var(--page-gutter-tablet);
+    scroll-padding-inline: var(--page-gutter-tablet);
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .video-reel__play {
+    top: calc(50% - 28px);
+    left: calc(50% - 28px);
+    width: 56px;
+    height: 56px;
+  }
+
+  .video-reel__caption {
+    font-size: 18px;
+  }
+}
+
+/* Setas sobre os pôsteres (maquete Home-Desktop): o <carousel-slider> é a referência. O
+   card começa a 76 px do topo dele (título com altura mínima de 44 px e margem de 28 em
+   base.css, .section-heading, mais os 4 px do trilho) e mede 200 × 16/9 px; as setas de
+   56 px ficam centradas no card. Posicionadas por top e left/right (não por transform), para
+   o pressionado (escala 0,97) não as deslocar. */
+@media screen and (min-width: 990px) {
+  /* Mesma largura máxima do trilho (.page-width), para as setas acompanharem os cards em
+     janelas maiores que 1440 px. */
+  .video-reels__carousel {
+    position: relative;
+    max-width: var(--page-max-width, 1440px);
+    margin-inline: auto;
+  }
+
+  .video-reels__nav {
+    display: contents;
+  }
+
+  .video-reels__arrow {
+    position: absolute;
+    top: calc(76px + 200px * 16 / 9 / 2 - 28px);
+    z-index: 2;
+    width: 56px;
+    height: 56px;
+  }
+
+  .video-reels__arrow--prev {
+    left: 16px;
+  }
+
+  .video-reels__arrow--next {
+    right: 24px;
+  }
+
+  .video-reels__track {
+    grid-auto-columns: 200px;
+    padding-inline: var(--page-gutter-desktop);
+    scroll-padding-inline: var(--page-gutter-desktop);
+  }
+}
+
+/* Movimento reduzido (spec 9.5): o play não cresce nem encolhe; a troca de alfa continua. */
+@media (prefers-reduced-motion: reduce) {
+  .video-reel__open:hover .video-reel__play,
+  .video-reel__open:active .video-reel__play {
+    transform: none;
+  }
+}

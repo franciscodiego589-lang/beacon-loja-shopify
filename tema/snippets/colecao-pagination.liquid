@@ -1,0 +1,65 @@
+{%- comment -%}
+  Paginação acessível da área coleção (grade de produtos e lista de coleções).
+  Parâmetros:
+  - paginate: objeto paginate do bloco {% paginate %} (obrigatório)
+  - facets: true para que o <facet-filters> troque a página sem recarregar (data-facets-link)
+  - class: classe extra (opcional)
+
+  Página atual: <span aria-current="page">. Anterior e próxima: links com texto para leitor de tela;
+  sem página anterior ou próxima, a seta fica desenhada e escondida do leitor de tela.
+  Os endereços vêm da Shopify (paginate.parts, paginate.previous, paginate.next) e já mantêm
+  filtros e ordenação.
+  Estilo: assets/component-colecao-pagination.css.
+{%- endcomment -%}
+{%- if paginate.pages > 1 -%}
+  {%- assign pagination_current = paginate.current_page | append: '' -%}
+  <nav class="colecao-pagination{% if class != blank %} {{ class }}{% endif %}" aria-label="{{ 'colecao.pagination.label' | t }}">
+    <ul class="colecao-pagination__list" role="list">
+      <li class="colecao-pagination__item">
+        {%- if paginate.previous -%}
+          <a href="{{ paginate.previous.url | escape }}" class="colecao-pagination__arrow"{% if facets %} data-facets-link data-facets-scroll{% endif %}>
+            {%- render 'icon', name: 'chevron-left', size: 20 -%}
+            <span class="visually-hidden">{{ 'colecao.pagination.previous' | t }}</span>
+          </a>
+        {%- else -%}
+          <span class="colecao-pagination__arrow colecao-pagination__arrow--disabled" aria-hidden="true">
+            {%- render 'icon', name: 'chevron-left', size: 20 -%}
+          </span>
+        {%- endif -%}
+      </li>
+      {%- for part in paginate.parts -%}
+        {%- if part.is_link -%}
+          <li class="colecao-pagination__item">
+            <a href="{{ part.url | escape }}" class="colecao-pagination__page"{% if facets %} data-facets-link data-facets-scroll{% endif %}>
+              <span class="visually-hidden">{{ 'colecao.pagination.page' | t }}</span>
+              {{ part.title }}
+            </a>
+          </li>
+        {%- elsif part.title == paginate.current_page or part.title == pagination_current -%}
+          <li class="colecao-pagination__item">
+            <span class="colecao-pagination__page colecao-pagination__page--current" aria-current="page">
+              <span class="visually-hidden">{{ 'colecao.pagination.page' | t }}</span>
+              {{ part.title }}
+            </span>
+          </li>
+        {%- else -%}
+          <li class="colecao-pagination__item" aria-hidden="true">
+            <span class="colecao-pagination__gap">{{ part.title }}</span>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+      <li class="colecao-pagination__item">
+        {%- if paginate.next -%}
+          <a href="{{ paginate.next.url | escape }}" class="colecao-pagination__arrow"{% if facets %} data-facets-link data-facets-scroll{% endif %}>
+            {%- render 'icon', name: 'chevron-right', size: 20 -%}
+            <span class="visually-hidden">{{ 'colecao.pagination.next' | t }}</span>
+          </a>
+        {%- else -%}
+          <span class="colecao-pagination__arrow colecao-pagination__arrow--disabled" aria-hidden="true">
+            {%- render 'icon', name: 'chevron-right', size: 20 -%}
+          </span>
+        {%- endif -%}
+      </li>
+    </ul>
+  </nav>
+{%- endif -%}

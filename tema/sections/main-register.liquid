@@ -1,0 +1,210 @@
+{{ 'conta-base.css' | asset_url | stylesheet_tag }}
+{{ 'conta-auth.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-register.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'conta-password-field.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Cadastro do cliente (template customers/register, contas de cliente legadas).
+  Formulário create_customer conforme a documentação da Shopify: customer[first_name],
+  customer[last_name], customer[email] e customer[password].
+  A documentação não traz campos de CPF, data de nascimento, gênero, confirmação de senha
+  nem aceite de newsletter para este formulário; por isso eles não entram aqui.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_image = section.settings.image
+  assign auth_class = 'conta-auth'
+  if section.settings.show_image
+    if section_image != blank
+      assign auth_class = auth_class | append: ' conta-auth--has-image'
+    else
+      assign auth_class = auth_class | append: ' conta-auth--placeholder'
+    endif
+    if section.settings.image_position == 'left'
+      assign auth_class = auth_class | append: ' conta-auth--media-left'
+    endif
+  else
+    assign auth_class = auth_class | append: ' conta-auth--no-media'
+  endif
+
+  assign errors_id = 'RegisterErrors-' | append: section.id
+-%}
+
+<div class="{{ auth_class }}">
+  {%- if section.settings.show_image -%}
+    {%- render 'conta-auth-media', image: section_image -%}
+  {%- endif -%}
+
+  <div class="conta-auth__body">
+    <div class="conta-auth__card conta-register glass glass--card">
+      <a class="conta-back" href="{{ routes.account_login_url }}">
+        {%- render 'icon', name: 'arrow-left', size: 18 -%}
+        <span>{{ 'conta.general.back' | t }}</span>
+      </a>
+
+      {%- form 'create_customer', class: 'conta-auth__form conta-register__form' -%}
+        <h1 class="conta-auth__title">{{ 'conta.register.title' | t }}</h1>
+        <p class="conta-auth__text">{{ 'conta.register.subtitle' | t }}</p>
+
+        {%- render 'conta-form-errors', form: form, id: errors_id -%}
+
+        <p class="conta-note">{{ 'conta.general.required_note' | t }}</p>
+
+        <div class="conta-register__names">
+          <div class="field">
+            <label class="field__label" for="RegisterFirstName-{{ section.id }}">
+              {{- 'conta.register.first_name' | t }} <span class="conta-required" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="text"
+              id="RegisterFirstName-{{ section.id }}"
+              name="customer[first_name]"
+              value="{{ form.first_name | escape }}"
+              autocomplete="given-name"
+              required
+              {% if form.errors contains 'first_name' %}aria-invalid="true" aria-describedby="{{ errors_id }}"{% endif %}
+            >
+          </div>
+          <div class="field">
+            <label class="field__label" for="RegisterLastName-{{ section.id }}">
+              {{- 'conta.register.last_name' | t }} <span class="conta-required" aria-hidden="true">*</span>
+            </label>
+            <input
+              type="text"
+              id="RegisterLastName-{{ section.id }}"
+              name="customer[last_name]"
+              value="{{ form.last_name | escape }}"
+              autocomplete="family-name"
+              required
+              {% if form.errors contains 'last_name' %}aria-invalid="true" aria-describedby="{{ errors_id }}"{% endif %}
+            >
+          </div>
+        </div>
+
+        <div class="field conta-field">
+          <label class="field__label" for="RegisterEmail-{{ section.id }}">
+            {{- 'conta.register.email' | t }} <span class="conta-required" aria-hidden="true">*</span>
+          </label>
+          <input
+            type="email"
+            id="RegisterEmail-{{ section.id }}"
+            name="customer[email]"
+            value="{{ form.email | escape }}"
+            autocomplete="email"
+            autocapitalize="off"
+            spellcheck="false"
+            required
+            {% if form.errors contains 'email' %}aria-invalid="true" aria-describedby="{{ errors_id }}"{% endif %}
+          >
+        </div>
+
+        {%- liquid
+          assign password_invalid = false
+          if form.errors contains 'password'
+            assign password_invalid = true
+          endif
+          assign password_id = 'RegisterPassword-' | append: section.id
+          assign password_label = 'conta.register.password' | t
+          render 'conta-password-field', id: password_id, name: 'customer[password]', label: password_label, autocomplete: 'new-password', required: true, invalid: password_invalid, describedby: errors_id
+        -%}
+
+        <div class="conta-auth__actions">
+          <button type="submit" class="button button--primary button--full button--large">
+            {{- 'conta.register.submit' | t -}}
+          </button>
+        </div>
+      {%- endform -%}
+
+      <p class="conta-divider">{{ 'conta.register.have_account' | t }}</p>
+      <a class="button button--secondary button--full" href="{{ routes.account_login_url }}">
+        {{- 'conta.register.login' | t -}}
+      </a>
+
+      <div class="conta-auth__blocks">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when '@app' -%}
+              {% render block %}
+            {%- when 'text' -%}
+              {%- if block.settings.text != blank -%}
+                <div class="rte conta-auth__block-text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+              {%- endif -%}
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Cadastro do cliente",
+  "tag": "section",
+  "class": "section-main-register",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["customers/register"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Tela de cadastro das contas de cliente legadas. Os textos ficam nas traduções do tema (área conta)."
+    },
+    {
+      "type": "header",
+      "content": "Imagem"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Mostrar imagem",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagem lateral",
+      "info": "Sugestão: 1440 × 1800 px. Sem imagem, o computador mostra um espaço reservado e o celular esconde a faixa."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Posição da imagem no computador",
+      "options": [
+        {
+          "value": "right",
+          "label": "Direita"
+        },
+        {
+          "value": "left",
+          "label": "Esquerda"
+        }
+      ],
+      "default": "right"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "text",
+      "name": "Texto",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texto",
+          "info": "Use para avisos curtos, como o link da política de privacidade."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Cadastro do cliente"
+    }
+  ]
+}
+{% endschema %}

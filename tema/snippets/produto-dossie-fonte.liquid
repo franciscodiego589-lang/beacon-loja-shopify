@@ -1,0 +1,57 @@
+{%- comment -%}
+  Área produto. Linha "Fonte" e "Consultado em" do dossiê e dos cartões de insumo
+  (snippets/produto-dossie e produto-dossie-insumo).
+  Parâmetros:
+  - fonte: texto da fonte (campo multi_line_text_field "fonte" do metaobjeto)
+  - data: data da consulta (campo "data_consulta", tipo date)
+
+  O campo date chega ao Liquid como texto de data ISO 8601, AAAA-MM-DD
+  (https://shopify.dev/docs/api/liquid/objects/metafield e
+  https://shopify.dev/docs/apps/build/metafields/list-of-data-types, lidos em 28/09/2026).
+  A data vira DD/MM/AAAA trocando a ordem das partes, sem conta de fuso horário, para o dia
+  mostrado ser sempre o dia gravado. Se o texto não tiver três partes, sai como está.
+  Nada aparece quando os dois campos estão vazios.
+
+  Data repetida (etapa 8e, item 15, 03/10/2026): quando o texto da fonte já traz a mesma data
+  (DD/MM/AAAA), por exemplo "..., consultada em 27/09/2026" em cada linha, o "Consultado em" não é
+  impresso, porque repetia a data sem ponto nem separação ("... consultada em 27/09/2026 Consultado
+  em 27/09/2026."). O cadastro da loja não foi reescrito. Data diferente da que está no texto
+  continua aparecendo.
+{%- endcomment -%}
+{%- if fonte != blank or data != blank -%}
+  {%- liquid
+    assign data_texto = ''
+    if data != blank
+      assign data_partes = data | append: '' | split: '-'
+      if data_partes.size == 3
+        assign data_texto = data_partes[2] | slice: 0, 2 | append: '/' | append: data_partes[1] | append: '/' | append: data_partes[0]
+      else
+        assign data_texto = data | append: ''
+      endif
+    endif
+
+    assign data_ja_no_texto = false
+    assign fonte_sem_ponto = false
+    if fonte != blank and data_texto != blank
+      assign fonte_texto = fonte | append: ''
+      if fonte_texto contains data_texto
+        assign data_ja_no_texto = true
+      endif
+      # Etapa 8e, leva B: texto que não termina em ponto, ponto de exclamação ou de interrogação ganha um
+      # ponto antes do "Consultado em" (sem ele, os dois ficavam colados). O cadastro não é reescrito.
+      assign fonte_ultimo = fonte_texto | strip | slice: -1
+      if fonte_ultimo != '.' and fonte_ultimo != '!' and fonte_ultimo != '?'
+        assign fonte_sem_ponto = true
+      endif
+    endif
+  -%}
+  <p class="produto-dossie__source">
+    {%- if fonte != blank -%}
+      <span class="produto-dossie__source-label">{{ 'produto.dossie.source' | t }}</span> {{ fonte | escape | newline_to_br }}
+    {%- endif -%}
+    {%- if data_texto != blank and data_ja_no_texto == false -%}
+      {%- if fonte != blank %}{% if fonte_sem_ponto %}.{% endif %} {% endif -%}
+      <span class="produto-dossie__source-date">{{ 'produto.dossie.consulted_on' | t: date: data_texto }}</span>
+    {%- endif -%}
+  </p>
+{%- endif -%}

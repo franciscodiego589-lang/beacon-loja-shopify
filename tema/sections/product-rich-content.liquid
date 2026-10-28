@@ -1,0 +1,458 @@
+{{ 'component-produto-nutrition.css' | asset_url | stylesheet_tag }}
+{{ 'section-product-rich-content.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Área produto. "Sobre o produto" na estrutura da maquete de 29/09/2026 (Produto-Desktop e
+  Produto-Mobile): quatro blocos, cada um com título, texto e uma imagem, alternando o lado da
+  imagem no computador (1º e 3º com a imagem à direita, 2º e 4º à esquerda; no celular a imagem
+  vem antes do título):
+  1. "O que é [nome]" (bloco de tipo "conteudo", o mesmo id de antes, para o template continuar
+     válido): o item "O que é" de beacon.conteudo e, abaixo, cada item "Sobre ..." com o próprio
+     título (é onde estão as alegações, com o texto literal do Anexo V da IN 28/2018). Um item
+     com título fora da lista abaixo também entra aqui, com o próprio título: nada é descartado.
+  2. "Como tomar [nome]": beacon.como_tomar (rich_text_field) e, ao lado dele, as caixas
+     "Composição" (item "Composição" de beacon.conteudo) e "Informação nutricional"
+     (beacon.tabela_nutricional, pelo snippet produto-nutrition-table).
+  3. "Quem pode usar [nome]": o público, que é o trecho de beacon.como_tomar antes dos dois
+     pontos (por exemplo "Adultos com 19 anos ou mais"; só entra quando esse trecho fala em
+     "anos"), e o item "Advertências" de beacon.conteudo, uma linha por advertência.
+  4. "Por que escolher [nome]": só um item de beacon.conteudo com título começando por
+     "Por que". Hoje nenhum produto tem esse item, então o bloco fica oculto (a maquete pede
+     laudos por lote, fabricação e matéria-prima, que ainda não têm dado).
+  Nenhum texto de produto é escrito aqui: tudo sai dos metafields, sem mudar palavra. O tema só
+  escreve os títulos dos blocos (ajuste "Título", editável) e o nome curto do produto
+  (snippets/produto-nome-curto). Texto em linhas: snippets/produto-conteudo-linhas.
+  Imagem de cada bloco: a de beacon.conteudo_imagens na mesma posição do item do bloco (O que
+  é, Advertências, Por que); sem ela, a imagem escolhida no ajuste do bloco. No "Como tomar" é
+  o contrário, para manter a foto já escolhida no template: primeiro o ajuste, depois a imagem
+  do item "Composição". Bloco sem dado não aparece; nenhum bloco com dado, a seção inteira não
+  aparece. A âncora padrão ("descricao") é a do atalho "Leia mais" de sections/main-product.
+{%- endcomment -%}
+{%- liquid
+  assign conteudo = product.metafields.beacon.conteudo.value
+  assign imagens = product.metafields.beacon.conteudo_imagens.value
+  assign como_tomar = product.metafields.beacon.como_tomar.value
+  # O filtro metafield_tag só aceita o metafield inteiro, não o .value (senão imprime "Liquid error").
+  assign como_tomar_campo = product.metafields.beacon.como_tomar
+  assign tabela = product.metafields.beacon.tabela_nutricional.value
+
+  capture nome_curto
+    render 'produto-nome-curto', product: product
+  endcapture
+  assign nome_curto = nome_curto | strip
+
+  # Posição (0 a n) de cada item de beacon.conteudo, entre vírgulas (",0,2,"), por título.
+  assign idx_oque = ','
+  assign idx_sobre = ','
+  assign idx_comp = ','
+  assign idx_adv = ','
+  assign idx_porque = ','
+  for item in conteudo
+    if item.titulo == blank and item.texto == blank
+      continue
+    endif
+    assign item_key = item.titulo | strip | downcase
+    assign item_head = item_key | slice: 0, 7
+    assign item_token = forloop.index0 | append: ','
+    if item_key == 'o que é'
+      assign idx_oque = idx_oque | append: item_token
+    elsif item_key == 'composição'
+      assign idx_comp = idx_comp | append: item_token
+    elsif item_key == 'advertências'
+      assign idx_adv = idx_adv | append: item_token
+    elsif item_head == 'por que'
+      assign idx_porque = idx_porque | append: item_token
+    else
+      assign idx_sobre = idx_sobre | append: item_token
+    endif
+  endfor
+
+  assign has_tabela = false
+  if tabela != blank and tabela.linhas != blank
+    assign has_tabela = true
+  endif
+
+  # Público: trecho de beacon.como_tomar antes dos dois pontos, só quando fala em "anos".
+  assign publico = ''
+  if como_tomar != blank
+    capture como_tomar_html
+      echo como_tomar_campo | metafield_tag
+    endcapture
+    assign como_tomar_text = como_tomar_html | strip_html | strip
+    if como_tomar_text contains ':'
+      assign publico_candidato = como_tomar_text | split: ':' | first | strip
+      if publico_candidato contains 'anos'
+        assign publico = publico_candidato
+      endif
+    endif
+  endif
+
+  assign has_oque = false
+  if idx_oque != ',' or idx_sobre != ','
+    assign has_oque = true
+  endif
+  assign has_como = false
+  if como_tomar != blank or idx_comp != ',' or has_tabela
+    assign has_como = true
+  endif
+  assign has_quem = false
+  if publico != blank or idx_adv != ','
+    assign has_quem = true
+  endif
+  assign has_porque = false
+  if idx_porque != ','
+    assign has_porque = true
+  endif
+
+  assign rich_has_content = false
+  for block in section.blocks
+    case block.type
+      when 'conteudo'
+        if has_oque
+          assign rich_has_content = true
+        endif
+      when 'como_tomar'
+        if has_como
+          assign rich_has_content = true
+        endif
+      when 'quem_pode_usar'
+        if has_quem
+          assign rich_has_content = true
+        endif
+      when 'por_que_escolher'
+        if has_porque
+          assign rich_has_content = true
+        endif
+    endcase
+  endfor
+-%}
+{%- if rich_has_content or request.design_mode -%}
+  <section class="product-rich-content section" id="{{ section.settings.anchor | default: 'descricao' | handle }}">
+    <div class="page-width">
+      <div class="rich-content__items">
+        {%- assign rc_position = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- liquid
+            assign rc_heading = block.settings.heading | strip
+            if rc_heading != blank and section.settings.append_name and nome_curto != blank
+              assign rc_heading = rc_heading | append: ' ' | append: nome_curto
+            endif
+            assign rc_body = ''
+            assign rc_image = block.settings.image
+            assign rc_inteira = false
+            # Nas gotas, a foto padrão de cápsulas não condiz com o produto: usa a foto da matéria-prima
+            # (metacampo beacon.imagem_insumo) e, sem ela, a foto do frasco.
+            if product.tags contains 'formato:gotas' and rc_image != blank
+              if product.metafields.beacon.imagem_insumo.value != blank
+                assign rc_image = product.metafields.beacon.imagem_insumo.value.preview_image
+              elsif product.featured_media != blank
+                # Foto do frasco: inteira (contain), sem o recorte em 4:3 que cortava a tampa e a base.
+                assign rc_image = product.featured_media.preview_image
+                assign rc_inteira = true
+              endif
+            endif
+            assign rc_item_index = ''
+            assign rc_empty_field = ''
+          -%}
+          {%- case block.type -%}
+            {%- when 'conteudo' -%}
+              {%- assign rc_empty_field = 'beacon.conteudo (O que é)' -%}
+              {%- if has_oque -%}
+                {%- liquid
+                  if idx_oque != ','
+                    assign rc_item_index = idx_oque | remove_first: ',' | split: ',' | first
+                  endif
+                -%}
+                {%- capture rc_body -%}
+                  {%- if rc_heading != blank -%}
+                    <h2 class="rich-content__title">{{ rc_heading | escape }}</h2>
+                  {%- endif -%}
+                  {%- for item in conteudo -%}
+                    {%- assign rc_token = ',' | append: forloop.index0 | append: ',' -%}
+                    {%- if idx_oque contains rc_token -%}
+                      <div class="rich-content__body rte">
+                        {%- render 'produto-conteudo-linhas', texto: item.texto -%}
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                  {%- for item in conteudo -%}
+                    {%- assign rc_token = ',' | append: forloop.index0 | append: ',' -%}
+                    {%- if idx_sobre contains rc_token -%}
+                      <div class="rich-content__group">
+                        {%- if item.titulo != blank -%}
+                          <h3 class="rich-content__subtitle">{{ item.titulo | escape }}</h3>
+                        {%- endif -%}
+                        <div class="rich-content__body rte">
+                          {%- render 'produto-conteudo-linhas', texto: item.texto -%}
+                        </div>
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endcapture -%}
+              {%- endif -%}
+
+            {%- when 'como_tomar' -%}
+              {%- assign rc_empty_field = 'beacon.como_tomar' -%}
+              {%- if has_como -%}
+                {%- liquid
+                  if rc_image == blank and idx_comp != ','
+                    assign rc_comp_index = idx_comp | remove_first: ',' | split: ',' | first | plus: 0
+                    assign rc_image = imagens[rc_comp_index]
+                  endif
+                  assign rc_has_h2 = false
+                  if como_tomar != blank and rc_heading != blank
+                    assign rc_has_h2 = true
+                  endif
+                  assign rc_box_heading = 'h2'
+                  if rc_has_h2
+                    assign rc_box_heading = 'h3'
+                  endif
+                -%}
+                {%- capture rc_body -%}
+                  {%- if como_tomar != blank -%}
+                    {%- if rc_has_h2 -%}
+                      <h2 class="rich-content__title">{{ rc_heading | escape }}</h2>
+                    {%- endif -%}
+                    <div class="rich-content__body rte">{{ como_tomar_campo | metafield_tag }}</div>
+                  {%- endif -%}
+                  {%- if idx_comp != ',' or has_tabela -%}
+                    <div class="rich-content__boxes">
+                      {%- for item in conteudo -%}
+                        {%- assign rc_token = ',' | append: forloop.index0 | append: ',' -%}
+                        {%- if idx_comp contains rc_token -%}
+                          {%- assign rc_box_id = 'RichFacts-' | append: section.id | append: '-' | append: forloop.index0 -%}
+                          <div class="produto-nutrition rich-content__facts" role="group" aria-labelledby="{{ rc_box_id }}">
+                            <{{ rc_box_heading }} class="produto-nutrition__title" id="{{ rc_box_id }}">{{ item.titulo | escape }}</{{ rc_box_heading }}>
+                            {%- render 'produto-conteudo-linhas', texto: item.texto, format: 'facts' -%}
+                          </div>
+                        {%- endif -%}
+                      {%- endfor -%}
+                      {%- if has_tabela -%}
+                        {% render 'produto-nutrition-table', product: product, heading_tag: rc_box_heading, id_prefix: section.id, class: 'rich-content__nutrition' %}
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+                {%- endcapture -%}
+              {%- endif -%}
+
+            {%- when 'quem_pode_usar' -%}
+              {%- assign rc_empty_field = 'beacon.como_tomar / beacon.conteudo (Advertências)' -%}
+              {%- if has_quem -%}
+                {%- liquid
+                  if idx_adv != ','
+                    assign rc_item_index = idx_adv | remove_first: ',' | split: ',' | first
+                  endif
+                -%}
+                {%- capture rc_body -%}
+                  {%- if rc_heading != blank -%}
+                    <h2 class="rich-content__title">{{ rc_heading | escape }}</h2>
+                  {%- endif -%}
+                  {%- if publico != blank -%}
+                    <div class="rich-content__body rte">
+                      <p>{{ publico | escape }}.</p>
+                    </div>
+                  {%- endif -%}
+                  {%- for item in conteudo -%}
+                    {%- assign rc_token = ',' | append: forloop.index0 | append: ',' -%}
+                    {%- if idx_adv contains rc_token -%}
+                      <div class="rich-content__group">
+                        {%- if item.titulo != blank -%}
+                          <h3 class="rich-content__subtitle">{{ item.titulo | escape }}</h3>
+                        {%- endif -%}
+                        <div class="rich-content__body rte">
+                          {%- render 'produto-conteudo-linhas', texto: item.texto, format: 'list' -%}
+                        </div>
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endcapture -%}
+              {%- endif -%}
+
+            {%- when 'por_que_escolher' -%}
+              {%- assign rc_empty_field = 'beacon.conteudo (Por que escolher)' -%}
+              {%- if has_porque -%}
+                {%- assign rc_item_index = idx_porque | remove_first: ',' | split: ',' | first -%}
+                {%- capture rc_body -%}
+                  {%- if rc_heading != blank -%}
+                    <h2 class="rich-content__title">{{ rc_heading | escape }}</h2>
+                  {%- endif -%}
+                  {%- for item in conteudo -%}
+                    {%- assign rc_token = ',' | append: forloop.index0 | append: ',' -%}
+                    {%- if idx_porque contains rc_token -%}
+                      <div class="rich-content__body rte">
+                        {%- render 'produto-conteudo-linhas', texto: item.texto -%}
+                      </div>
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endcapture -%}
+              {%- endif -%}
+          {%- endcase -%}
+
+          {%- if rc_body != blank -%}
+            {%- liquid
+              if rc_item_index != blank
+                assign rc_index_number = rc_item_index | plus: 0
+                assign rc_item_image = imagens[rc_index_number]
+                if rc_item_image != blank
+                  assign rc_image = rc_item_image
+                endif
+              endif
+              assign rc_position = rc_position | plus: 1
+              assign rc_is_odd = rc_position | modulo: 2
+            -%}
+            <article class="rich-content__item{% if rc_image == blank %} rich-content__item--text{% elsif rc_is_odd == 1 %} rich-content__item--reverse{% endif %}" {{ block.shopify_attributes }}>
+              {%- if rc_image != blank -%}
+                {%- assign rc_alt = rc_image.alt | default: '' -%}
+                {%- assign rc_classe = 'rich-content__image' -%}
+                {%- if rc_inteira -%}{%- assign rc_classe = 'rich-content__image rich-content__image--inteira' -%}{%- endif -%}
+                <div class="rich-content__media">
+                  {{ rc_image | image_url: width: 1200 | image_tag: widths: '480, 640, 800, 1000, 1200', sizes: '(min-width: 990px) 50vw, 100vw', loading: 'lazy', alt: rc_alt, class: rc_classe }}
+                </div>
+              {%- endif -%}
+              <div class="rich-content__text">
+                {{- rc_body -}}
+              </div>
+            </article>
+          {%- elsif request.design_mode -%}
+            <p class="home-editor-note" {{ block.shopify_attributes }}>{{ 'produto.editor.empty' | t: field: rc_empty_field }}</p>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Conteúdo do produto",
+  "tag": "div",
+  "class": "section-product-rich-content",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Textos e imagens vêm dos metafields beacon.conteudo, beacon.conteudo_imagens, beacon.como_tomar e beacon.tabela_nutricional. Bloco sem dado não aparece na loja."
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Âncora (link direto)",
+      "default": "descricao"
+    },
+    {
+      "type": "checkbox",
+      "id": "append_name",
+      "label": "Acrescentar o nome do produto aos títulos",
+      "info": "Por exemplo, \"O que é Pure Taurina\". Usa o nome do produto sem a dose.",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "conteudo",
+      "name": "O que é",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Item \"O que é\" de beacon.conteudo e, abaixo dele, os itens \"Sobre ...\" (alegações), cada um com o próprio título. Imagem: a de beacon.conteudo_imagens na mesma posição do item \"O que é\"."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "O que é"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem quando o produto não tiver",
+          "info": "Opcional. Quadrada ou 4:3."
+        }
+      ]
+    },
+    {
+      "type": "como_tomar",
+      "name": "Como tomar",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Texto de beacon.como_tomar, com as caixas \"Composição\" (item de beacon.conteudo) e \"Informação nutricional\" (beacon.tabela_nutricional)."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "Como tomar"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem",
+          "info": "Opcional. Quadrada (1:1), por exemplo 1254 × 1254 px. Sem ela, usa a imagem do item \"Composição\" em beacon.conteudo_imagens."
+        }
+      ]
+    },
+    {
+      "type": "quem_pode_usar",
+      "name": "Quem pode usar",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Público (o trecho de beacon.como_tomar antes dos dois pontos, por exemplo \"Adultos com 19 anos ou mais\") e o item \"Advertências\" de beacon.conteudo. Imagem: a de beacon.conteudo_imagens na mesma posição do item \"Advertências\"."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "Quem pode usar"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem quando o produto não tiver",
+          "info": "Opcional. Quadrada ou 4:3."
+        }
+      ]
+    },
+    {
+      "type": "por_que_escolher",
+      "name": "Por que escolher",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Só aparece quando beacon.conteudo tem um item com título começando por \"Por que\" (por exemplo, laudos por lote, fabricação e matéria-prima, com dado confirmado). Alegação só com o texto literal autorizado."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "Por que escolher"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Imagem quando o produto não tiver",
+          "info": "Opcional. Quadrada ou 4:3."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Conteúdo do produto",
+      "blocks": [
+        { "type": "conteudo" },
+        { "type": "como_tomar" },
+        { "type": "quem_pode_usar" },
+        { "type": "por_que_escolher" }
+      ]
+    }
+  ]
+}
+{% endschema %}

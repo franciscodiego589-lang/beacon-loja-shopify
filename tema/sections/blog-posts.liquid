@@ -1,0 +1,108 @@
+{{ 'home-carousel.css' | asset_url | stylesheet_tag }}
+{{ 'section-blog-posts.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  "Do nosso blog": posts recentes de um blog. Celular: rolagem por toque.
+  Computador (≥ 990 px): grade fixa, sem setas, como na maquete. Sem blog
+  escolhido ou sem posts, a seção não renderiza nada na loja (no editor, mostra
+  um aviso).
+  Liquid Glass (spec 8.5): posts sem moldura, sobre a névoa, como na maquete; a capa fica
+  sobre o preenchimento de foto (.lg-fill--photo) enquanto carrega.
+{%- endcomment -%}
+
+{%- liquid
+  assign bp_blog = section.settings.blog
+  assign bp_limit = section.settings.limit | at_least: 3 | at_most: 8
+  assign bp_count = bp_blog.articles.size | at_most: bp_limit
+  assign bp_heading_id = 'BlogPosts-' | append: section.id
+-%}
+
+{%- if bp_blog != blank and bp_count > 0 -%}
+  <div class="blog-posts section">
+    <div class="page-width">
+      <div class="section-heading">
+        <h2 class="section-heading__title" id="{{ bp_heading_id }}">{{ section.settings.heading | escape }}</h2>
+        {%- if section.settings.view_all_label != blank -%}
+          <a href="{{ bp_blog.url }}" class="link section-heading__link lg-hit">
+            {{- section.settings.view_all_label | escape -}}
+            <span class="visually-hidden"> {{ 'home.general.view_all_suffix' | t: title: section.settings.heading }}</span>
+          </a>
+        {%- endif -%}
+      </div>
+
+      <ul class="blog-posts__track home-carousel-track" role="list" aria-labelledby="{{ bp_heading_id }}">
+        {%- for article in bp_blog.articles limit: bp_count -%}
+          <li class="blog-posts__item">
+            <article class="blog-posts__card">
+              <a href="{{ article.url }}" class="blog-posts__media lg-fill--photo" tabindex="-1" aria-hidden="true">
+                {%- if article.image != blank -%}
+                  {{ article.image | image_url: width: 640 | image_tag: widths: '320, 420, 520, 640', sizes: '(min-width: 990px) 25vw, 260px', loading: 'lazy', alt: article.title, class: 'blog-posts__image' }}
+                {%- else -%}
+                  {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg blog-posts__placeholder' }}
+                {%- endif -%}
+              </a>
+              <span class="blog-posts__category">
+                {%- if article.tags.size > 0 -%}{{ article.tags.first | escape }}{%- else -%}{{ 'home.blog_posts.placeholder_category' | t }}{%- endif -%}
+              </span>
+              <h3 class="blog-posts__title">
+                <a href="{{ article.url }}" class="blog-posts__link">
+                  {%- if article.title != blank -%}{{ article.title | escape }}{%- else -%}{{ 'home.blog_posts.placeholder_title' | t }}{%- endif -%}
+                </a>
+              </h3>
+              <a href="{{ article.url }}" class="link blog-posts__read-more lg-hit">{{ 'home.blog_posts.read_more' | t }}</a>
+            </article>
+          </li>
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="blog-posts blog-posts--empty section page-width">
+    <p class="home-editor-note">
+      <span class="visually-hidden">{{ 'home.general.editor_only' | t }}</span>
+      {{ 'home.blog_posts.editor_empty' | t }}
+    </p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Posts do blog",
+  "tag": "section",
+  "class": "section-blog-posts",
+  "settings": [
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Do nosso blog"
+    },
+    {
+      "type": "text",
+      "id": "view_all_label",
+      "label": "Texto do link \"ver todos\"",
+      "info": "Deixe em branco para escondê-lo.",
+      "default": "Ver todos os posts"
+    },
+    {
+      "type": "range",
+      "id": "limit",
+      "min": 3,
+      "max": 8,
+      "step": 1,
+      "label": "Quantidade de posts",
+      "default": 4
+    }
+  ],
+  "presets": [
+    {
+      "name": "Posts do blog"
+    }
+  ]
+}
+{% endschema %}

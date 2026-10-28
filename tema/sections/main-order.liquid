@@ -1,0 +1,391 @@
+{{ 'conta-base.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-order.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Detalhe do pedido (template customers/order, contas de cliente legadas).
+  Mostra: número, data, situação do pagamento e do envio, cancelamento, itens (foto,
+  opções, SKU, propriedades, plano de assinatura, descontos do item e rastreio), resumo
+  de valores e os endereços de entrega e de cobrança.
+
+  Resumo de valores, sem contar desconto duas vezes:
+  - Subtotal: order.line_items_subtotal_price (já com os descontos de cada item).
+  - Descontos do pedido: order.cart_level_discount_applications com target_type
+    line_item. Descontos de frete já estão no valor do frete.
+  - Frete: shipping_method.price_with_discounts de cada método (com o valor original
+    riscado quando houver desconto).
+  - Impostos (order.tax_lines) e taxas de importação (order.total_duties), quando houver.
+  - Total: order.total_price. Com reembolso, também o reembolsado e order.total_net_amount.
+
+  Todo texto vindo do pedido sai com | escape. Chaves _html recebem valores já escapados.
+{%- endcomment -%}
+
+{%- liquid
+  assign date_format = 'conta.formats.date' | t
+  assign order_name = order.name | escape
+  assign order_date = order.created_at | date: date_format
+  assign financial_label = order.financial_status_label | escape
+  assign fulfillment_label = order.fulfillment_status_label | escape
+  assign items_title_id = 'OrderItemsTitle-' | append: section.id
+  assign summary_title_id = 'OrderSummaryTitle-' | append: section.id
+  assign shipping_title_id = 'OrderShippingTitle-' | append: section.id
+  assign billing_title_id = 'OrderBillingTitle-' | append: section.id
+-%}
+
+<div class="conta-page conta-order page-width" style="--conta-pad-top: {{ section.settings.padding_top }}px; --conta-pad-bottom: {{ section.settings.padding_bottom }}px;">
+  <a class="conta-back" href="{{ routes.account_url }}">
+    {%- render 'icon', name: 'arrow-left', size: 18 -%}
+    <span>{{ 'conta.general.back_to_account' | t }}</span>
+  </a>
+
+  <header class="conta-page__header conta-order__header">
+    <h1 class="conta-page__title">{{ 'conta.order.title_html' | t: name: order_name }}</h1>
+    <p class="conta-page__eyebrow">
+      <time datetime="{{ order.created_at | date: '%Y-%m-%d' }}">{{ 'conta.order.placed_on_html' | t: date: order_date }}</time>
+    </p>
+
+    <ul class="conta-order__statuses" role="list">
+      {%- if financial_label != blank -%}
+        <li class="chip">{{ 'conta.order.payment_html' | t: status: financial_label }}</li>
+      {%- endif -%}
+      {%- if fulfillment_label != blank -%}
+        <li class="chip">{{ 'conta.order.fulfillment_html' | t: status: fulfillment_label }}</li>
+      {%- endif -%}
+    </ul>
+
+    {%- if order.cancelled -%}
+      {%- liquid
+        assign cancelled_date = order.cancelled_at | date: date_format
+        assign cancel_reason = order.cancel_reason_label | escape
+      -%}
+      <div class="conta-order__notice glass glass--card">
+        <p>{{ 'conta.order.cancelled_html' | t: date: cancelled_date }}</p>
+        {%- if cancel_reason != blank -%}
+          <p>{{ 'conta.order.cancel_reason_html' | t: reason: cancel_reason }}</p>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.show_status_link and order.order_status_url != blank -%}
+      <p class="conta-order__status-link">
+        <a class="button button--secondary button--small" href="{{ order.order_status_url | escape }}">
+          {{- 'conta.order.status_link' | t -}}
+        </a>
+      </p>
+    {%- endif -%}
+  </header>
+
+  {%- render 'conta-account-nav', current: 'orders', subpage: true -%}
+
+  <div class="conta-order__layout">
+    <section class="conta-order__items" aria-labelledby="{{ items_title_id }}">
+      <h2 class="conta-section-title" id="{{ items_title_id }}">{{ 'conta.order.items_title' | t }}</h2>
+
+      <table class="conta-table conta-order-table">
+        <caption class="visually-hidden">{{ 'conta.order.items_caption' | t }}</caption>
+        <thead>
+          <tr>
+            <th scope="col">{{ 'conta.order.column_product' | t }}</th>
+            <th scope="col" class="conta-table__num">{{ 'conta.order.column_price' | t }}</th>
+            <th scope="col" class="conta-table__num">{{ 'conta.order.column_quantity' | t }}</th>
+            <th scope="col" class="conta-table__num">{{ 'conta.order.column_total' | t }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- for line_item in order.line_items -%}
+            {%- liquid
+              # Nome sem o trecho depois de " – " (emenda 2 da tarefa 3, G3), pela fonte única
+              # snippets/v3-nome-visivel (emenda 15 da tarefa 8). Produto apagado da loja não tem
+              # line_item.product: o título vem do próprio item do pedido. Os dois nomes já saem
+              # escapados (S1): 'html' vai entre tags; o alt leva | escape_once (texto), porque o
+              # image_tag escaparia o texto uma segunda vez. As opções (1, 3 ou 6 potes) seguem na
+              # lista abaixo.
+              assign mo_titulo = line_item.product.title | default: line_item.title
+              capture item_title_html
+                render 'v3-nome-visivel', titulo: mo_titulo, modo: 'html'
+              endcapture
+              assign item_title_html = item_title_html | strip
+              capture item_title
+                render 'v3-nome-visivel', titulo: mo_titulo, modo: 'texto'
+              endcapture
+              assign item_title = item_title | strip
+              assign item_title_alt = item_title | escape_once
+              assign item_alt = line_item.image.alt | default: item_title_alt
+            -%}
+            <tr>
+              <td class="conta-order-table__product">
+                <div class="conta-line-item">
+                  {%- if section.settings.show_images -%}
+                    <div class="conta-line-item__media">
+                      {%- if line_item.image != blank -%}
+                        {{ line_item.image | image_url: width: 192 | image_tag: widths: '96, 144, 192', sizes: '96px', loading: 'lazy', alt: item_alt, class: 'conta-line-item__image' }}
+                      {%- else -%}
+                        <span class="conta-line-item__placeholder" aria-hidden="true">
+                          {{- 'product-1' | placeholder_svg_tag: 'placeholder-svg' -}}
+                        </span>
+                      {%- endif -%}
+                    </div>
+                  {%- endif -%}
+
+                  <div class="conta-line-item__info">
+                    {%- if line_item.product != blank and line_item.url != blank -%}
+                      <a class="conta-line-item__title lg-hit" href="{{ line_item.url | escape }}">{{ item_title_html }}</a>
+                    {%- else -%}
+                      <span class="conta-line-item__title">{{ item_title_html }}</span>
+                    {%- endif -%}
+
+                    {%- if line_item.product.has_only_default_variant == false -%}
+                      <ul class="conta-line-item__details" role="list">
+                        {%- for option in line_item.options_with_values -%}
+                          <li>{{ option.name | escape }}: {{ option.value | escape }}</li>
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+
+                    {%- if line_item.selling_plan_allocation != blank -%}
+                      <p class="conta-line-item__meta">{{ line_item.selling_plan_allocation.selling_plan.name | escape }}</p>
+                    {%- endif -%}
+
+                    {%- if line_item.sku != blank -%}
+                      {%- assign item_sku = line_item.sku | escape -%}
+                      <p class="conta-line-item__meta">{{ 'conta.order.sku_html' | t: sku: item_sku }}</p>
+                    {%- endif -%}
+
+                    {%- assign visible_properties = 0 -%}
+                    {%- for property in line_item.properties -%}
+                      {%- assign property_first = property.first | slice: 0 -%}
+                      {%- if property.last != blank and property_first != '_' -%}
+                        {%- assign visible_properties = visible_properties | plus: 1 -%}
+                      {%- endif -%}
+                    {%- endfor -%}
+                    {%- if visible_properties > 0 -%}
+                      <ul class="conta-line-item__details" role="list">
+                        {%- for property in line_item.properties -%}
+                          {%- assign property_first = property.first | slice: 0 -%}
+                          {%- if property.last != blank and property_first != '_' -%}
+                            <li>{{ property.first | escape }}: {{ property.last | escape }}</li>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+
+                    {%- if line_item.line_level_discount_allocations.size > 0 -%}
+                      <ul class="conta-line-item__discounts" role="list">
+                        {%- for allocation in line_item.line_level_discount_allocations -%}
+                          <li>
+                            {%- render 'icon', name: 'tag', size: 16 -%}
+                            <span>{{ allocation.discount_application.title | escape }} (-{{ allocation.amount | money }})</span>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+
+                    {%- if line_item.fulfillment -%}
+                      {%- liquid
+                        assign fulfilled_date = line_item.fulfillment.created_at | date: date_format
+                        assign tracking_company = line_item.fulfillment.tracking_company | escape
+                        assign tracking_number = line_item.fulfillment.tracking_number | escape
+                      -%}
+                      <div class="conta-line-item__fulfillment">
+                        <p>{{ 'conta.order.fulfilled_on_html' | t: date: fulfilled_date }}</p>
+                        {%- if tracking_company != blank -%}
+                          <p>{{ 'conta.order.tracking_company_html' | t: company: tracking_company }}</p>
+                        {%- endif -%}
+                        {%- if tracking_number != blank -%}
+                          <p>{{ 'conta.order.tracking_number_html' | t: number: tracking_number }}</p>
+                        {%- endif -%}
+                        {%- if line_item.fulfillment.tracking_url != blank -%}
+                          <a class="link conta-line-item__track lg-hit" href="{{ line_item.fulfillment.tracking_url | escape }}" target="_blank" rel="noopener noreferrer">
+                            {{- 'conta.order.track' | t -}}
+                            <span class="visually-hidden"> {{ 'conta.general.new_tab' | t }}</span>
+                          </a>
+                        {%- endif -%}
+                      </div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </td>
+              <td class="conta-table__num" data-label="{{ 'conta.order.column_price' | t }}">
+                {%- if line_item.original_price != line_item.final_price -%}
+                  <span class="conta-price">
+                    <s class="conta-price__compare"><span class="visually-hidden">{{ 'conta.order.original_price' | t }} </span>{{ line_item.original_price | money }}</s>
+                    <span class="conta-price__final"><span class="visually-hidden">{{ 'conta.order.final_price' | t }} </span>{{ line_item.final_price | money }}</span>
+                  </span>
+                {%- else -%}
+                  {{ line_item.final_price | money }}
+                {%- endif -%}
+              </td>
+              <td class="conta-table__num" data-label="{{ 'conta.order.column_quantity' | t }}">{{ line_item.quantity }}</td>
+              <td class="conta-table__num" data-label="{{ 'conta.order.column_total' | t }}">
+                {%- if line_item.original_line_price != line_item.final_line_price -%}
+                  <span class="conta-price">
+                    <s class="conta-price__compare"><span class="visually-hidden">{{ 'conta.order.original_price' | t }} </span>{{ line_item.original_line_price | money }}</s>
+                    <span class="conta-price__final"><span class="visually-hidden">{{ 'conta.order.final_price' | t }} </span>{{ line_item.final_line_price | money }}</span>
+                  </span>
+                {%- else -%}
+                  {{ line_item.final_line_price | money }}
+                {%- endif -%}
+              </td>
+            </tr>
+          {%- endfor -%}
+        </tbody>
+      </table>
+
+      <section class="conta-order__summary" aria-labelledby="{{ summary_title_id }}">
+        <h2 class="conta-section-title" id="{{ summary_title_id }}">{{ 'conta.order.summary_title' | t }}</h2>
+        <dl class="conta-summary">
+          <div class="conta-summary__row">
+            <dt>{{ 'conta.order.subtotal' | t }}</dt>
+            <dd>{{ order.line_items_subtotal_price | money }}</dd>
+          </div>
+
+          {%- for discount_application in order.cart_level_discount_applications -%}
+            {%- if discount_application.target_type == 'line_item' -%}
+              {%- assign discount_title = discount_application.title | escape -%}
+              <div class="conta-summary__row conta-summary__row--discount">
+                <dt>{{ 'conta.order.discount_line_html' | t: title: discount_title }}</dt>
+                <dd>-{{ discount_application.total_allocated_amount | money }}</dd>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+
+          {%- for shipping_method in order.shipping_methods -%}
+            {%- assign shipping_title = shipping_method.title | escape -%}
+            <div class="conta-summary__row">
+              <dt>{{ 'conta.order.shipping_line_html' | t: title: shipping_title }}</dt>
+              <dd>
+                {%- if shipping_method.original_price != shipping_method.price_with_discounts -%}
+                  <s class="conta-price__compare"><span class="visually-hidden">{{ 'conta.order.original_price' | t }} </span>{{ shipping_method.original_price | money }}</s>
+                  <span class="visually-hidden">{{ 'conta.order.final_price' | t }} </span>
+                {%- endif -%}
+                {{ shipping_method.price_with_discounts | money }}
+              </dd>
+            </div>
+          {%- endfor -%}
+
+          {%- for tax_line in order.tax_lines -%}
+            {%- assign tax_title = tax_line.title | escape -%}
+            <div class="conta-summary__row">
+              <dt>{{ 'conta.order.tax_line_html' | t: title: tax_title, rate: tax_line.rate_percentage }}</dt>
+              <dd>{{ tax_line.price | money }}</dd>
+            </div>
+          {%- endfor -%}
+
+          {%- if order.total_duties -%}
+            <div class="conta-summary__row">
+              <dt>{{ 'conta.order.duties' | t }}</dt>
+              <dd>{{ order.total_duties | money }}</dd>
+            </div>
+          {%- endif -%}
+
+          <div class="conta-summary__row conta-summary__row--total">
+            <dt>{{ 'conta.order.total' | t }}</dt>
+            <dd>{{ order.total_price | money }}</dd>
+          </div>
+
+          {%- if order.total_refunded_amount > 0 -%}
+            <div class="conta-summary__row conta-summary__row--refund">
+              <dt>{{ 'conta.order.refunded' | t }}</dt>
+              <dd>-{{ order.total_refunded_amount | money }}</dd>
+            </div>
+            <div class="conta-summary__row conta-summary__row--total">
+              <dt>{{ 'conta.order.net_total' | t }}</dt>
+              <dd>{{ order.total_net_amount | money }}</dd>
+            </div>
+          {%- endif -%}
+        </dl>
+      </section>
+    </section>
+
+    <div class="conta-order__aside">
+      <section class="conta-card glass glass--card" aria-labelledby="{{ shipping_title_id }}">
+        <h2 class="conta-section-title" id="{{ shipping_title_id }}">{{ 'conta.order.shipping_address' | t }}</h2>
+        {%- if order.shipping_address -%}
+          {%- render 'conta-address', address: order.shipping_address -%}
+        {%- else -%}
+          <p class="conta-order__muted">{{ 'conta.order.no_address' | t }}</p>
+        {%- endif -%}
+      </section>
+
+      <section class="conta-card glass glass--card" aria-labelledby="{{ billing_title_id }}">
+        <h2 class="conta-section-title" id="{{ billing_title_id }}">{{ 'conta.order.billing_address' | t }}</h2>
+        {%- if order.billing_address -%}
+          {%- render 'conta-address', address: order.billing_address -%}
+        {%- else -%}
+          <p class="conta-order__muted">{{ 'conta.order.no_address' | t }}</p>
+        {%- endif -%}
+      </section>
+
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when '@app' -%}
+            {% render block %}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Detalhe do pedido",
+  "tag": "section",
+  "class": "section-main-order",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["customers/order"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Detalhe de um pedido na conta do cliente. Os textos ficam nas traduções do tema (área conta)."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_images",
+      "label": "Mostrar fotos dos produtos",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_status_link",
+      "label": "Mostrar botão da página de status do pedido",
+      "info": "Leva à página de status da Shopify, com o andamento da entrega.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Espaçamento"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espaço acima",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espaço abaixo",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Detalhe do pedido"
+    }
+  ]
+}
+{% endschema %}

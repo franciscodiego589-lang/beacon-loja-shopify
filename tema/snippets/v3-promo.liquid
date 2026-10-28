@@ -1,0 +1,168 @@
+{%- comment -%}
+  Banner promocional em HTML (peça reaproveitável, 03/10/2026). Usado pelo carrossel do topo
+  (sections/vitrine-topo.liquid) e pela faixa de banners (sections/faixa-promos.liquid). Estilos em
+  assets/component-promo.css (a página que usa o snippet carrega esse arquivo).
+
+  Parâmetros:
+  - bloco: o bloco "promo" inteiro (usa bloco.settings.*, com os mesmos ajustes nas duas seções).
+  - Produtos 4 e 5 (05/10/2026, só o carrossel do topo tem esses ajustes): com 5 produtos, o primeiro fica grande no
+    centro e os outros quatro menores, dois de cada lado, na frente dele (classe v3-promo__potes--n5); no celular
+    aparecem só os três primeiros. Com 4 produtos, o quarto não aparece no computador nem no celular (use 3 ou 5).
+  - prioridade: true carrega as fotos dos potes já (eager, fetchpriority high); senão, loading lazy.
+  - sizes: atributo sizes das fotos dos potes.
+  - bloco.settings.titulo_menor (só a faixa de banners tem esse ajuste): título um pouco menor no computador, para
+    títulos longos caberem em duas ou três linhas dentro do banner; o carrossel do topo não usa.
+  - variante: vazio (carrossel, 3:1) ou 'faixa' (cartão de uma faixa de 2 colunas, perto de 2:1 no computador).
+
+  O elemento PAI tem de ser um container de medida (container-type: inline-size): os tamanhos são em cqw.
+
+  Preço sempre verdadeiro: o texto de apoio (e o de apoio para celular) aceita o marcador [preco], trocado na
+  saída pelo menor price_min entre os produtos escolhidos, no formato de dinheiro da loja, com espaço não
+  separável depois de "R$". Sem produto, o marcador some.
+
+  Segurança (S1 a S5): textos com | escape; o link do botão vem de ajuste do tipo url; nenhum ajuste html ou
+  liquid; nenhum script; classe do tema montada com | handleize.
+{%- endcomment -%}
+
+{%- liquid
+  assign vp_tema = bloco.settings.tema | default: 'vermelho' | handleize
+  assign vp_produtos = bloco.settings.produto_1 | append: bloco.settings.produto_2 | append: bloco.settings.produto_3 | append: bloco.settings.produto_4 | append: bloco.settings.produto_5
+  assign vp_menor = nil
+  assign vp_qtd = 0
+  for n in (1..5)
+    case n
+      when 1
+        assign vp_produto = bloco.settings.produto_1
+      when 2
+        assign vp_produto = bloco.settings.produto_2
+      when 3
+        assign vp_produto = bloco.settings.produto_3
+      when 4
+        assign vp_produto = bloco.settings.produto_4
+      else
+        assign vp_produto = bloco.settings.produto_5
+    endcase
+    if vp_produto != blank
+      assign vp_qtd = vp_qtd | plus: 1
+      if vp_menor == nil or vp_produto.price_min < vp_menor
+        assign vp_menor = vp_produto.price_min
+      endif
+    endif
+  endfor
+  assign vp_preco = ''
+  if vp_menor != nil
+    assign vp_preco = vp_menor | money
+  endif
+  assign vp_apoio = bloco.settings.apoio | escape | replace: '[preco]', vp_preco | replace: 'R$ ', 'R$&nbsp;'
+  assign vp_apoio_celular = bloco.settings.apoio_celular | escape | replace: '[preco]', vp_preco | replace: 'R$ ', 'R$&nbsp;'
+  assign vp_apoio_cel = vp_apoio_celular | default: vp_apoio
+  assign vp_itens = bloco.settings.item_1 | append: bloco.settings.item_2 | append: bloco.settings.item_3
+-%}
+<div class="v3-promo v3-promo--{{ vp_tema }}{% if variante == 'faixa' %} v3-promo--faixa{% endif %}{% if bloco.settings.titulo_menor %} v3-promo--titulo-menor{% endif %}">
+  <div class="v3-promo__texto">
+    {%- if bloco.settings.selo != blank -%}
+      <p class="v3-promo__selo{% unless bloco.settings.selo_no_celular %} v3-promo__so-pc{% endunless %}">{{ bloco.settings.selo | escape }}</p>
+    {%- endif -%}
+    {%- if bloco.settings.titulo != blank or bloco.settings.titulo_destaque != blank -%}
+      <p class="v3-promo__titulo">
+        <span class="v3-promo__so-pc">
+          {{- bloco.settings.titulo | escape | replace: 'R$ ', 'R$&nbsp;' -}}
+          {%- if bloco.settings.titulo != blank and bloco.settings.titulo_destaque != blank %}<br>{% endif -%}
+          <span class="v3-promo__destaque">{{ bloco.settings.titulo_destaque | escape | replace: 'R$ ', 'R$&nbsp;' | replace: 'por dia', 'por&nbsp;dia' }}</span>
+        </span>
+        <span class="v3-promo__so-cel">
+          {%- if bloco.settings.titulo_celular != blank -%}
+            {{- bloco.settings.titulo_celular | escape | replace: 'R$ ', 'R$&nbsp;' -}}
+            {%- if bloco.settings.destaque_celular != blank %}<br><span class="v3-promo__destaque">{{ bloco.settings.destaque_celular | escape | replace: 'R$ ', 'R$&nbsp;' | replace: 'por dia', 'por&nbsp;dia' }}</span>{% endif -%}
+          {%- else -%}
+            {{- bloco.settings.titulo | escape | replace: 'R$ ', 'R$&nbsp;' -}}
+            {%- if bloco.settings.titulo != blank and bloco.settings.titulo_destaque != blank %}<br>{% endif -%}
+            <span class="v3-promo__destaque">{{ bloco.settings.titulo_destaque | escape | replace: 'R$ ', 'R$&nbsp;' | replace: 'por dia', 'por&nbsp;dia' }}</span>
+          {%- endif -%}
+        </span>
+      </p>
+    {%- endif -%}
+    {%- if vp_itens != blank -%}
+      <ul class="v3-promo__itens v3-promo__so-pc" role="list">
+        {%- for n in (1..3) -%}
+          {%- liquid
+            case n
+              when 1
+                assign vp_item = bloco.settings.item_1
+              when 2
+                assign vp_item = bloco.settings.item_2
+              else
+                assign vp_item = bloco.settings.item_3
+            endcase
+          -%}
+          {%- if vp_item != blank -%}
+            <li>{% render 'icon', name: 'check', size: 16 %}<span>{{ vp_item | escape }}</span></li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+      {%- if vp_apoio_cel != blank -%}
+        <p class="v3-promo__apoio v3-promo__so-cel-bloco">{{ vp_apoio_cel }}</p>
+      {%- endif -%}
+    {%- elsif bloco.settings.apoio != blank -%}
+      <p class="v3-promo__apoio">
+        {%- if bloco.settings.apoio_celular != blank -%}
+          <span class="v3-promo__so-pc">{{ vp_apoio }}</span>
+          <span class="v3-promo__so-cel">{{ vp_apoio_celular }}</span>
+        {%- else -%}
+          {{- vp_apoio -}}
+        {%- endif -%}
+      </p>
+    {%- elsif bloco.settings.apoio_celular != blank -%}
+      <p class="v3-promo__apoio v3-promo__so-cel-bloco">{{ vp_apoio_celular }}</p>
+    {%- endif -%}
+    {%- if bloco.settings.botao_rotulo != blank and bloco.settings.botao_link != blank -%}
+      <a href="{{ bloco.settings.botao_link }}" class="v3-promo__botao">{{ bloco.settings.botao_rotulo | escape }}</a>
+    {%- endif -%}
+  </div>
+  {%- if bloco.settings.imagem_produtos != blank -%}
+    {%- comment -%}
+      Imagem única com todos os produtos juntos (05/10/2026, pedido do dono: "gerar uma única imagem aqui
+      com potes e gotas"). Quando existe, substitui os cards dos produtos; os produtos escolhidos continuam
+      valendo para o marcador [preco].
+    {%- endcomment -%}
+    <div class="v3-promo__potes v3-promo__potes--imagem">
+      {%- if prioridade -%}
+        {{ bloco.settings.imagem_produtos | image_url: width: 1600 | image_tag: widths: '480, 720, 960, 1280, 1600', sizes: '(min-width: 761px) 46vw, calc(100vw - 32px)', alt: bloco.settings.imagem_produtos.alt, loading: 'eager', fetchpriority: 'high' }}
+      {%- else -%}
+        {{ bloco.settings.imagem_produtos | image_url: width: 1600 | image_tag: widths: '480, 720, 960, 1280, 1600', sizes: '(min-width: 761px) 46vw, calc(100vw - 32px)', alt: bloco.settings.imagem_produtos.alt, loading: 'lazy' }}
+      {%- endif -%}
+    </div>
+  {%- elsif vp_produtos != blank -%}
+    <div class="v3-promo__potes v3-promo__potes--n{{ vp_qtd }}">
+      {%- for n in (1..5) -%}
+        {%- liquid
+          case n
+            when 1
+              assign vp_produto = bloco.settings.produto_1
+            when 2
+              assign vp_produto = bloco.settings.produto_2
+            when 3
+              assign vp_produto = bloco.settings.produto_3
+            when 4
+              assign vp_produto = bloco.settings.produto_4
+            else
+              assign vp_produto = bloco.settings.produto_5
+          endcase
+        -%}
+        {%- if vp_produto != blank -%}
+          <div class="v3-promo__pote{% if n == 1 and bloco.settings.primeiro_menor %} v3-promo__pote--menor{% endif %}{% if vp_produto.tags contains 'formato:gotas' %} v3-promo__pote--gotas{% endif %}">
+            {%- if vp_produto.featured_image != blank -%}
+              {%- if prioridade -%}
+                {{ vp_produto.featured_image | image_url: width: 640 | image_tag: widths: '240, 360, 480, 640, 800', sizes: sizes, alt: vp_produto.title, loading: 'eager', fetchpriority: 'high' }}
+              {%- else -%}
+                {{ vp_produto.featured_image | image_url: width: 640 | image_tag: widths: '240, 360, 480, 640, 800', sizes: sizes, alt: vp_produto.title, loading: 'lazy' }}
+              {%- endif -%}
+            {%- else -%}
+              {{ 'product-1' | placeholder_svg_tag: 'v3-promo__pote-vazio' }}
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</div>

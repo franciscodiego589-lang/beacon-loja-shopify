@@ -1,0 +1,42 @@
+{%- comment -%}
+  Área conta: paginação acessível (pedidos e endereços).
+  Parâmetros:
+  - paginate: o objeto paginate do {% paginate %} em volta (obrigatório)
+  Só aparece com mais de uma página. A página atual leva aria-current="page".
+{%- endcomment -%}
+{%- if paginate.pages > 1 -%}
+  {%- assign pagination_current = paginate.current_page | append: '' -%}
+  <nav class="conta-pagination" aria-label="{{ 'conta.pagination.label' | t }}">
+    <ul class="conta-pagination__list" role="list">
+      {%- if paginate.previous -%}
+        <li>
+          <a class="conta-pagination__link conta-pagination__link--arrow" href="{{ paginate.previous.url | escape }}" aria-label="{{ 'conta.pagination.previous' | t }}">
+            {%- render 'icon', name: 'chevron-left', size: 20 -%}
+          </a>
+        </li>
+      {%- endif -%}
+      {%- for part in paginate.parts -%}
+        {%- assign part_title = part.title | append: '' -%}
+        <li>
+          {%- if part.is_link -%}
+            <a class="conta-pagination__link" href="{{ part.url | escape }}" aria-label="{{ 'conta.pagination.page' | t: page: part.title }}">{{ part.title | escape }}</a>
+          {%- elsif part_title == pagination_current -%}
+            <span class="conta-pagination__link conta-pagination__link--current" aria-current="page">
+              <span class="visually-hidden">{{ 'conta.pagination.page' | t: page: part.title }}</span>
+              <span aria-hidden="true">{{ part.title | escape }}</span>
+            </span>
+          {%- else -%}
+            <span class="conta-pagination__gap">{{ part.title | escape }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+      {%- if paginate.next -%}
+        <li>
+          <a class="conta-pagination__link conta-pagination__link--arrow" href="{{ paginate.next.url | escape }}" aria-label="{{ 'conta.pagination.next' | t }}">
+            {%- render 'icon', name: 'chevron-right', size: 20 -%}
+          </a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

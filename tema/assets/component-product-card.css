@@ -1,0 +1,339 @@
+/*
+  Beacon Labs · card de produto (component-product-card.css)
+  Estrutura em snippets/product-card.liquid.
+
+  Redesenho v3 (spec 2.4; alvo.css linhas 174 a 187, 377 e 378, 417 a 425 e 470 a 476): o card é
+  um BLOCO CLARO, não vidro. Fundo --color-photo-bg (#ECF3F9, o tom das 27 fotos), raio
+  --radius-card (22 px; 20 px no celular), sem sombra e sem a classe .glass--card. O vidro fica nos
+  controles: o botão "Adicionar" (.button--secondary .button--small) e a etiqueta "Novo".
+
+  Faixa da etiqueta (emenda V1): o alto da foto reserva uma faixa de 40 px no computador e 36 px
+  até 760 px. A etiqueta mora nela e nunca encosta na tampa do pote. O pote inteiro fica
+  centrado abaixo da faixa, reduzido na mesma proporção (foto quadrada de largura do card menos a
+  faixa), sem recorte. A faixa existe em todo card, com ou sem etiqueta, para os potes de uma
+  linha ficarem alinhados.
+
+  Foto: .lg-pote-solto (máscara de borda, assets/liquid-glass.css) para pote de cápsula;
+  .v3-foto-quadro (abaixo) para o resto. A classe vem de snippets/v3-classe-foto.
+
+  Largura do card por @container (o card se adapta à coluna onde cai, sem depender da seção):
+  a partir de 228 px de largura, padding de 20 px, nome de 17 px e preço ao lado do botão; abaixo
+  disso (duas colunas no celular, 160 e 220 px dos relacionados), padding de 14 px, nome de 15 px
+  e o botão ocupa a linha de baixo, na largura toda. Sem suporte a @container vale o modo estreito.
+
+  Um link por card: o do nome, que se estica sobre o card inteiro (::after). Alvo de toque do
+  link de 44 px (emenda 8): padding de 13 px com margem negativa igual, como o alvo.css:183.
+  Foco do link: anel duplo para dentro do card (o card corta o que passa da borda).
+
+  Rodapé em três estados (snippets/product-card.liquid): "Adicionar" (botão do formulário);
+  "Ver opções" (link .product-card__options, com a mesma aparência e medida do botão, quando o pote
+  único esgotou e algum kit não, Ruling 22); "Esgotado" (botão desabilitado, produto todo esgotado).
+
+  Contraste (campo claro #ECF3F9): tinta 15,44:1; apoio #566472 5,42:1.
+*/
+
+.product-card {
+  --card-faixa: 40px;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background-color: var(--color-photo-bg);
+  color: var(--color-text);
+  container: product-card / inline-size;
+}
+
+/* ---------- Foto ---------- */
+
+.product-card__media {
+  position: relative;
+  flex: none;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  padding-top: var(--card-faixa);
+  overflow: hidden;
+}
+
+.product-card__image,
+.product-card__placeholder {
+  display: block;
+  width: calc(100% - var(--card-faixa));
+  height: 100%;
+  margin-inline: auto;
+  object-fit: contain;
+}
+
+.product-card__image {
+  transition: transform 350ms ease;
+}
+
+.product-card__placeholder {
+  fill: var(--color-text-muted);
+}
+
+@media (hover: hover) {
+  .product-card:hover .product-card__image {
+    transform: scale(1.03);
+  }
+}
+
+.product-card--sold-out .product-card__image {
+  opacity: 0.6;
+}
+
+/* Quadro arredondado no mesmo bloco claro, sem máscara: foto fora do padrão (não é pote de
+   cápsula sobre #ECF3F9). Serve também fora do card (galeria e seções da home).
+   O arredondamento vai na caixa da <img>, não na figura visível: imagem que não é quadrada
+   precisa da proporção natural (aspect-ratio e height: auto da própria imagem, sem object-fit:
+   contain numa caixa quadrada), senão sobra espaço dentro da caixa e os cantos arredondados não
+   são os da imagem. No card a caixa é quadrada e hoje as 27 fotos principais também são
+   (2048 x 2048 px); quem usar a classe com outra proporção (infográfico, tabela) deve dar a
+   proporção natural à imagem. */
+.v3-foto-quadro {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+/* ---------- Etiqueta ---------- */
+
+/* A etiqueta ocupa a faixa reservada, centrada na vertical. Não recebe o ponteiro: o link do
+   nome, esticado sobre o card, é quem leva ao produto. */
+.product-card__badges {
+  position: absolute;
+  top: 0;
+  right: 12px;
+  left: 12px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: var(--card-faixa);
+  pointer-events: none;
+}
+
+/* ---------- Texto ---------- */
+
+.product-card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: 2px 14px 14px;
+}
+
+.product-card__title {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-size: 15px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* O padding e a margem negativa dão ao link a altura de 44 px sem mexer no layout. */
+.product-card__link {
+  display: block;
+  padding-block: 13px;
+  margin-block: -13px;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Nome em até três linhas (emenda 1); o excesso, se um dia houver, é cortado com reticências em
+   vez de empurrar o preço e o botão. O corte fica no <span> de dentro, sem padding: no próprio
+   link, o padding de 13 px deixava a ponta da quarta linha aparecer. */
+.product-card__name {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* O card inteiro leva ao produto. A caixa estica sobre o card (o card é position: relative); o
+   botão e a etiqueta ficam acima dela (z-index). */
+.product-card__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: var(--radius-card);
+}
+
+/* Foco: anel duplo (tinta por dentro, halo branco encostado na borda), para dentro do card. */
+.product-card__link:focus-visible {
+  outline: none;
+}
+
+.product-card__link:focus-visible::after {
+  outline: var(--lg-focus-width, 3px) solid var(--lg-focus-outer, var(--color-ink));
+  outline-offset: calc(-1 * (var(--lg-focus-width, 3px) + var(--lg-focus-offset, 2px)));
+  box-shadow: inset 0 0 0 var(--lg-focus-offset, 2px) var(--lg-focus-halo, #fff);
+}
+
+.product-card__meta {
+  margin: 2px 0 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+.product-card__rating {
+  min-height: 16px;
+  margin-top: 6px;
+}
+
+/* ---------- Rodapé: preço e botão ---------- */
+
+.product-card__footer {
+  display: block;
+  margin-top: auto;
+  padding-top: 16px;
+}
+
+/* Modo estreito: o preço em cima e o botão embaixo, na largura toda. */
+.product-card__add-form {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  margin: 0;
+}
+
+.product-card__add {
+  z-index: 2;
+  width: 100%;
+}
+
+/* Botão de compra maior e mais forte (06/10/2026, pedido do dono: "os botões de adicionar podem ser maiores
+   pra destacar mais"). Não vale para o "Esgotado". */
+.button.product-card__add:not(.product-card__sold-out) {
+  min-height: 52px;
+  padding: 0 30px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.product-card__price {
+  line-height: 1.2;
+}
+
+.product-card__price .price__from {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* O texto do tema é "a partir de"; no card ele abre a linha, com a primeira letra em caixa-alta. */
+.product-card__price .price__from::first-letter {
+  text-transform: uppercase;
+}
+
+.product-card__price .price__current {
+  font-size: 17px;
+  letter-spacing: 0;
+}
+
+/* O card já mostra o % de desconto na etiqueta; o selo ao lado do preço fica só na página de produto. */
+.product-card__price .price__badge {
+  display: none;
+}
+
+.product-card__error {
+  margin: 0;
+  font-size: 12px;
+}
+
+/* Esgotado: o botão continua no lugar, desabilitado, com o texto "Esgotado". Sem opacidade (o
+   texto precisa ser lido): apoio #566472 sobre o campo claro, 5,42:1, e contorno fino. */
+.product-card__sold-out {
+  --button-bg: transparent;
+  --button-text: var(--color-text-muted);
+  --button-bg-hover: transparent;
+  --button-text-hover: var(--color-text-muted);
+  --button-shadow: inset 0 0 0 1px rgba(var(--color-ink-rgb), 0.16);
+}
+
+.product-card__sold-out:disabled,
+.product-card__sold-out[aria-disabled="true"] {
+  opacity: 1;
+  box-shadow: var(--button-shadow);
+}
+
+/* O botão desabilitado fica acima do link esticado (z-index) e não recebe o clique nem o deixa
+   passar: sem isto a área do "Esgotado" era uma zona morta do card. Sem ponteiro, o toque cai no
+   link do card e leva à página do produto, onde está o aviso de volta ao estoque (#avise-me). */
+.product-card__sold-out {
+  pointer-events: none;
+}
+
+/* ---------- Card largo (a partir de 228 px) ---------- */
+
+@container product-card (min-width: 228px) {
+  .product-card__body {
+    padding: 2px 20px 20px;
+  }
+
+  .product-card__title {
+    font-size: 17px;
+  }
+
+  .product-card__meta {
+    font-size: 14px;
+  }
+
+  .product-card__add-form {
+    flex-flow: row wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+
+  .product-card__add {
+    width: auto;
+    min-width: 52%;
+  }
+
+  /* A mensagem de erro do botão ocupa a linha de baixo, na largura toda. */
+  .product-card__error {
+    flex: 1 0 100%;
+  }
+}
+
+/* ---------- Celular ---------- */
+
+@media screen and (max-width: 760px) {
+  .product-card {
+    --card-faixa: 36px;
+  }
+
+  .product-card__badges {
+    right: 8px;
+    left: 8px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card__image {
+    transition: none;
+  }
+
+  .product-card:hover .product-card__image {
+    transform: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .product-card {
+    border: 1px solid var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .product-card {
+    border: 1px solid CanvasText;
+  }
+}

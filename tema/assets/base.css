@@ -1,0 +1,1563 @@
+/*
+  Beacon Labs · base.css (fundação)
+
+  As variáveis ligadas aos ajustes do tema (cores, fontes, raios, logo) são criadas em
+  snippets/css-variables.liquid, dentro de :root. Aqui ficam só os tokens que não dependem
+  de ajuste (espaços, sombras, tempos, camadas) e os estilos globais:
+  reset, tipografia, contêiner, botões, campos, cartões, chips, selos, grades, utilitários,
+  foco visível e redução de movimento.
+
+  Pontos de quebra usados em todo o tema:
+  - 750 px: celular para tablet
+  - 990 px: tablet para computador (menu horizontal e cabeçalho completo)
+  As medidas do redesenho v3 (--page-content, --page-gutter, --section-gap, --grid-gap e os
+  raios) seguem o alvo: celular até 760 px, computador a partir de 761 px
+  (snippets/css-variables.liquid).
+
+  Liquid Glass (docs/superpowers/specs/2026-09-27-liquid-glass-sistema.md): os tokens e as
+  classes do material ficam em assets/liquid-glass.css, carregado logo depois deste arquivo.
+  Aqui as classes-base do tema passam a usar o sistema, sem mudar medidas:
+  - .button (primário): preenchimento sólido com linha de luz e sombra da primária; por cima
+    de vidro (.glass/.glass-layer) perde a sombra colorida (D36).
+  - .button--secondary: botão de vidro (material cartão, 0,66); por cima de vidro vira
+    preenchimento (branco a 0,72), nunca vidro sobre vidro.
+  - .icon-button e .chip--outline: vidro funcional fino, sem desfoque (spec 8.3 e 8.4), com o
+    fio externo escuro de 6% (redesenho v3, emenda V2).
+  - .card: vidro de conteúdo cartão. Campos: preenchimento branco a 0,90, cápsula.
+  Todo valor de vidro vem com reserva (var(--x, valor)) para a página continuar legível
+  sem liquid-glass.css. Os modos de acessibilidade estão no fim do arquivo.
+
+  Redesenho v3 (02/10/2026, alvo.css linhas 57 e 97 a 122): corpo 17 px com linha de 25 px;
+  botão em cápsula de 44 px, 17 px, peso 500 (15 px e recuo de 18 px até 760 px, alvo.css linha
+  400); pequeno (.mini) e grande (.btn--grande) do alvo; utilitárias .v3-eyebrow, .v3-title,
+  .v3-link e .v3-junto.
+*/
+
+:root {
+  --page-gutter-tablet: 32px;
+  --section-spacing: 40px;
+  --section-spacing-desktop: 64px;
+
+  --shadow-soft: 0 4px 16px rgba(var(--color-ink-rgb), 0.08);
+  --shadow-panel: 0 16px 40px rgba(var(--color-ink-rgb), 0.14);
+  --shadow-drawer: 0 0 40px rgba(var(--color-ink-rgb), 0.18);
+  --overlay: rgba(var(--color-ink-rgb), 0.55);
+
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  --z-header: 40;
+  --z-dropdown: 50;
+  --z-skip-link: 100;
+}
+
+/* ---------- Reset ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -moz-tab-size: 4;
+  tab-size: 4;
+}
+
+html.scroll-locked {
+  overflow: hidden;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-background);
+  color: var(--color-text);
+  font-family: var(--font-body-family);
+  font-style: var(--font-body-style);
+  font-weight: var(--font-body-weight);
+  /* Texto corrido do alvo: 17 px com linha de 25 px (razão sem unidade, para os filhos com
+     outro tamanho de letra manterem a proporção) e espaçamento -0,022em. */
+  font-size: 17px;
+  line-height: calc(25 / 17);
+  letter-spacing: -0.022em;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body > .main-content {
+  flex: 1 0 auto;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+figure,
+dl,
+dd {
+  margin: 0;
+}
+
+img,
+svg,
+video,
+canvas,
+picture {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Toque: sem o zoom do toque duplo nos controles tocados várias vezes seguidas (+/− da
+   quantidade, setas dos carrosséis); rolar e pinçar continuam valendo (manipulation). */
+a,
+a,
+button,
+summary,
+label,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+/* O realce de toque do navegador sai só das peças que já têm estado pressionado próprio
+   (:active com escala ou fundo), para ele não aparecer por cima do vidro. */
+.button,
+.icon-button,
+.quantity-input__button,
+.glass--interactive {
+  -webkit-tap-highlight-color: transparent;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+hr {
+  height: 1px;
+  margin: 0;
+  border: 0;
+  background: var(--color-line);
+}
+
+summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Todo elemento com o atributo hidden fica escondido, mesmo quando o componente define display. */
+[hidden] {
+  display: none !important;
+}
+
+/* Custom elements que envolvem blocos. */
+mega-menu,
+details-disclosure,
+cart-items,
+product-form,
+predictive-search,
+menu-drawer,
+cart-drawer {
+  display: block;
+}
+
+/* ---------- Tipografia ---------- */
+
+h1,
+h2,
+h3,
+h4,
+.h0,
+.h1,
+.h2,
+.h3,
+.h4 {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  color: var(--color-text);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  overflow-wrap: break-word;
+  /* Linhas equilibradas: o título não termina com uma palavra sozinha na última linha.
+     Navegador sem suporte ignora a propriedade e quebra como antes. */
+  text-wrap: balance;
+}
+
+.h0 {
+  font-size: 34px;
+  line-height: 1.1;
+}
+
+h1,
+.h1 {
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+h2,
+.h2 {
+  font-size: 22px;
+}
+
+h3,
+.h3 {
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+h4,
+.h4 {
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+@media screen and (min-width: 990px) {
+  .h0 {
+    font-size: 48px;
+  }
+
+  h1,
+  .h1 {
+    font-size: 40px;
+  }
+
+  h2,
+  .h2 {
+    font-size: 30px;
+  }
+
+  h3,
+  .h3 {
+    font-size: 20px;
+  }
+}
+
+/* Negrito em 600, o peso forte do alvo (todo <b> do alvo é 600). Sem isto o navegador usa
+   "bolder": dentro de título em 600 o negrito ia a 900, e dentro de texto em 700 também. */
+b,
+strong {
+  font-weight: 600;
+}
+
+/* Texto em peso forte usa a fonte de título (com fonte da biblioteca, o corpo carrega só
+   400 a 700). */
+.text-heavy {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+.text-small {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.eyebrow {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.rte > * + * {
+  margin-top: 1em;
+}
+
+.rte ul,
+.rte ol {
+  padding-left: 1.25em;
+}
+
+/* Link dentro de texto corrido: tinta com sublinhado (redesenho v3, emenda C3). Navegação,
+   botões, cards e fichas continuam sem sublinhado. */
+.rte a {
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* ---------- Links ---------- */
+
+/* Links na tinta (--lg-link-glass lê --color-ink desde o redesenho v3, emenda C3); o
+   sublinhado no hover diferencia o estado. */
+a {
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.link {
+  color: var(--lg-link-glass, var(--color-primary));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.link:hover {
+  color: var(--color-ink);
+  text-decoration-thickness: 2px;
+}
+
+/* ---------- Foco visível ---------- */
+
+:focus-visible {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* O <main> recebe foco só pelo link "pular para o conteúdo". */
+.main-content:focus {
+  outline: none;
+}
+
+/* ---------- Utilitários ---------- */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+}
+
+/* Escondido só abaixo de 990 px, continuando acessível ao leitor de tela; a partir de 990 px o
+   elemento volta ao estilo dele. Sem !important, então nada precisa ser desfeito no
+   computador (antes a grade da coleção recopiava .visually-hidden e depois desfazia tudo com
+   outro !important). */
+@media screen and (max-width: 989px) {
+  .visually-hidden-below-desktop {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: var(--z-skip-link);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  color: var(--color-on-dark);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: none;
+  color: var(--color-on-dark);
+  text-decoration: none;
+  outline-color: var(--color-accent);
+}
+
+/* Coluna do alvo (.wrap): conteúdo de até 1200 px com recuo de 24 px (20 px até 760 px). */
+.page-width {
+  width: 100%;
+  max-width: calc(var(--page-content) + 2 * var(--page-gutter));
+  margin-inline: auto;
+  padding-inline: var(--page-gutter);
+}
+
+.main-content {
+  display: block;
+}
+
+.list-unstyled {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.full-bleed {
+  width: 100%;
+}
+
+@media screen and (max-width: 749px) {
+  .hidden-mobile {
+    display: none !important;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .hidden-tablet-up {
+    display: none !important;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .hidden-desktop {
+    display: none !important;
+  }
+}
+
+@media screen and (max-width: 989px) {
+  .hidden-below-desktop {
+    display: none !important;
+  }
+}
+
+/* ---------- Ícones ---------- */
+
+.icon {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ---------- Seções ---------- */
+
+.section {
+  padding-block: var(--section-spacing);
+}
+
+@media screen and (min-width: 990px) {
+  .section {
+    padding-block: var(--section-spacing-desktop);
+  }
+}
+
+.section--surface {
+  background: var(--color-surface-1);
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  margin-bottom: 20px;
+}
+
+.section-heading__title {
+  font-size: 22px;
+}
+
+.section-heading__link {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+@media screen and (min-width: 990px) {
+  .section-heading {
+    min-height: 44px;
+    margin-bottom: 28px;
+  }
+
+  .section-heading__title {
+    font-size: 30px;
+  }
+}
+
+/* Wrappers das seções do cromo (atributo "class" do schema). */
+.section-header {
+  position: relative;
+  z-index: var(--z-header);
+}
+
+.section-announcement,
+.section-footer {
+  position: relative;
+}
+
+/* ---------- Botões ---------- */
+
+/*
+  Cores pelas variáveis --button-* (as seções podem trocar só as cores). O material entra por
+  --button-shadow (linhas de luz e sombra) e --button-sheen (reflexo); o halo do foco entra
+  por --lg-focus-shadow, primeira camada do box-shadow (spec 5.10, D35).
+  Padrão (sem modificador) = primário (alvo .btn): tinta sólida, texto branco (17,29:1);
+  hover e pressionado em --color-primary-hover (#15375A, 12,17:1 com o branco), para o
+  estado continuar visível com a primária igual à tinta (emenda C6).
+*/
+.button {
+  --button-bg: var(--color-primary);
+  --button-text: var(--color-on-dark);
+  --button-border: transparent;
+  --button-bg-hover: var(--color-primary-hover);
+  --button-text-hover: var(--color-on-dark);
+  --button-border-hover: transparent;
+  --button-shadow: var(--lg-rim-fill-line, 0 0 #0000), var(--lg-shadow-primary, 0 0 #0000);
+  --button-shadow-hover: var(--button-shadow);
+  --button-shadow-press: var(--lg-rim-fill-line, 0 0 #0000);
+  --button-sheen: none;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 22px;
+  border: 1px solid var(--button-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--button-bg);
+  background-image: var(--button-sheen);
+  color: var(--button-text);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--button-shadow);
+  font-family: var(--font-body-family);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    border-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    box-shadow var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+/* Celular (alvo.css linha 400, .btn até 760 px): altura de 44 px, recuo de 18 px e letra de 15 px.
+   Fica logo depois do .button e antes dos modificadores, que seguem valendo por virem depois: o
+   pequeno (.button--small) mantém 14 px e o grande (.button--large) mantém 56 px de altura. */
+@media screen and (max-width: 760px) {
+  .button {
+    min-height: 44px;
+    padding: 0 18px;
+    font-size: 15px;
+  }
+}
+
+.button:hover {
+  background-color: var(--button-bg-hover);
+  color: var(--button-text-hover);
+  border-color: var(--button-border-hover);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--button-shadow-hover);
+  text-decoration: none;
+}
+
+/* Pressionado: escala 0,97 com retorno de mola (movimento reduzido: escala 1). */
+.button:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--button-bg-hover);
+  color: var(--button-text-hover);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--button-shadow-press);
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.button:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.button--primary {
+  --button-bg: var(--color-primary);
+  --button-text: var(--color-on-dark);
+  --button-bg-hover: var(--color-primary-hover);
+  --button-text-hover: var(--color-on-dark);
+}
+
+/* Secundário = vidro claro do alvo (.btn--vidro, alvo.css linhas 108 e 109): material cartão
+   (branco a 0,66), borda de luz a 0,40, fio ink a 0,16 e sombra fina, sem reflexo; hover a
+   0,80 com fio ink a 0,30. Texto ink (16,65:1 sobre o campo claro). */
+.button--secondary {
+  --button-bg: var(--glass-card-bg, #FFFFFF);
+  --button-text: var(--color-ink);
+  --button-border: var(--lg-rim-light-color, rgba(255, 255, 255, 0.4));
+  --button-bg-hover: rgba(255, 255, 255, 0.8);
+  --button-text-hover: var(--color-ink);
+  --button-border-hover: var(--lg-rim-light-color, rgba(255, 255, 255, 0.4));
+  --button-shadow: var(--lg-hairline-button, 0 0 0 1px var(--color-ink)), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  --button-shadow-hover: var(--lg-hairline-strong, 0 0 0 1px var(--color-ink)), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  --button-shadow-press: var(--lg-hairline-strong, 0 0 0 1px var(--color-ink)), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-press-glow, 0 0 #0000);
+  --button-sheen: none;
+}
+
+.button--accent {
+  --button-bg: var(--color-accent);
+  --button-text: var(--color-ink);
+  --button-bg-hover: var(--color-accent);
+  --button-text-hover: var(--color-ink);
+  --button-border-hover: var(--color-ink);
+  --button-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --button-shadow-hover: inset 0 0 0 1px var(--color-ink);
+  --button-shadow-press: inset 0 0 0 1px var(--color-ink);
+
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+}
+
+.button--dark {
+  --button-bg: var(--color-ink);
+  --button-text: var(--color-on-dark);
+  --button-bg-hover: var(--color-petroleo);
+  --button-text-hover: var(--color-on-dark);
+  --button-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+}
+
+/* Fantasma: texto de link (tinta, --lg-link-glass), sem material; o hover ganha o fundo do chip. */
+.button--ghost {
+  --button-bg: transparent;
+  --button-text: var(--lg-link-glass, var(--color-primary));
+  --button-bg-hover: var(--color-chip-bg);
+  --button-text-hover: var(--color-ink);
+  --button-shadow: 0 0 #0000;
+  --button-shadow-press: 0 0 #0000;
+}
+
+/* Por cima de vidro, só preenchimento (P3, D36): o primário perde a sombra colorida e o
+   secundário vira preenchimento branco a 0,72 com fio ink a 0,16, sem luz nem reflexo. */
+:is(.glass, .glass-layer) .button {
+  --button-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+}
+
+:is(.glass, .glass-layer) .button--secondary {
+  --button-bg: var(--glass-fill-bg, #FFFFFF);
+  --button-border: transparent;
+  --button-bg-hover: var(--glass-fill-bg-hover, #FFFFFF);
+  --button-border-hover: transparent;
+  --button-shadow: var(--lg-hairline-button, 0 0 0 1px var(--color-ink));
+  --button-shadow-hover: var(--lg-hairline-strong, 0 0 0 1px var(--color-ink));
+  --button-shadow-press: var(--lg-hairline-strong, 0 0 0 1px var(--color-ink));
+  --button-sheen: none;
+}
+
+:is(.glass, .glass-layer) .button--ghost {
+  --button-shadow: 0 0 #0000;
+}
+
+.button--full {
+  width: 100%;
+}
+
+/* Pequeno = .mini do alvo (alvo.css linhas 118 a 124 e 413): 36 px no computador e 44 px no
+   celular e em tela de toque. Só medida e letra: o material do .mini é o do .button--secondary,
+   que é o par usado na marcação (button--secondary button--small). flex: none, como o .mini
+   (alvo.css linha 119): numa linha flex apertada, por exemplo o rodapé do card ao lado do preço,
+   o botão não encolhe nem corta o rótulo. */
+.button--small {
+  flex: none;
+  min-height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+}
+
+@media screen and (max-width: 760px), (pointer: coarse) {
+  .button--small {
+    min-height: 44px;
+    padding: 0 18px;
+  }
+}
+
+/* Grande = .btn--grande do alvo (alvo.css linha 112): 56 px de altura e peso 600. Sem largura:
+   o botão tem a largura do conteúdo, como antes do redesenho v3 (ajuda, página 404, rastreio,
+   cabeçalho de página, formulários). A largura total é do .button--full, que a marcação já soma
+   no login, no cadastro e no carrinho e que a tarefa 6 soma ao botão de compra do produto (o
+   único .btn--grande do alvo). */
+.button--large {
+  min-height: 56px;
+  font-weight: 600;
+}
+
+.button--icon {
+  width: 44px;
+  padding: 0;
+}
+
+.button:disabled,
+.button[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.button:disabled:hover,
+.button[aria-disabled="true"]:hover {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  border-color: var(--button-border);
+}
+
+/* Estado de carregamento: o texto some e aparece um indicador girando. */
+.button.is-loading {
+  color: transparent !important;
+  pointer-events: none;
+}
+
+.button.is-loading > * {
+  visibility: hidden;
+}
+
+.button.is-loading::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid var(--button-text);
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Utilitárias do redesenho v3 (alvo.css: .eyebrow, .titulo-sec e .link) ---------- */
+
+/* Linha pequena acima de título: vermelho do farol da logo, só texto pequeno em caixa-alta
+   (9,98:1 no branco e 8,92:1 no campo claro). */
+.v3-eyebrow {
+  color: var(--color-eyebrow);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Título de seção: 32 px (26 px até 760 px), peso 600; o trecho em <span> sai no texto de apoio. */
+.v3-title {
+  font-family: var(--font-heading-family);
+  font-size: 32px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.v3-title span {
+  color: var(--color-text-muted);
+}
+
+@media screen and (max-width: 760px) {
+  .v3-title {
+    font-size: 26px;
+  }
+}
+
+/* Link com seta ("Ver todos"): altura mínima de 44 px, sem sublinhado em repouso. */
+.v3-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 44px;
+  color: var(--color-ink);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.v3-link .icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+.v3-link:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Palavra com hífen do nome do produto ("Beta-Alanina", "L-Cisteína", "MK-7") que não se parte na
+   quebra de linha. O snippets/v3-nome-visivel (modo html) envolve cada uma em <span class="v3-junto">,
+   sem caractere invisível no texto. Regra única do tema: as cópias locais saíram. */
+.v3-junto {
+  white-space: nowrap;
+}
+
+/* Botão circular com ícone (setas de carrossel, fechar): vidro funcional fino, sem desfoque
+   (spec 8.3), com o fio externo escuro de 6% (emenda V2). Ícone ink sobre o fino: 6,206:1 no
+   pior caso livre. Com a classe .glass do sistema (setas sobre foto com .glass--thin
+   .glass--blur), o material de liquid-glass.css vale. */
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid var(--lg-rim-light-color, var(--color-line));
+  border-radius: var(--radius-pill);
+  background-color: var(--glass-thin-bg-fallback, var(--color-background));
+  background-image: var(--lg-sheen-functional, none);
+  color: var(--color-ink);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-soft, 0 0 #0000), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    border-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    box-shadow var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .icon-button {
+    background-color: var(--glass-thin-bg, var(--color-background));
+  }
+}
+
+@media (hover: hover) {
+  .icon-button:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--glass-thin-bg-hover, var(--color-surface-2));
+    background-image: var(--lg-sheen-functional-hover, none);
+  }
+}
+
+.icon-button:active:not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-soft, 0 0 #0000), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000), var(--lg-press-glow, 0 0 #0000);
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.icon-button:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+/* Seta na ponta da fileira (ou botão desabilitado): continua sendo um círculo de vidro, só mais
+   claro (opacidade 0,5). Não tira o reflexo, o fio e a sombra do repouso: sem eles o círculo some
+   no fundo branco e sobra só o ícone (revisão da tarefa 3, Menor 6). Por isso a regra só muda a
+   opacidade e o cursor. */
+.icon-button:disabled,
+.icon-button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.icon-button--plain {
+  border-color: transparent;
+  background-color: transparent;
+  background-image: none;
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+}
+
+@media (hover: hover) {
+  .icon-button--plain:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--lg-fill-ink-06, var(--color-surface-2));
+    background-image: none;
+  }
+}
+
+.icon-button--plain:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--lg-fill-ink-10, var(--color-surface-2));
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+}
+
+/* Por cima de vidro, o botão circular vira preenchimento (P3). */
+:is(.glass, .glass-layer) .icon-button:not(.icon-button--plain):not(.glass) {
+  border-color: transparent;
+  background-color: var(--glass-fill-bg, var(--color-background));
+  background-image: none;
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-soft, 0 0 #0000);
+}
+
+/* ---------- Campos de formulário ---------- */
+
+/*
+  Campo de vidro (.lg-field-input, spec 8.9): preenchimento branco a 0,90, altura mínima 48 px,
+  cápsula nos campos de uma linha e raio 16 na área de texto, texto ink 16 px. Borda do ajuste
+  "Borda de campos" (#6F8798, 3,36:1 na névoa) direto sobre o campo e #4A6072 dentro de
+  qualquer vidro (3,474:1 no pior caso do regular). Tudo em :where(), especificidade zero:
+  o CSS de cada componente continua mandando.
+*/
+:where(
+  input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="range"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="file"], [type="color"]),
+  select,
+  textarea
+) {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--lg-fill-white-90, var(--color-background));
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+:where(textarea) {
+  min-height: 120px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  resize: vertical;
+}
+
+:where(select) {
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23081C2D' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  background-size: 16px;
+}
+
+:where(.glass, .glass-layer) :where(input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="range"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="file"], [type="color"]), select, textarea) {
+  border-color: var(--lg-input-border-glass, var(--color-input-border));
+}
+
+@media (hover: hover) {
+  :where(input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="range"], [type="submit"], [type="button"], [type="reset"], [type="image"], [type="file"], [type="color"]), select, textarea):hover:not(:disabled) {
+    border-color: var(--color-ink);
+  }
+}
+
+:where(input:not([type="checkbox"], [type="radio"], [type="hidden"]), select, textarea):focus-visible {
+  box-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+:where(input, select, textarea):disabled {
+  opacity: 0.5;
+  background-color: var(--lg-fill-ink-04, var(--color-surface-2));
+  cursor: not-allowed;
+}
+
+::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+/* Erro: borda de 2 px #C2410C (componente, 3:1), sempre com ícone ou mensagem. */
+:where(input, select, textarea)[aria-invalid="true"] {
+  border-width: 2px;
+  border-color: var(--color-offer);
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field + .field {
+  margin-top: 16px;
+}
+
+.field__label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.field__hint {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.form-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* Texto de erro em #9B3915 (spec D30): 6,288:1 na névoa, 5,006:1 no maré-2, 6,431:1 no
+   vidro espesso. A borda de erro dos campos continua #C2410C. */
+.form-message--error {
+  color: var(--lg-error-text, var(--color-offer));
+}
+
+.form-message--success {
+  color: var(--color-chip-text);
+}
+
+/* Seletor de quantidade (gaveta e página do carrinho): cápsula de 44 px com a mesma regra
+   de borda dos campos (spec 8.9). Botões e campo ocupam os 44 px inteiros de altura (a margem
+   de -1 px passa por cima da borda de 1 px, que continua visível: eles são transparentes), e o
+   campo tem 44 px de largura: todo alvo do seletor fica com 44 x 44 (spec P21).
+   Hover: borda ink e preenchimento ink a 6% no botão; pressionado: escala 0,95 (1 com
+   movimento reduzido); botão no limite (aria-disabled): opacidade 0,5. */
+.quantity-input {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-white-90, var(--color-background));
+  color: var(--color-ink);
+  transition: border-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+:is(.glass, .glass-layer) .quantity-input {
+  border-color: var(--lg-input-border-glass, var(--color-input-border));
+}
+
+@media (hover: hover) {
+  .quantity-input:hover {
+    border-color: var(--color-ink);
+  }
+}
+
+.quantity-input__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-block: -1px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.quantity-input__button:hover {
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+}
+
+.quantity-input__button:active:not([aria-disabled="true"]) {
+  transform: scale(0.95);
+}
+
+.quantity-input__button:focus-visible {
+  outline-offset: -3px;
+}
+
+.quantity-input__button[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-input__button[aria-disabled="true"]:hover {
+  background: transparent;
+}
+
+.quantity-input__field {
+  width: 44px;
+  min-height: 0;
+  height: 44px;
+  margin-block: -1px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.quantity-input__field:focus-visible {
+  box-shadow: none;
+  outline-offset: -3px;
+}
+
+.quantity-input__field::-webkit-outer-spin-button,
+.quantity-input__field::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ---------- Cartões, chips e selos ---------- */
+
+/* Cartão = vidro de conteúdo (spec 5.3 e D29): branco a 0,66, sem desfoque, só a linha de
+   luz de cima, fio ink suave e sombra de cartão. Raio 28 no computador e 22 no celular. */
+.card {
+  border: 1px solid transparent;
+  border-radius: var(--lg-radius-card, var(--radius-card));
+  background-color: var(--glass-card-bg, var(--color-background));
+  box-shadow: var(--lg-hairline-soft, 0 0 0 1px var(--color-line)), var(--lg-rim-content-inset, 0 0 #0000), var(--lg-shadow-card, 0 0 #0000);
+  padding: 16px;
+}
+
+.card--surface {
+  border-color: transparent;
+}
+
+.card--large {
+  padding: 24px;
+}
+
+/* Cartão dentro de vidro vira preenchimento (P3). */
+:is(.glass, .glass-layer) .card {
+  background-color: var(--glass-fill-bg, var(--color-background));
+  box-shadow: var(--lg-hairline-soft, 0 0 0 1px var(--color-line));
+}
+
+@media screen and (max-width: 749px) {
+  .card {
+    padding: 12px;
+  }
+}
+
+/* Chip de formato (.lg-fill--chip): preenchimento sólido, tinta sobre o campo claro (15,44:1).
+   11 px só no celular, permitido por ser preenchimento sólido (spec 5.8, regra 3). */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-chip-bg);
+  color: var(--color-chip-text);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  white-space: nowrap;
+}
+
+/* Chip de contorno (atalhos e categorias): cápsula de 44 px em vidro funcional fino sem
+   desfoque (spec 8.4), texto ink, fio externo escuro de 6% (emenda V2). Hover: alfa 0,70 e
+   fio ink a 0,30. */
+.chip--outline {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--lg-rim-light-color, var(--color-line));
+  background-color: var(--glass-thin-bg-fallback, var(--color-background));
+  background-image: var(--lg-sheen-functional, none);
+  color: var(--color-ink);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-soft, 0 0 #0000), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    box-shadow var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .chip--outline {
+    background-color: var(--glass-thin-bg, var(--color-background));
+  }
+}
+
+a.chip--outline:hover {
+  background-color: var(--glass-thin-bg-hover, var(--color-background));
+  color: var(--color-ink);
+  text-decoration: none;
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-strong, 0 0 0 1px var(--color-ink)), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+}
+
+a.chip--outline:active {
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.chip--outline:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+/* Chip de contorno por cima de vidro: preenchimento (P3). */
+:is(.glass, .glass-layer) .chip--outline {
+  border-color: transparent;
+  background-color: var(--glass-fill-bg, var(--color-background));
+  background-image: none;
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-soft, 0 0 0 1px var(--color-line));
+}
+
+:is(.glass, .glass-layer) a.chip--outline:hover {
+  background-color: var(--glass-fill-bg-hover, var(--color-background));
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-strong, 0 0 0 1px var(--color-ink));
+}
+
+@media screen and (max-width: 749px) {
+  .chip {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .chip--outline {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+
+/* Selo simples em pílula (.lg-fill--badge; o selo sobre foto de produto está em
+   component-badge-ribbon.css): linha de luz de 1 px em cima, sem reflexo sobre o texto. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 12px;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+}
+
+.badge--accent {
+  background: var(--color-accent);
+  color: var(--color-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.badge--offer {
+  background: var(--color-offer);
+  color: var(--color-on-dark);
+}
+
+/* ---------- Grades ---------- */
+
+.grid {
+  --grid-columns: var(--grid-columns-mobile, 2);
+
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  gap: var(--grid-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media screen and (min-width: 750px) {
+  .grid {
+    --grid-columns: var(--grid-columns-tablet, 3);
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .grid {
+    --grid-columns: var(--grid-columns-desktop, 4);
+  }
+}
+
+.grid--1 {
+  --grid-columns-mobile: 1;
+  --grid-columns-tablet: 1;
+  --grid-columns-desktop: 1;
+}
+
+.grid--2 {
+  --grid-columns-tablet: 2;
+  --grid-columns-desktop: 2;
+}
+
+.grid--3 {
+  --grid-columns-desktop: 3;
+}
+
+.grid--4 {
+  --grid-columns-desktop: 4;
+}
+
+.grid--5 {
+  --grid-columns-desktop: 5;
+}
+
+.grid--6 {
+  --grid-columns-desktop: 6;
+}
+
+.grid--mobile-1 {
+  --grid-columns-mobile: 1;
+}
+
+.grid > * {
+  min-width: 0;
+}
+
+/* ---------- Redes sociais e formas de pagamento ---------- */
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social-links__item {
+  display: flex;
+}
+
+.social-links__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  color: inherit;
+  transition: background-color var(--duration-fast) ease;
+}
+
+.social-links__link:hover {
+  color: inherit;
+  background: rgba(var(--color-ink-rgb), 0.08);
+}
+
+.payment-icons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.payment-icons__item {
+  display: flex;
+}
+
+.payment-icons__icon {
+  width: 38px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+/* ---------- Mídia ---------- */
+
+.media {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-media);
+  background: var(--color-photo-bg);
+}
+
+.media > img,
+.media > svg,
+.media > video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--color-text-muted);
+  background: var(--color-photo-bg);
+}
+
+/* ---------- Redução de movimento ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Sem escala ao pressionar (spec 9.5); as demais peças leem --lg-press-scale, que já vai a 1. */
+  .quantity-input__button:active:not([aria-disabled="true"]) {
+    transform: none;
+  }
+}
+
+/* ---------- Modos de reserva das classes-base (spec 9) ---------- */
+
+/* Transparência reduzida (Chrome e Edge 118+): cada material volta à cor chapada atual. */
+@media (prefers-reduced-transparency: reduce) {
+  .button--secondary,
+  :is(.glass, .glass-layer) .button--secondary {
+    --button-bg: #FFFFFF;
+    --button-bg-hover: #FFFFFF;
+    --button-sheen: none;
+  }
+
+  .icon-button:not(.icon-button--plain),
+  .chip--outline,
+  .card,
+  .quantity-input,
+  :where(input:not([type="checkbox"], [type="radio"], [type="hidden"]), select, textarea) {
+    background-color: #FFFFFF;
+    background-image: none;
+  }
+
+  .icon-button:disabled,
+  .icon-button[aria-disabled="true"] {
+    background-color: #FFFFFF;
+  }
+}
+
+/* Contraste aumentado: branco sólido com borda ink, sem sombra nem luz; o halo do foco fica. */
+@media (prefers-contrast: more) {
+  .button--secondary,
+  :is(.glass, .glass-layer) .button--secondary {
+    --button-bg: #FFFFFF;
+    --button-bg-hover: #FFFFFF;
+    --button-border: var(--color-ink);
+    --button-border-hover: var(--color-ink);
+    --button-shadow: 0 0 #0000;
+    --button-shadow-hover: 0 0 #0000;
+    --button-shadow-press: 0 0 #0000;
+    --button-sheen: none;
+  }
+
+  .button {
+    --button-shadow: 0 0 #0000;
+    --button-shadow-hover: 0 0 #0000;
+    --button-shadow-press: 0 0 #0000;
+  }
+
+  .icon-button:not(.icon-button--plain),
+  .chip--outline,
+  :is(.glass, .glass-layer) .chip--outline,
+  :is(.glass, .glass-layer) .icon-button:not(.icon-button--plain):not(.glass) {
+    border-color: var(--color-ink);
+    background-color: #FFFFFF;
+    background-image: none;
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+
+  .card,
+  :is(.glass, .glass-layer) .card {
+    border-color: var(--color-ink);
+    background-color: #FFFFFF;
+    box-shadow: none;
+  }
+
+  .quantity-input,
+  :where(input:not([type="checkbox"], [type="radio"], [type="hidden"]), select, textarea) {
+    border-color: var(--color-ink);
+    background-color: #FFFFFF;
+  }
+
+  .badge {
+    box-shadow: none;
+  }
+}
+
+/* Cores forçadas: o navegador anula sombras e força as cores; bordas reais no lugar dos fios. */
+@media (forced-colors: active) {
+  .button,
+  .chip,
+  .badge,
+  .icon-button {
+    border: 1px solid ButtonText;
+  }
+
+  .card,
+  .chip--outline,
+  .quantity-input {
+    border: 1px solid CanvasText;
+    background-color: Canvas;
+    background-image: none;
+  }
+
+  /* O navegador força a cor mas mantém o alfa do fundo (spec 9.4): o botão circular, que pode
+     ficar sobre foto, e o secundário ficam opacos. */
+  .icon-button:not(.icon-button--plain),
+  .button--secondary {
+    background-color: ButtonFace;
+    background-image: none;
+  }
+
+  .button:focus-visible,
+  .icon-button:focus-visible,
+  .chip--outline:focus-visible {
+    outline-color: Highlight;
+  }
+}

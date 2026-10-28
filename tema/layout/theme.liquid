@@ -1,0 +1,157 @@
+<!doctype html>
+<html class="no-js" lang="{{ request.locale.iso_code | default: 'pt-BR' }}">
+  <head>
+    {%- comment -%}
+      Metas, ícones, pré-carga das fontes, descrição, troca no-js/js e importmap: trecho comum
+      aos dois layouts (snippets/head-comum.liquid).
+    {%- endcomment -%}
+    {%- comment -%}
+      Descrição padrão da página inicial (17/10/2026). Só vale na home e só enquanto a descrição de
+      Loja virtual > Preferências estiver vazia: preenchida lá, ela passa a valer e este texto sai de cena.
+      Vai para a meta description (head-comum) e para og:description e twitter:description (meta-tags).
+      O "R$ 179" do frete grátis está em texto fixo: se settings.free_shipping_threshold mudar, ajustar aqui.
+    {%- endcomment -%}
+    {%- liquid
+      assign default_description = ''
+      if request.page_type == 'index'
+        assign default_description = 'Suplementos Beacon Labs em cápsulas, gotas e gomas, com laudo de análise do insumo. Frete grátis a partir de R$ 179 para todo o Brasil.'
+      endif
+    -%}
+    {% render 'head-comum', preload_heading_font: true, default_description: default_description %}
+
+    {%- liquid
+      assign title_tags = current_tags | join: ', '
+    -%}
+    <title>
+      {{- page_title | escape -}}
+      {%- if current_tags %} · {{ 'fundacao.meta.tagged' | t: tags: title_tags }}{% endif -%}
+      {%- if current_page != 1 %} · {{ 'fundacao.meta.page' | t: page: current_page }}{% endif -%}
+      {%- unless page_title contains shop.name %} · {{ shop.name | escape }}{% endunless -%}
+    </title>
+
+    {% render 'meta-tags', default_description: default_description %}
+    {% render 'structured-data' %}
+
+    {{ content_for_header }}
+
+    {% render 'css-variables' %}
+
+    {{ 'base.css' | asset_url | stylesheet_tag }}
+    {{ 'liquid-glass.css' | asset_url | stylesheet_tag }}
+    {{ 'component-price.css' | asset_url | stylesheet_tag }}
+    {{ 'component-badge-ribbon.css' | asset_url | stylesheet_tag }}
+    {{ 'component-rating-stars.css' | asset_url | stylesheet_tag }}
+    {{ 'component-product-card.css' | asset_url | stylesheet_tag }}
+    {{ 'component-potes-mexem.css' | asset_url | stylesheet_tag }}
+    {{ 'component-botoes-pulsando.css' | asset_url | stylesheet_tag }}
+    {{ 'component-revelar.css' | asset_url | stylesheet_tag }}
+    {{ 'component-free-shipping-bar.css' | asset_url | stylesheet_tag }}
+    {{ 'component-drawer.css' | asset_url | stylesheet_tag }}
+    {{ 'component-menu-drawer.css' | asset_url | stylesheet_tag }}
+    {%- if settings.cart_type == 'drawer' -%}
+      {{ 'component-cart-drawer.css' | asset_url | stylesheet_tag }}
+      {{ 'component-cart-troca-kit.css' | asset_url | stylesheet_tag }}
+      {{ 'component-cart-combos.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if settings.predictive_search_enabled -%}
+      {{ 'component-predictive-search.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+    {%- if request.page_type == 'policy' -%}
+      {{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+      {{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+      {{ 'component-policy.css' | asset_url | stylesheet_tag }}
+    {%- endif -%}
+
+    <script type="application/json" id="ThemeConfig">
+      {
+        "routes": {
+          "root": {{ routes.root_url | json }},
+          "cart": {{ routes.cart_url | json }},
+          "cartAdd": {{ routes.cart_add_url | json }},
+          "cartChange": {{ routes.cart_change_url | json }},
+          "cartUpdate": {{ routes.cart_update_url | json }},
+          "search": {{ routes.search_url | json }},
+          "predictiveSearch": {{ routes.predictive_search_url | json }},
+          "productRecommendations": {{ routes.product_recommendations_url | json }},
+          "allProducts": {{ routes.all_products_collection_url | json }}
+        },
+        "cartType": {{ settings.cart_type | json }},
+        "freeShippingThreshold": {{ settings.free_shipping_threshold | default: 0 | json }},
+        "moneyFormat": {{ shop.money_format | json }},
+        "currency": {{ cart.currency.iso_code | json }},
+        "locale": {{ request.locale.iso_code | json }},
+        "predictiveSearch": {{ settings.predictive_search_enabled | json }},
+        "strings": {
+          "adding": {{ 'fundacao.js.adding' | t | json }},
+          "added": {{ 'fundacao.js.added' | t | json }},
+          "addError": {{ 'fundacao.js.add_error' | t | json }},
+          "updateError": {{ 'fundacao.js.update_error' | t | json }},
+          "loading": {{ 'fundacao.js.loading' | t | json }},
+          "cartLabelOne": {{ 'fundacao.js.cart_label_one' | t | json }},
+          "cartLabelOther": {{ 'fundacao.js.cart_label_other' | t | json }},
+          "cartCountOne": {{ 'fundacao.js.cart_count_one' | t | json }},
+          "cartCountOther": {{ 'fundacao.js.cart_count_other' | t | json }},
+          "freeShippingRemaining": {{ 'fundacao.js.free_shipping_remaining' | t | json }},
+          "freeShippingUnlocked": {{ 'fundacao.js.free_shipping_unlocked' | t | json }},
+          "searchLoading": {{ 'fundacao.js.search_loading' | t | json }},
+          "menuOpen": {{ 'fundacao.js.menu_open' | t | json }},
+          "menuClose": {{ 'fundacao.js.menu_close' | t | json }}
+        }
+      }
+    </script>
+
+    <script src="{{ 'global.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'cart-chrome.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'product-form.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'quantity-input.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'details-disclosure.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'carousel-slider.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'menu-drawer.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'mega-menu.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'liquid-glass.js' | asset_url }}" type="module"></script>
+    <script src="{{ 'revelar.js' | asset_url }}" type="module"></script>
+    {%- if settings.cart_type == 'drawer' -%}
+      <script src="{{ 'cart-items.js' | asset_url }}" type="module"></script>
+      <script src="{{ 'cart-drawer.js' | asset_url }}" type="module"></script>
+      <script src="{{ 'cart-troca-kit.js' | asset_url }}" type="module"></script>
+      <script src="{{ 'cart-combos.js' | asset_url }}" type="module"></script>
+    {%- endif -%}
+    {%- if settings.predictive_search_enabled -%}
+      <script src="{{ 'predictive-search.js' | asset_url }}" type="module"></script>
+    {%- endif -%}
+  </head>
+
+  <body class="template-{{ template.name | handle }}{% if template.suffix != blank %} template-suffix-{{ template.suffix | handle }}{% endif %}">
+    <a class="skip-link" href="#MainContent">{{ 'fundacao.accessibility.skip_to_content' | t }}</a>
+
+    {% sections 'header-group' %}
+
+    <main id="MainContent" class="main-content" tabindex="-1">
+      {%- if request.page_type == 'policy' -%}
+        {%- comment -%}
+          Políticas da loja (privacidade, trocas, envio, termos): o modelo é da Shopify e só entrega o bloco
+          .shopify-policy__container. A trilha única do tema abre a página, no campo claro do topo
+          (assets/component-policy.css; etapa 8e, leva E, item 3).
+        {%- endcomment -%}
+        <div class="pb-topo policy-topo">
+          <div class="page-width">
+            {% render 'colecao-breadcrumb', current: page_title, class: 'pb-topo__trilha' %}
+          </div>
+        </div>
+      {%- endif -%}
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'footer-group' %}
+
+    {%- if settings.cart_type == 'drawer' -%}
+      {% render 'cart-drawer' %}
+    {%- endif -%}
+
+    {%- if settings.predictive_search_enabled -%}
+      {% render 'predictive-search-modal' %}
+    {%- endif -%}
+
+    <p id="ThemeLiveRegion" class="visually-hidden" role="status" aria-live="polite"></p>
+  </body>
+</html>

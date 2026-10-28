@@ -1,0 +1,114 @@
+/* Beacon Labs · página do vale-presente (templates/gift_card.liquid)
+   Página isolada ({% layout none %}), sem cabeçalho nem rodapé do tema.
+   Liquid Glass (spec 4.2 e 5.6): fundo na névoa; cartão em vidro de conteúdo (.glass
+   .glass--card na marcação), raio 28 (22 no celular); bloco do código em preenchimento
+   (.glass-fill, branco a 0,72) com borda tracejada decorativa #6F8798 (3,715:1 contra o
+   preenchimento); situação (desativado, vencido) em preenchimento ink a 6%. Sobre a névoa
+   [calculado em 28/09/2026]: código ink 17,498:1 e rótulo em apoio 6,480:1 no preenchimento;
+   apoio 6,309:1 no cartão; situação em apoio 5,587:1 sobre o ink a 6%. */
+
+body.gift-card-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 24px;
+  background: var(--lg-field-nevoa, var(--color-surface-1));
+}
+
+.gift-card {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.gift-card__card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 28px;
+  border-radius: var(--lg-radius-card, var(--radius-card-lg));
+  text-align: center;
+}
+
+.gift-card__logo {
+  margin-bottom: 24px;
+}
+
+.gift-card__logo img {
+  display: block;
+  height: auto;
+}
+
+.gift-card__status {
+  margin: 0 0 16px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.gift-card__eyebrow {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.gift-card__balance {
+  margin: 0 0 4px;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 40px;
+  color: var(--color-ink);
+}
+
+.gift-card__initial {
+  margin: 0 0 20px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.gift-card__code-block {
+  width: 100%;
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px dashed var(--color-input-border);
+  border-radius: var(--lg-radius-inner, var(--radius-card));
+}
+
+.gift-card__code-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.gift-card__code {
+  margin: 0;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--color-ink);
+  word-break: break-all;
+}
+
+.gift-card__expiry {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.gift-card__cta {
+  margin-top: 28px;
+  width: 100%;
+}

@@ -1,0 +1,151 @@
+{%- comment -%}
+  Área produto. Bloco "Oferta combo" (sections/main-product.liquid), extraído para cá para
+  simplificar a lógica condicional da seção principal (o Theme Check aponta complexidade
+  demais quando este bloco fica embutido).
+  Parâmetros:
+  - product: produto da página (obrigatório)
+  - current_variant: variante inicial (para o item "este produto")
+  - block_settings: block.settings do bloco "combo_oferta" (o nome não é "settings" para não
+    esconder o objeto global settings do tema, de onde vem settings.free_shipping_threshold)
+  - shopify_attributes: block.shopify_attributes
+  - section_id: id da seção (para ids únicos e o atributo data-section-id)
+  - design_mode: request.design_mode
+
+  Mostra este produto e os produtos do metafield beacon.combo, cada um com caixa de seleção
+  (snippets/produto-combo-item.liquid). Sem beacon.combo, combo-offer.js busca recomendações
+  complementares (sections/product-combo-recommendations.liquid) quando use_complementary
+  estiver ativo; até lá, o elemento fica hidden (combo_wait), sem inventar produto nenhum.
+  Redesenho v3 (tarefa 6, parte B): o "Compre junto" fica fora da grade do topo, em bloco claro
+  (.lg-field--claro, #ECF3F9) sobre a página branca, sem vidro: lista em linhas com caixa de marcação
+  nativa, foto, nome com a dose, opção, preço e o botão de adicionar. Sem a frase de frete grátis
+  do alvo (emenda U1): free_shipping_lead continua desligado. O comportamento não muda.
+{%- endcomment -%}
+{%- liquid
+  assign combo_products = product.metafields.beacon.combo.value
+  assign combo_max = block_settings.max_items | plus: 0
+  assign combo_extra = 0
+  for combo_product in combo_products
+    if combo_product.available and combo_product.id != product.id
+      assign combo_extra = combo_extra | plus: 1
+    endif
+  endfor
+  assign combo_title_id = 'ComboTitle-' | append: section_id
+  assign combo_wait = false
+  if combo_extra == 0 and block_settings.use_complementary
+    assign combo_wait = true
+  endif
+
+  # Texto inicial do botão: a mesma soma que combo-offer.js faz (itens marcados e disponíveis,
+  # na variante inicial de cada um), para a página já abrir com o texto certo.
+  assign combo_count = 0
+  assign combo_total = 0
+  if current_variant.available
+    assign combo_count = 1
+    assign combo_total = current_variant.price
+  endif
+  assign combo_counted = 0
+  for combo_product in combo_products
+    if combo_counted >= combo_max
+      break
+    endif
+    if combo_product.available and combo_product.id != product.id
+      capture combo_sum_index
+        render 'produto-initial-variant', product: combo_product
+      endcapture
+      assign combo_sum_index = combo_sum_index | strip | plus: 0
+      assign combo_sum_variant = combo_product.variants[combo_sum_index]
+      if combo_sum_variant.available
+        assign combo_count = combo_count | plus: 1
+        assign combo_total = combo_total | plus: combo_sum_variant.price
+      endif
+      assign combo_counted = combo_counted | plus: 1
+    endif
+  endfor
+  assign combo_total_money = combo_total | money | replace: ' ', ' '
+  assign combo_threshold = 0
+  if block_settings.show_free_shipping
+    assign combo_threshold = settings.free_shipping_threshold | default: 0 | plus: 0
+  endif
+  assign combo_ships_free = false
+  if combo_threshold > 0 and combo_total >= combo_threshold
+    assign combo_ships_free = true
+  endif
+  if combo_count == 0
+    assign combo_label = 'produto.combo.select_one' | t
+  elsif combo_count == 1
+    assign combo_label = 'produto.combo.add_one' | t: total: combo_total_money
+  else
+    assign combo_label = 'produto.combo.add_many' | t: quantidade: combo_count, total: combo_total_money
+  endif
+-%}
+{%- if product.available and combo_extra > 0 or product.available and combo_wait -%}
+  <script src="{{ 'combo-offer.js' | asset_url }}" type="module"></script>
+  <combo-offer
+    class="combo-offer lg-field--claro"
+    role="group"
+    aria-labelledby="{{ combo_title_id }}"
+    data-section-id="{{ section_id }}"
+    data-product-id="{{ product.id }}"
+    data-max-items="{{ combo_max }}"
+    data-use-complementary="{{ block_settings.use_complementary }}"
+    data-recommendations-section="product-combo-recommendations"
+    data-threshold="{{ combo_threshold }}"
+    {% if combo_wait %}hidden{% endif %}
+    {{ shopify_attributes }}
+  >
+    {%- if block_settings.banner_text != blank -%}
+      <p class="combo-offer__banner">
+        {%- render 'icon', name: 'flame', size: 18 -%}
+        <span>{{ block_settings.banner_text | escape }}</span>
+      </p>
+    {%- endif -%}
+    <div class="combo-offer__body">
+      <h2 class="combo-offer__title" id="{{ combo_title_id }}">{{ block_settings.heading | escape }}</h2>
+      <p class="combo-offer__shipping" data-combo-shipping{% unless combo_ships_free %} hidden{% endunless %}>
+        <span>{{ 'produto.combo.free_shipping_lead' | t }}</span>
+        <span class="combo-offer__shipping-chip">
+          {%- render 'icon', name: 'truck', size: 16 -%}
+          {{ 'produto.combo.free_shipping' | t }}
+        </span>
+      </p>
+      <ul class="combo-offer__list" role="list" data-combo-list>
+        {% render 'produto-combo-item', product: product, variant: current_variant, is_current: true, id_prefix: section_id %}
+        {%- assign combo_rendered = 0 -%}
+        {%- for combo_product in combo_products -%}
+          {%- if combo_rendered >= combo_max -%}{%- break -%}{%- endif -%}
+          {%- if combo_product.available and combo_product.id != product.id -%}
+            {% render 'produto-combo-item', product: combo_product, is_current: false, id_prefix: section_id %}
+            {%- assign combo_rendered = combo_rendered | plus: 1 -%}
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+      <button type="button" class="button button--primary button--large combo-offer__submit" data-combo-submit{% if combo_count == 0 %} disabled{% endif %}>
+        {%- render 'icon', name: 'bag', size: 20 -%}
+        <span class="button__label" data-combo-submit-label>{{ combo_label }}</span>
+      </button>
+      <p class="form-message form-message--error combo-offer__error" role="alert" hidden data-combo-error></p>
+    </div>
+    {%- comment -%}
+      Marcadores em variáveis: o Liquid da Shopify encerra um {{ ... }} no primeiro "}".
+    {%- endcomment -%}
+    {%- liquid
+      assign ph_total = '{total}'
+      assign ph_quantidade = '{quantidade}'
+      assign ph_percent = '{percent}'
+    -%}
+    <script type="application/json" data-combo-config>
+      {
+        "strings": {
+          "addOne": {{ 'produto.combo.add_one' | t: total: ph_total | json }},
+          "addMany": {{ 'produto.combo.add_many' | t: quantidade: ph_quantidade, total: ph_total | json }},
+          "selectOne": {{ 'produto.combo.select_one' | t | json }},
+          "discount": {{ 'produto.combo.discount' | t: percent: ph_percent | json }},
+          "added": {{ 'produto.combo.added' | t | json }},
+          "error": {{ 'produto.combo.error' | t | json }}
+        }
+      }
+    </script>
+  </combo-offer>
+{%- elsif design_mode -%}
+  <p class="main-product__block main-product__editor-note" {{ shopify_attributes }}>{{ 'produto.editor.empty' | t: field: 'beacon.combo' }}</p>
+{%- endif -%}

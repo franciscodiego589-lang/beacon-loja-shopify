@@ -1,0 +1,219 @@
+{%- comment -%}
+  Gaveta do carrinho. Renderizada no layout (quando o ajuste "Tipo de carrinho" = gaveta)
+  e também pela seção sections/cart-drawer.liquid, para a Section Rendering API
+  (?sections=cart-drawer). O JS troca o conteúdo de #CartDrawerContent pelo da resposta.
+
+  Estrutura:
+  <cart-drawer id="CartDrawer">
+    <dialog id="CartDrawerDialog"> cabeçalho, #CartDrawerContent (itens, barra de frete,
+    sugestões, rodapé com subtotal e checkout) ou estado vazio.
+
+  Sugestões: [data-cart-recommendations] carrega via recommendations.api.js a seção
+  'cart-drawer-recommendations' com o produto do primeiro item.
+  Sugestões curadas (29/09/2026): snippets/cart-upsell lê beacon.combo dos itens do carrinho e vem
+  dentro de #CartDrawerContent (refeito a cada mudança do carrinho). Quando há sugestão curada, ela
+  toma o lugar das automáticas; sem candidato, valem as automáticas de antes.
+
+  Liquid Glass: o <dialog> é vidro funcional espesso (.glass .glass--thick, spec 8.8); desde
+  01/10/2026 (Apple v2) COM desfoque (.glass--blur), porque há conteúdo da página por trás.
+  Forma e lugar em component-drawer.css, o resto em component-cart-drawer.css.
+{%- endcomment -%}
+<cart-drawer id="CartDrawer" class="cart-drawer{% if cart.item_count == 0 %} cart-drawer--empty{% endif %}">
+  <dialog id="CartDrawerDialog" class="drawer drawer--right cart-drawer__dialog glass glass--thick glass--blur" aria-labelledby="CartDrawerTitle">
+    <div class="drawer__inner cart-drawer__inner">
+      <div class="drawer__header cart-drawer__header">
+        <h2 id="CartDrawerTitle" class="drawer__title cart-drawer__title">
+          {{ 'fundacao.cart.title' | t }}
+          <span class="cart-drawer__count" data-cart-drawer-count>{{ 'fundacao.cart.item_count' | t: count: cart.item_count }}</span>
+        </h2>
+        <button type="button" class="drawer__close cart-drawer__close" aria-label="{{ 'fundacao.cart.close' | t }}" data-cart-drawer-close>
+          {% render 'icon', name: 'close', size: 22 %}
+        </button>
+      </div>
+
+      <div id="CartDrawerContent" class="cart-drawer__content" data-cart-drawer-content>
+        {%- if cart.item_count > 0 -%}
+          {% render 'free-shipping-bar', class: 'cart-drawer__free-shipping' %}
+
+          <form action="{{ routes.cart_url }}" method="post" id="CartDrawerForm" class="cart-drawer__form" novalidate>
+            <cart-items class="cart-items cart-drawer__items" data-cart-items>
+              <h3 class="visually-hidden">{{ 'fundacao.cart.items_label' | t }}</h3>
+              <ul class="cart-items__list" role="list">
+                {%- for item in cart.items -%}
+                  {%- liquid
+                    # Nome sem o trecho depois de " – " (emenda 2 da tarefa 3, G3), pela fonte única
+                    # snippets/v3-nome-visivel (emenda 15 da tarefa 8). Os três já saem escapados (S1):
+                    # 'html' vai entre tags; 'texto' vai aos rótulos (o filtro t não escapa de novo);
+                    # o alt leva | escape_once, porque o image_tag escaparia o texto uma segunda vez.
+                    # A variante (1, 3 ou 6 potes) segue em item.variant.title.
+                    capture item_title_html
+                      render 'v3-nome-visivel', produto: item.product, modo: 'html'
+                    endcapture
+                    assign item_title_html = item_title_html | strip
+                    capture item_title
+                      render 'v3-nome-visivel', produto: item.product, modo: 'texto'
+                    endcapture
+                    assign item_title = item_title | strip
+                    assign item_title_alt = item_title | escape_once
+                    assign item_input_id = 'CartDrawerQuantity-' | append: forloop.index
+                    assign item_max = ''
+                    if item.variant.inventory_management == 'shopify' and item.variant.inventory_policy == 'deny'
+                      assign item_max = item.variant.inventory_quantity
+                    endif
+                  -%}
+                  <li class="cart-item" data-line="{{ forloop.index }}" data-key="{{ item.key }}" data-cart-item>
+                    <a href="{{ item.url }}" class="cart-item__media" tabindex="-1" aria-hidden="true">
+                      {%- if item.image -%}
+                        {%- assign item_alt = item.image.alt | default: item_title_alt -%}
+                        {{ item.image | image_url: width: 192 | image_tag: widths: '96, 144, 192', sizes: '96px', loading: 'lazy', alt: item_alt, class: 'cart-item__image' }}
+                      {%- else -%}
+                        {{ 'product-1' | placeholder_svg_tag: 'cart-item__placeholder' }}
+                      {%- endif -%}
+                    </a>
+
+                    <div class="cart-item__info">
+                      <a href="{{ item.url }}" class="cart-item__title">{{ item_title_html }}</a>
+
+                      {%- unless item.product.has_only_default_variant -%}
+                        <p class="cart-item__variant">{{ item.variant.title | escape }}</p>
+                      {%- endunless -%}
+                      {%- render 'cart-troca-kit', item: item -%}
+
+                      {%- if item.selling_plan_allocation -%}
+                        <p class="cart-item__plan">{{ item.selling_plan_allocation.selling_plan.name | escape }}</p>
+                      {%- endif -%}
+
+                      {%- for property in item.properties -%}
+                        {%- assign property_first_char = property.first | slice: 0 -%}
+                        {%- if property.last != blank and property_first_char != '_' -%}
+                          <p class="cart-item__property">
+                            <span class="cart-item__property-name">{{ property.first | escape }}:</span>
+                            {%- assign property_scheme = property.last | slice: 0, 8 -%}
+                            {% if property.last contains '/uploads/' and property_scheme == 'https://' %}
+                              <a href="{{ property.last | escape }}" class="link" target="_blank" rel="noopener noreferrer">{{ property.last | split: '/' | last | escape }}</a>
+                            {% else %}
+                              {{ property.last | escape }}
+                            {% endif %}
+                          </p>
+                        {%- endif -%}
+                      {%- endfor -%}
+
+                      {%- if item.line_level_discount_allocations.size > 0 -%}
+                        <ul class="cart-item__discounts" role="list">
+                          {%- for allocation in item.line_level_discount_allocations -%}
+                            <li class="cart-item__discount">
+                              {% render 'icon', name: 'tag', size: 14 %}
+                              {{ allocation.discount_application.title | escape }} (-{{ allocation.amount | money }})
+                            </li>
+                          {%- endfor -%}
+                        </ul>
+                      {%- endif -%}
+
+                      <div class="cart-item__row">
+                        <quantity-input class="quantity-input cart-item__quantity">
+                          <button type="button" class="quantity-input__button" data-quantity-step="-1" aria-label="{{ 'fundacao.cart.decrease' | t: title: item_title }}">
+                            {% render 'icon', name: 'minus', size: 16 %}
+                          </button>
+                          <label for="{{ item_input_id }}" class="visually-hidden">{{ 'fundacao.cart.quantity_label' | t: title: item_title }}</label>
+                          <input
+                            type="number"
+                            id="{{ item_input_id }}"
+                            class="quantity-input__field"
+                            name="updates[]"
+                            autocomplete="off"
+                            value="{{ item.quantity }}"
+                            min="0"
+                            {% if item_max != '' %}max="{{ item_max }}"{% endif %}
+                            step="1"
+                            inputmode="numeric"
+                            data-line="{{ forloop.index }}"
+                            data-key="{{ item.key }}"
+                          >
+                          <button type="button" class="quantity-input__button" data-quantity-step="1" aria-label="{{ 'fundacao.cart.increase' | t: title: item_title }}">
+                            {% render 'icon', name: 'plus', size: 16 %}
+                          </button>
+                        </quantity-input>
+
+                        <div class="cart-item__prices">
+                          {%- if item.original_line_price > item.final_line_price -%}
+                            <span class="visually-hidden">{{ 'fundacao.price.regular' | t }}</span>
+                            <s class="cart-item__compare">{{ item.original_line_price | money }}</s>
+                          {%- elsif item.variant.compare_at_price > item.variant.price -%}
+                            <span class="visually-hidden">{{ 'fundacao.price.regular' | t }}</span>
+                            <s class="cart-item__compare">{{ item.variant.compare_at_price | times: item.quantity | money }}</s>
+                          {%- endif -%}
+                          <span class="cart-item__price">{{ item.final_line_price | money }}</span>
+                        </div>
+                      </div>
+
+                      <button type="button" class="cart-item__remove" data-cart-remove="{{ forloop.index }}" aria-label="{{ 'fundacao.cart.remove' | t: title: item_title }}">
+                        {% render 'icon', name: 'trash', size: 18 %}
+                        <span class="cart-item__remove-label" aria-hidden="true">{{ 'fundacao.cart.remove_short' | t }}</span>
+                      </button>
+                      <p class="cart-item__error form-message form-message--error" role="alert" hidden data-cart-item-error></p>
+                    </div>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            </cart-items>
+          </form>
+
+          {%- capture cart_combos_html -%}{% render 'cart-combos', limit: 2 %}{%- endcapture -%}
+          {%- if cart_combos_html contains 'cart-combos' -%}
+            <div class="cart-drawer__combos">{{ cart_combos_html }}</div>
+          {%- endif -%}
+
+          {%- capture cart_upsell_html -%}
+            {% render 'cart-upsell', limit: 10 %}
+          {%- endcapture -%}
+          {%- if cart_upsell_html contains 'data-cart-upsell' -%}
+            <div class="cart-drawer__recommendations">{{ cart_upsell_html }}</div>
+          {%- elsif settings.cart_show_recommendations -%}
+            <div
+              class="cart-drawer__recommendations"
+              data-cart-recommendations
+              data-product-id="{{ cart.items.first.product_id }}"
+              data-cart-products="{{ cart.items | map: 'product_id' | uniq | join: ',' }}"
+              data-limit="{{ settings.cart_recommendations_limit }}"
+              data-intent="related"
+              data-section-id="cart-drawer-recommendations"
+              data-url="{{ routes.product_recommendations_url }}"
+            ></div>
+          {%- endif -%}
+
+          <div class="drawer__footer cart-drawer__footer">
+            {%- if cart.cart_level_discount_applications.size > 0 -%}
+              <ul class="cart-drawer__discounts" role="list">
+                {%- for discount in cart.cart_level_discount_applications -%}
+                  <li class="cart-drawer__discount">
+                    {% render 'icon', name: 'tag', size: 14 %}
+                    <span>{{ discount.title | escape }}</span>
+                    <span>-{{ discount.total_allocated_amount | money }}</span>
+                  </li>
+                {%- endfor -%}
+              </ul>
+            {%- endif -%}
+            <div class="cart-drawer__subtotal">
+              <span class="cart-drawer__subtotal-label">{{ 'fundacao.cart.subtotal' | t }}</span>
+              <span class="cart-drawer__subtotal-value" data-cart-subtotal>{{ cart.total_price | money }}</span>
+            </div>
+            <p class="cart-drawer__note">{% render 'cart-frete-linha' %}</p>
+            <button type="submit" form="CartDrawerForm" name="checkout" class="button button--primary button--full cart-drawer__checkout">
+              {% render 'icon', name: 'lock', size: 18 %}
+              {{ 'fundacao.cart.checkout' | t }}
+            </button>
+            <p class="cart-drawer__garantia">{% render 'icon', name: 'shield-check', size: 16 %}<span>{{ 'busca_carrinho.cart.garantia_curta' | t }}</span></p>
+            <a href="{{ routes.cart_url }}" class="link cart-drawer__view-cart">{{ 'fundacao.cart.view_cart' | t }}</a>
+          </div>
+        {%- else -%}
+          <div class="cart-drawer__empty">
+            <span class="cart-drawer__empty-icon" aria-hidden="true">{% render 'icon', name: 'bag', size: 40 %}</span>
+            <p class="cart-drawer__empty-title">{{ 'fundacao.cart.empty_title' | t }}</p>
+            <p class="cart-drawer__empty-text">{{ 'fundacao.cart.empty_text' | t }}</p>
+            <a href="{{ routes.all_products_collection_url }}" class="button button--primary button--full cart-drawer__continue">{{ 'fundacao.cart.continue' | t }}</a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </dialog>
+</cart-drawer>

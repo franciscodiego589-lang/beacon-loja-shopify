@@ -1,0 +1,184 @@
+/*
+  Beacon Labs · aviso do topo (section-announcement-bar.css)
+  Estrutura em sections/announcement-bar.liquid.
+
+  Redesenho v3 (alvo.css, .aviso): texto tinta de 13 px (12 px até 760 px) sobre o campo claro,
+  sem barra escura. O campo (#ECF3F9) é pintado no invólucro da seção (.section-announcement),
+  o mesmo do cabeçalho (section-header.css): os dois formam o grupo do topo, sem emenda entre
+  eles nem com o topo das páginas. Altura de 40 px no computador e 36 px no celular; com
+  setas de navegação (mais de uma mensagem), 44 px para respeitar o alvo de toque.
+  Cores por variável da seção: --announcement-text e --announcement-progress (a cor do
+  preenchimento da barra de frete grátis, lida em component-free-shipping-bar.css).
+  Tinta #081C2D sobre #ECF3F9: 15,44:1.
+*/
+
+.section-announcement {
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.announcement-bar {
+  color: var(--announcement-text, var(--color-ink));
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+
+/* 6 px em cima e 2 px embaixo, como no alvo: o texto fica um pouco acima do centro. O recuo
+   lateral vem do .page-width. */
+.announcement-bar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding-block: 6px 2px;
+}
+
+.announcement-bar:has(.announcement-bar__nav) .announcement-bar__inner {
+  min-height: 44px;
+  padding-block: 0;
+}
+
+.announcement-bar :focus-visible {
+  outline-color: currentColor;
+  outline-offset: -3px;
+}
+
+.announcement-bar__messages {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 960px;
+}
+
+.announcement-bar__track {
+  flex: 1;
+  min-width: 0;
+}
+
+.announcement-bar__slide {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
+.announcement-bar__message {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 28px;
+  margin: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.announcement-bar__message--link {
+  min-height: 44px;
+}
+
+a.announcement-bar__message--link:hover {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.announcement-bar__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.announcement-bar__text--mobile {
+  display: none;
+}
+
+/* Setas e pausa: cápsulas transparentes de 44 px; hover ink a 6%, pressionado a 10%. */
+.announcement-bar__nav,
+.announcement-bar__pause {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.announcement-bar__nav:hover,
+.announcement-bar__pause:hover {
+  background: var(--lg-fill-ink-06, rgba(var(--color-ink-rgb, 8, 28, 45), 0.06));
+}
+
+.announcement-bar__nav:active,
+.announcement-bar__pause:active {
+  background: var(--lg-fill-ink-10, rgba(var(--color-ink-rgb, 8, 28, 45), 0.1));
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.announcement-bar__nav[aria-disabled="true"] {
+  opacity: 0.5;
+}
+
+/* Sem recuo vertical: texto e trilho (uns 34 px) cabem nos 40 px (36 px no celular) do aviso, e a
+   troca entre mensagem e progresso não muda a altura do topo. */
+.announcement-bar__free-shipping {
+  max-width: 560px;
+  padding-block: 0;
+}
+
+/* Progresso do frete grátis sobre o campo claro: trilho em ink a 24%. É a única definição do
+   trilho da barra de anúncio (component-free-shipping-bar.css não define mais um, porque o branco
+   a 0,24 de antes some sobre o claro); o preenchimento vem de --announcement-progress (tinta),
+   lido em component-free-shipping-bar.css. */
+.announcement-bar .free-shipping-bar {
+  --free-shipping-track: rgba(var(--color-ink-rgb, 8, 28, 45), 0.24);
+}
+
+/* Celular (até 760 px): 12 px, 36 px de altura e o texto curto. */
+@media screen and (max-width: 760px) {
+  .announcement-bar {
+    font-size: 12px;
+  }
+
+  .announcement-bar__inner {
+    min-height: 36px;
+  }
+
+  .announcement-bar:has(.announcement-bar__nav) .announcement-bar__inner {
+    min-height: 44px;
+  }
+
+  .announcement-bar__text--desktop {
+    display: none;
+  }
+
+  .announcement-bar__text--mobile {
+    display: inline;
+  }
+
+  /* 05/10/2026: em 360 px a frase quebrava deixando "179" sozinho na segunda linha; balance reparte as linhas. */
+  .announcement-bar__slide {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .announcement-bar__slide:not([hidden]) {
+    animation: announcement-fade 300ms ease-out;
+  }
+}
+
+@keyframes announcement-fade {
+  from {
+    opacity: 0;
+  }
+}

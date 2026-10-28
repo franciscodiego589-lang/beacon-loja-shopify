@@ -1,0 +1,37 @@
+/*
+  Beacon Labs · textos e imagens que aparecem ao rolar (06/10/2026, pedido do dono, com a loja
+  risenutritionbr.com como referência: "vamos deixar com esse layout de aparecer as escritas e as imagens").
+  - Medido na referência: começa invisível e 26 px abaixo; sobe e aparece em 0,75 a 1,1 s, curva
+    cubic-bezier(0.2, 0.8, 0.2, 1); foto de produto entra com 6 px de desfoque e 6 % maior; em sequência
+    (título, texto, botão). Aqui: 26 px, 0,8 s (texto) e 1 s (imagem), mesmo desfoque e zoom.
+  - A classe .rv só é posta pelo assets/revelar.js, e só em elemento que ainda está fora da tela ao
+    carregar: sem JavaScript, ou o que já está à vista, nunca fica escondido.
+  - Com "reduzir movimento" ligado no aparelho, nada é escondido nem anima.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .rv {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+    transition:
+      opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--rv-atraso, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .rv--imagem {
+    transform: translate3d(0, 26px, 0) scale(1.06);
+    filter: blur(6px);
+    transition:
+      opacity 1s cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 1s cubic-bezier(0.2, 0.8, 0.2, 1),
+      filter 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition-delay: var(--rv-atraso, 0ms);
+  }
+
+  .rv.rv--visivel {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}

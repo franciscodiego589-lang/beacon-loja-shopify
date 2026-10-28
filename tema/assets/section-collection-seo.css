@@ -1,0 +1,162 @@
+/*
+  Beacon Labs · texto de SEO da categoria (section-collection-seo.css)
+  Marcação em sections/collection-seo.liquid.
+
+  Redesenho v3 (emenda 17 da tarefa 8, etapa 8c; alvo.css linhas 209 a 212, 375 e 428, o bloco
+  .frase): a seção saiu do painel de vidro da v2 e fica sólida na página branca, sem vidro, sem
+  sombra e sem fio.
+  - Com o ajuste "Superfície" em bloco claro (padrão), o conteúdo mora num bloco no tom --color-photo-bg
+    (#ECF3F9) com raio --radius-tile (28 px; 24 px até 760 px) e recuo de 64 px (48 px e 40 px de 761 a
+    1080 px; 32 px e 20 px até 760 px), a mesma receita do bloco .frase do alvo. Com "Sem bloco", o
+    conteúdo fica direto na página, sem recuo.
+  - Espaço entre seções: --section-gap (104 px; 68 px até 760 px) em cima e embaixo, como margem do
+    próprio bloco da seção; as margens da grade de produtos e da seção seguinte se fundem com ela, e a
+    última seção da página se funde com o espaço do rodapé (section-footer.css). Medido em 02/10/2026:
+    104 px da grade até o bloco e 104 px do bloco até o rodapé (68 px no celular).
+  - Título pela classe .v3-title (32 px; 26 px até 760 px; peso 600). Texto corrido de 17 px com linha de
+    25 px na tinta (15,44:1 sobre o bloco claro). "Ler texto completo e referências" é um botão
+    transparente de 44 px, na tinta, com sublinhado ao passar o mouse (o texto nunca some).
+  - Foto opcional: inteira, na proporção dela, sem recorte (regra global das fotos), com o raio de cartão
+    --radius-card. Ao lado do texto só a partir de 1081 px (320 px de largura, à esquerda ou à direita,
+    conforme o ajuste); abaixo disso fica embaixo do texto, com até 360 px.
+*/
+
+.collection-seo {
+  margin-block: var(--section-gap, 64px);
+}
+
+/* O bloco só tem recuo e cor com a superfície em bloco claro. */
+.collection-seo--panel .collection-seo__bloco {
+  padding: 64px;
+  border-radius: var(--radius-tile);
+  background-color: var(--color-photo-bg);
+}
+
+.collection-seo__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 720px;
+}
+
+.collection-seo__heading {
+  margin: 0;
+}
+
+.collection-seo__text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--color-text);
+  font-size: 17px;
+  line-height: 25px;
+}
+
+.collection-seo__more {
+  margin: 0;
+  padding: 0;
+}
+
+.collection-seo__more-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-inline: -12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+.collection-seo__more-summary:hover {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.collection-seo__more-summary:active {
+  background-color: var(--lg-fill-ink-06, transparent);
+}
+
+.collection-seo__more-chevron {
+  transition: transform var(--duration-fast, 150ms) ease;
+}
+
+.collection-seo__more[open] .collection-seo__more-chevron {
+  transform: rotate(180deg);
+}
+
+.collection-seo__more-text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 4px;
+  color: var(--color-text);
+  font-size: 17px;
+  line-height: 25px;
+}
+
+/* Foto ao lado do texto (só existe com imagem escolhida): inteira, na proporção dela. */
+.collection-seo__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.collection-seo__media {
+  width: 100%;
+  max-width: 360px;
+}
+
+.collection-seo__image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-card);
+}
+
+@media screen and (max-width: 1080px) {
+  .collection-seo--panel .collection-seo__bloco {
+    padding: 48px 40px;
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .collection-seo--panel .collection-seo__bloco {
+    padding: 32px 20px;
+  }
+
+  .collection-seo__layout {
+    gap: 24px;
+  }
+}
+
+@media screen and (min-width: 1081px) {
+  .collection-seo__layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 56px;
+  }
+
+  .collection-seo__layout .collection-seo__inner {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .collection-seo__media {
+    flex: 0 0 320px;
+    width: 320px;
+  }
+
+  .collection-seo__layout--image-left .collection-seo__media {
+    order: -1;
+  }
+
+  /* Foto à direita: encosta na borda da coluna da página, mesmo quando o texto (até 720 px) deixa sobra. */
+  .collection-seo__layout--image-right {
+    justify-content: space-between;
+  }
+}

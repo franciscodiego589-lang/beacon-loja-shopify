@@ -1,0 +1,120 @@
+/*
+  Beacon Labs · páginas de política da loja (privacidade, trocas, envio, termos).
+  Etapa 8e, leva E, item 3 (03/10/2026). O modelo de política é da Shopify: ela entrega só o bloco
+  .shopify-policy__container (título em .shopify-policy__title e texto em .shopify-policy__body > .rte), sem
+  seção do tema. Antes a página saía sem estilo: título centralizado de 40 px a poucos pixels da cápsula,
+  parágrafos colados e listas apertadas. Agora segue a linguagem das páginas de ajuda e de texto:
+  - topo em campo claro de ponta a ponta com a trilha única (renderizada em layout/theme.liquid, classe
+    .pb-topo; ela também zera a bandeja clara do cabeçalho, paginas-blog.css) e o título de 56 px (36 px até
+    760 px), alinhado à esquerda da coluna de 1200 px;
+  - texto na página branca, coluna de leitura de 760 px à esquerda, 16 px (17 px a partir de 990 px) com linha
+    de 1,7, parágrafos e listas com respiro;
+  - 48 px (32 px até 760 px) entre o topo e o texto; o vão até o rodapé é o do .main-content::after (104 px; 68 px
+    até 760 px), por isso o bloco não tem recuo de baixo.
+  Só carregado quando request.page_type é 'policy' (layout/theme.liquid). O texto é gerado pela Shopify com o
+  nome da loja; o nome é do dono (Configurações, Detalhes da loja).
+*/
+
+/* A Shopify injeta o próprio estilo do bloco (recuo de 20 px dos lados e largura máxima): aqui ele é zerado e
+   a coluna passa a ser a do tema (.page-width). */
+.shopify-policy__container {
+  width: 100%;
+  max-width: calc(var(--page-content) + 2 * var(--page-gutter));
+  margin-inline: auto;
+  padding: 0;
+}
+
+/* Campo claro de ponta a ponta sem estourar a janela: a sombra com espalhamento grande pinta o fundo dos dois
+   lados, e o clip-path corta o que passa de cima e de baixo. O recuo lateral é o do .page-width. */
+.shopify-policy__title {
+  padding: 12px var(--page-gutter) 28px;
+  background-color: var(--lg-field-claro, #ECF3F9);
+  box-shadow: 0 0 0 100vmax var(--lg-field-claro, #ECF3F9);
+  clip-path: inset(0 -100vmax);
+}
+
+.shopify-policy__title h1 {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-size: 36px;
+  font-weight: var(--font-heading-weight);
+  line-height: 1.05;
+  letter-spacing: -0.028em;
+  text-align: left;
+  text-wrap: balance;
+}
+
+.shopify-policy__body {
+  padding: 32px var(--page-gutter) 0;
+}
+
+.shopify-policy__body .rte {
+  max-width: 760px;
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+/* O texto da Shopify vem embrulhado num <div>: os filhos diretos do .rte não são os parágrafos, então a regra
+   geral de espaço entre irmãos do .rte (base.css) não chega neles. */
+.shopify-policy__body .rte > div > * + * {
+  margin-top: 1em;
+}
+
+.shopify-policy__body .rte h2 {
+  margin-top: 1.8em;
+  font-size: 22px;
+  line-height: 1.25;
+}
+
+.shopify-policy__body .rte h3 {
+  margin-top: 1.5em;
+  font-size: 18px;
+}
+
+.shopify-policy__body .rte :is(h2, h3) + * {
+  margin-top: 0.6em;
+}
+
+.shopify-policy__body .rte :is(ul, ol) {
+  padding-left: 1.4em;
+}
+
+.shopify-policy__body .rte li + li {
+  margin-top: 0.4em;
+}
+
+.shopify-policy__body .rte table {
+  width: 100%;
+  font-size: 14px;
+}
+
+.shopify-policy__body .rte :is(th, td) {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--lg-divider, var(--color-line));
+  text-align: left;
+}
+
+@media screen and (min-width: 761px) {
+  .shopify-policy__title h1 {
+    font-size: 56px;
+  }
+
+  .shopify-policy__body {
+    padding-top: 48px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .shopify-policy__title {
+    padding-block: 22px 48px;
+  }
+
+  .shopify-policy__body .rte {
+    font-size: 17px;
+  }
+
+  .shopify-policy__body .rte h2 {
+    font-size: 26px;
+  }
+}

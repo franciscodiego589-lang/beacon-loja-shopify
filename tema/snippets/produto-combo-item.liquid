@@ -1,0 +1,130 @@
+{%- comment -%}
+  Área produto. Um item da oferta combo (<combo-offer>).
+  Parâmetros:
+  - product: produto do item (obrigatório; produto indisponível não é renderizado)
+  - variant: variante inicial (opcional; sem ela usa a mesma regra de produto-initial-variant)
+  - is_current: true para o produto da página ("este produto", sem seletor de variante)
+  - id_prefix: prefixo único para ids (ex.: section.id)
+
+  Preço, preço de comparação e % OFF vêm da variante. Nada é inventado: sem preço de
+  comparação maior que o preço, o selo de desconto não aparece.
+  O JS (combo-offer.js) lê data-variant-id, data-price e data-compare-at-price do item
+  e, no seletor, das opções.
+  Redesenho v3 (tarefa 6, parte B): o item é uma linha do bloco claro (sem vidro nem cartão): caixa
+  de marcação nativa, foto, nome com a dose (snippets/v3-nome-visivel), opção e preço. O nome sai
+  sem " – " e sem "cápsulas"; a foto principal usa a classe de snippets/v3-classe-foto.
+{%- endcomment -%}
+{%- if product != blank and product.available -%}
+  {%- liquid
+    assign combo_variant = variant
+    if combo_variant == blank
+      capture combo_initial_index
+        render 'produto-initial-variant', product: product
+      endcapture
+      assign combo_initial_index = combo_initial_index | strip | plus: 0
+      assign combo_variant = product.variants[combo_initial_index]
+    endif
+
+    assign combo_prefix = id_prefix | default: 'Combo'
+    assign combo_uid = combo_prefix | append: '-' | append: product.id
+    assign combo_price = combo_variant.price
+    assign combo_compare = combo_variant.compare_at_price | default: 0
+    assign combo_on_sale = false
+    assign combo_percent = 0
+    if combo_compare > combo_price
+      assign combo_on_sale = true
+      assign combo_percent = combo_compare | minus: combo_price | times: 100 | divided_by: combo_compare
+    endif
+    assign combo_alt = product.featured_media.alt | default: product.title
+
+    # Nome visível (fonte única, v3-nome-visivel): 'html' vai entre tags, 'texto' em rótulo.
+    capture combo_nome_html
+      render 'v3-nome-visivel', produto: product, modo: 'html'
+    endcapture
+    assign combo_nome_html = combo_nome_html | strip
+    capture combo_nome_texto
+      render 'v3-nome-visivel', produto: product, modo: 'texto'
+    endcapture
+    assign combo_nome_texto = combo_nome_texto | strip
+    capture combo_foto_classe
+      render 'v3-classe-foto', product: product
+    endcapture
+    assign combo_foto_classe = combo_foto_classe | strip | prepend: 'combo-offer__image '
+  -%}
+  <li
+    class="combo-offer__item{% if is_current %} combo-offer__item--current{% endif %}"
+    data-combo-item
+    data-product-id="{{ product.id }}"
+    data-variant-id="{{ combo_variant.id }}"
+    data-price="{{ combo_price }}"
+    data-compare-at-price="{{ combo_compare }}"
+    data-available="{{ combo_variant.available }}"
+    {% if is_current %}data-combo-current{% endif %}
+  >
+    <div class="combo-offer__card">
+      <span class="combo-offer__check">
+        <label class="combo-offer__check-label" for="ComboCheck-{{ combo_uid }}">
+          <input
+            type="checkbox"
+            class="combo-offer__checkbox"
+            id="ComboCheck-{{ combo_uid }}"
+            checked
+            {% unless combo_variant.available %}disabled{% endunless %}
+            data-combo-check
+          >
+          <span class="visually-hidden">{{ 'produto.combo.include' | t: title: combo_nome_texto }}</span>
+        </label>
+      </span>
+
+      <a href="{{ product.url }}" class="combo-offer__media" tabindex="-1" aria-hidden="true">
+        {%- if product.featured_media -%}
+          {{ product.featured_media | image_url: width: 192 | image_tag: widths: '56, 72, 112, 144, 192', sizes: '(min-width: 750px) 72px, 56px', loading: 'lazy', alt: combo_alt, class: combo_foto_classe }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+      </a>
+
+      <div class="combo-offer__info">
+        <a href="{{ product.url }}" class="combo-offer__name lg-focus-dual">{{ combo_nome_html }}</a>
+        <span class="combo-offer__discount" data-combo-discount{% unless combo_on_sale %} hidden{% endunless %}>
+          {{- 'produto.combo.discount' | t: percent: combo_percent -}}
+        </span>
+      </div>
+
+      <div class="combo-offer__footer">
+        {%- if is_current -%}
+          <span class="combo-offer__current">{{ 'produto.combo.current' | t }}</span>
+        {%- elsif product.has_only_default_variant == false and product.variants.size > 1 -%}
+          <span class="combo-offer__select">
+            <label class="visually-hidden" for="ComboVariant-{{ combo_uid }}">{{ 'produto.combo.variant_label' | t: title: combo_nome_texto }}</label>
+            <select id="ComboVariant-{{ combo_uid }}" class="combo-offer__variant" data-combo-variant>
+              {%- for option_variant in product.variants -%}
+                <option
+                  value="{{ option_variant.id }}"
+                  data-price="{{ option_variant.price }}"
+                  data-compare-at-price="{{ option_variant.compare_at_price | default: 0 }}"
+                  data-available="{{ option_variant.available }}"
+                  {% if option_variant.id == combo_variant.id %}selected{% endif %}
+                  {% unless option_variant.available %}disabled{% endunless %}
+                >
+                  {{- option_variant.title | escape -}}
+                </option>
+              {%- endfor -%}
+            </select>
+          </span>
+        {%- endif -%}
+
+        <span class="combo-offer__prices">
+          <span class="combo-offer__compare" data-combo-compare-wrap{% unless combo_on_sale %} hidden{% endunless %}>
+            <span class="visually-hidden">{{ 'fundacao.price.regular' | t }}</span>
+            <s data-combo-compare>{{ combo_compare | money }}</s>
+          </span>
+          <span class="combo-offer__price">
+            <span class="visually-hidden" data-combo-sale-label{% unless combo_on_sale %} hidden{% endunless %}>{{ 'fundacao.price.sale' | t }}</span>
+            <span data-combo-price>{{ combo_price | money }}</span>
+          </span>
+        </span>
+      </div>
+    </div>
+  </li>
+{%- endif -%}

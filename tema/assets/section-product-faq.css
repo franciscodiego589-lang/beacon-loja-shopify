@@ -1,0 +1,161 @@
+/*
+  Beacon Labs · Perguntas frequentes do produto (section-product-faq.css)
+  Área produto. sections/product-faq.liquid. Acordeão com <details>/<summary>, sem JS.
+
+  Etapa 8e, item 7 (03/10/2026): o painel de vidro da v2 (.glass-layer .glass--panel: branco a 0,50, recuo
+  lateral de 24 px da janela, raio 40) saiu. Ele passava 96 px da coluna de 1200 px de cada lado (12 px no
+  celular), com a lista de perguntas só até 760 px e 440 px vazios à direita, e a borda de 1 px quase branca
+  não dava fim ao painel. Agora a seção fica na coluna da página, sobre o branco, no desenho do FAQ da home
+  (arranjo "lado" de section-faq-list.css, alvo.css linhas 228 a 238, 376 e 435 a 438): título e perguntas em
+  duas colunas a partir de 1081 px (360 px de título e vão de 80 px; antes, uma coluna), cada pergunta com um
+  fio --color-line em cima e a última também embaixo; resumo de 19 px (17 px no celular) em peso 600, recuo de
+  22 px (18 px no celular); ícone de mais de 20 px que gira 45 graus ao abrir; resposta de 17 px em apoio,
+  com recuo de 48 px à direita (0 no celular). Título de 40 px (30 px no celular), peso 600, linha 1,1 e
+  espaçamento -0,025em. Sem recuo próprio: o vão de cima é o --section-gap e o de baixo, o da prateleira que
+  vem depois (related-products). Foco: anel duplo no <summary> (.lg-focus-dual). Com movimento reduzido, o
+  ícone troca sem giro (base.css zera as transições). Contraste sobre o branco: tinta 17,29:1 e apoio
+  #566472 5,89:1.
+*/
+
+/* Vão entre blocos da página do produto (etapa 8e, item 13): --section-gap (104 px; 68 px até 760 px) acima
+   da seção, como margem dela. Etapa 8e, leva B (item 7): o recuo próprio da classe .section (padding-block)
+   é zerado; ele existia para o painel de vidro, que saiu, e somava ao vão da prateleira seguinte. */
+.product-faq.section {
+  margin-top: var(--section-gap);
+  padding-block: 0;
+}
+
+.product-faq__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media screen and (min-width: 761px) {
+  .product-faq__grid {
+    gap: 28px;
+  }
+}
+
+@media screen and (min-width: 1081px) {
+  .product-faq__grid {
+    grid-template-columns: 360px minmax(0, 1fr);
+    gap: 80px;
+  }
+}
+
+.product-faq .section-heading {
+  min-height: 0;
+  margin: 0;
+}
+
+/* Etapa 8e, leva E, item 4: escala de título de seção do tema (.v3-title): 26 px até 760 px e 32 px acima. Era a
+   do FAQ da home (30 e 40 px), maior que os outros títulos de seção do produto. */
+.product-faq .section-heading__title {
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+@media screen and (min-width: 761px) {
+  .product-faq .section-heading__title {
+    font-size: 32px;
+  }
+}
+
+/* Nome do produto no título: o mesmo peso do título, na cor do foco do tema. */
+.product-faq__name {
+  color: var(--color-focus, var(--color-ink));
+  font-weight: var(--font-heading-weight);
+}
+
+.product-faq__list {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.product-faq__item + .product-faq__item {
+  border-top: 1px solid var(--color-line);
+}
+
+.product-faq__summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 0;
+  border-radius: var(--lg-radius-min, 8px);
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+@media screen and (min-width: 761px) {
+  .product-faq__summary {
+    padding-block: 22px;
+  }
+}
+
+.product-faq__question {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: calc(25 / 17);
+  letter-spacing: -0.02em;
+}
+
+@media screen and (min-width: 761px) {
+  .product-faq__question {
+    font-size: 19px;
+  }
+}
+
+/* O alvo não pinta a linha no hover; a pergunta fica sublinhada (o texto nunca some). */
+.product-faq__summary:hover .product-faq__question {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.product-faq__chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-ink);
+  transition: transform var(--lg-dur-state, 240ms) var(--lg-ease-glass, ease);
+}
+
+.product-faq__item[open] .product-faq__chevron {
+  transform: rotate(45deg);
+}
+
+.product-faq__answer {
+  padding: 0 0 24px;
+}
+
+@media screen and (min-width: 761px) {
+  .product-faq__answer {
+    padding-right: 48px;
+  }
+}
+
+.product-faq__answer p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 17px;
+  line-height: calc(25 / 17);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-faq__chevron {
+    transition: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .product-faq__list,
+  .product-faq__item {
+    border-color: var(--color-ink);
+  }
+}

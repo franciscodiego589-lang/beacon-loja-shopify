@@ -1,0 +1,386 @@
+{{ 'component-produto-dossie.css' | asset_url | stylesheet_tag }}
+{{ 'component-beneficios-vidro.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'beneficios-vidro.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Página "Benefícios" do produto (templates/product.beneficios.json, aberta na MESMA aba por
+  {{ product.url }}?view=beneficios a partir do botão "Benefícios" do painel de compra; emenda 26
+  e Ruling 28 de 02/10/2026).
+  Modelo: catálogo do dono (catalogo.lemoncapsauto.com, lido em 29/09/2026). Redesenho v3
+  (tarefa 6, parte C, 02/10/2026): capa em bloco claro (.lg-field--claro, sem arte), pote solto
+  pela classe de snippets/v3-classe-foto, abas em controle segmentado (atalhos de rolagem para as
+  seções, mais o atalho para o dossiê), benefícios em grade de 3 colunas com filete (sem cartão) e
+  seções em blocos sólidos no tom claro (conteúdo não é vidro). Nome pelo snippets/v3-nome-visivel.
+  Botões: .button--primary e .button--secondary (emenda 22: o secundário é o botão de vidro do
+  alvo, o mesmo do resto do tema v3; o .lg-button--glass é da família anterior, com borda branca a
+  0,80 e reflexo). Fontes: o " – " do texto cadastrado sai da tela (vira ": "); o cadastro não muda.
+
+  De onde vem cada texto (o tema não escreve nada):
+  - beacon.detalhes (json, conteúdo pedido pelo dono em 30/09/2026, spec em
+    docs/superpowers/loja/spec-detalhes-produto.md): visao_geral, beneficios [{titulo, texto}],
+    como_age [], dicas_de_uso [], cuidados [], insumos [{nome, descricao_tecnica}],
+    fontes [{fonte, url, consultado_em, usado_em}];
+  - beacon.conteudo: item "Benefícios" (reserva, quando beacon.detalhes não tiver benefícios) e
+    item "Sobre ..." (alegações literais da IN 28/2018, Anexo V);
+  - beacon.dossie (resumo, reserva da visão geral) e beacon.insumos (nome, dose, forma química,
+    descrição neutra, alegações, nota, advertências);
+  - beacon.chips (chips da capa).
+  Campo vazio não renderiza. Nenhum número é escrito pelo tema.
+
+  Configuração "embutido" (30/09/2026, pedido do dono: dossiê e benefícios "nessa página
+  principal", uma seção embaixo da outra): a mesma seção entra em templates/product.json, logo
+  depois da compra, com id="beneficios" (alvo do botão "Benefícios"). Sem a capa (título, foto,
+  voltar e comprar já estão no topo da página) e sem a chamada final (o dossiê vem logo abaixo).
+  Produto sem nenhum conteúdo de benefícios não mostra nada.
+{%- endcomment -%}
+{%- liquid
+  # Nome visível (emenda 24, Ruling 24): fonte única em snippets/v3-nome-visivel. 'html' já sai escapado,
+  # com as palavras de hífen juntas, e vai direto entre tags; 'texto' já sai escapado, para alt e t:.
+  capture nome_html
+    render 'v3-nome-visivel', produto: product, modo: 'html'
+  endcapture
+  assign nome_html = nome_html | strip
+  capture nome_texto
+    render 'v3-nome-visivel', produto: product, modo: 'texto'
+  endcapture
+  assign nome_texto = nome_texto | strip
+  # Foto principal (emenda 15, C9): pote solto no campo claro, ou quadro para foto fora do padrão.
+  capture dp_foto_classe
+    render 'v3-classe-foto', product: product
+  endcapture
+  assign dp_foto_classe = dp_foto_classe | strip | prepend: 'dp-hero__img '
+  assign dossie = product.metafields.beacon.dossie.value
+  assign insumos_lista = product.metafields.beacon.insumos.value
+  assign conteudo = product.metafields.beacon.conteudo.value
+  assign detalhes = product.metafields.beacon.detalhes.value
+  assign chips = product.metafields.beacon.chips.value
+  assign doc_page = pages['documentacao']
+
+  assign texto_beneficios = ''
+  assign texto_sobre = ''
+  assign titulo_sobre = ''
+  for bloco in conteudo
+    if bloco.titulo == 'Benefícios'
+      assign texto_beneficios = bloco.texto
+    elsif bloco.titulo contains 'Sobre'
+      assign texto_sobre = bloco.texto
+      assign titulo_sobre = bloco.titulo
+    endif
+  endfor
+  assign linhas_beneficios = texto_beneficios | newline_to_br | split: '<br />'
+  assign linhas_sobre = texto_sobre | newline_to_br | split: '<br />'
+
+  assign lead = detalhes.visao_geral
+  if lead == blank
+    assign lead = dossie.resumo.value
+  endif
+
+  assign n_beneficios = detalhes.beneficios.size | default: 0
+  assign n_como = detalhes.como_age.size | default: 0
+  assign n_dicas = detalhes.dicas_de_uso.size | default: 0
+  assign n_cuidados = detalhes.cuidados.size | default: 0
+  assign n_fontes = detalhes.fontes.size | default: 0
+
+  assign insumos_count = 0
+  for insumo in insumos_lista
+    if insumo != blank and insumo.nome.value != blank
+      assign insumos_count = insumos_count | plus: 1
+    endif
+  endfor
+
+  assign tem_lista = false
+  if n_beneficios > 0 or texto_beneficios != blank
+    assign tem_lista = true
+  endif
+
+  assign embutido = section.settings.embutido
+  assign tem_algo = false
+  if tem_lista or texto_sobre != blank or n_como > 0 or n_dicas > 0 or n_cuidados > 0 or insumos_count > 0
+    assign tem_algo = true
+  endif
+
+  assign sid = section.id
+-%}
+
+{%- if embutido == false or tem_algo -%}
+<article class="dp{% if embutido %} dp--embutido{% endif %}" id="{% if embutido %}beneficios{% else %}Beneficios-{{ sid }}{% endif %}" aria-labelledby="BeneficiosTitulo-{{ sid }}">
+  {%- if embutido -%}
+  <div class="dp-embed-head page-width">
+    <h2 class="dp-eyebrow" id="BeneficiosTitulo-{{ sid }}">{{ 'produto.dossie.pill_benefits' | t }}</h2>
+  </div>
+  {%- else -%}
+  <header class="dp-hero lg-field--claro">
+    <div class="dp-hero__inner page-width">
+      <div class="dp-hero__text">
+        <a class="dp-back" href="{{ product.url }}">
+          {%- render 'icon', name: 'arrow-left', size: 18 -%}
+          <span>{{ 'produto.dossie.back_to_product' | t }}</span>
+        </a>
+        <p class="dp-eyebrow">{{ 'produto.dossie.pill_benefits' | t }}</p>
+        <h1 class="dp-hero__title" id="BeneficiosTitulo-{{ sid }}">{{ nome_html }}</h1>
+        {%- if lead != blank -%}
+          <p class="dp-hero__lead">{{ lead | escape | newline_to_br }}</p>
+        {%- endif -%}
+        {%- if chips != blank -%}
+          <ul class="dp-chips" role="list">
+            {%- for chip in chips -%}
+              <li class="dp-chip lg-fill--chip">{{ chip | escape }}</li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+        <div class="dp-hero__actions">
+          <a class="button button--primary dp-button" href="{{ product.url }}">{{ 'produto.dossie.buy' | t }}</a>
+          {%- if dossie != blank -%}
+            <a class="button button--secondary dp-button" href="{{ product.url }}?view=dossie">
+              {%- render 'icon', name: 'file-text', size: 18 -%}
+              <span>{{ 'produto.dossie.pill_dossier' | t }}</span>
+            </a>
+          {%- endif -%}
+        </div>
+      </div>
+      <div class="dp-hero__media">
+        {%- if product.featured_media -%}
+          {{ product.featured_media | image_url: width: 900 | image_tag: widths: '360, 540, 720, 900', sizes: '(min-width: 990px) 420px, (min-width: 750px) 40vw, 80vw', loading: 'eager', fetchpriority: 'high', alt: nome_texto, class: dp_foto_classe }}
+        {%- endif -%}
+      </div>
+    </div>
+  </header>
+  {%- endif -%}
+
+  <nav class="dp-toc page-width" aria-label="{{ 'produto.dossie.toc_label' | t }}">
+    <ul class="dp-toc__list" role="list">
+      {%- if tem_lista -%}<li><a class="dp-toc__link" href="#dp-beneficios-{{ sid }}">{{ 'produto.dossie.benefits_label' | t }}</a></li>{%- endif -%}
+      {%- if texto_sobre != blank -%}<li><a class="dp-toc__link" href="#dp-alegacoes-{{ sid }}">{{ 'produto.dossie.toc_claims' | t }}</a></li>{%- endif -%}
+      {%- if n_como > 0 -%}<li><a class="dp-toc__link" href="#dp-como-{{ sid }}">{{ 'produto.dossie.section_how' | t }}</a></li>{%- endif -%}
+      {%- if n_dicas > 0 -%}<li><a class="dp-toc__link" href="#dp-dicas-{{ sid }}">{{ 'produto.dossie.section_tips' | t }}</a></li>{%- endif -%}
+      {%- if n_cuidados > 0 -%}<li><a class="dp-toc__link" href="#dp-cuidados-{{ sid }}">{{ 'produto.dossie.section_care' | t }}</a></li>{%- endif -%}
+      {%- if insumos_count > 0 -%}<li><a class="dp-toc__link" href="#dp-insumos-{{ sid }}">{{ 'produto.dossie.ingredients_heading' | t }}</a></li>{%- endif -%}
+      {%- if dossie != blank -%}<li><a class="dp-toc__link" href="{{ product.url }}?view=dossie">{{ 'produto.dossie.pill_dossier' | t }}</a></li>{%- endif -%}
+    </ul>
+  </nav>
+
+  <div class="dp-body page-width">
+    {%- if tem_lista -%}
+      <section class="dp-section" id="dp-beneficios-{{ sid }}" aria-labelledby="dp-beneficios-t-{{ sid }}">
+        <div class="dp-section__head">
+          <h2 class="dp-section__title" id="dp-beneficios-t-{{ sid }}">{{ 'produto.dossie.benefits_of' | t: name: nome_texto }}</h2>
+        </div>
+        <ol class="dp-benefits dp-benefits--vidro" role="list">
+          {%- if n_beneficios > 0 -%}
+            {%- for b in detalhes.beneficios -%}
+              <li class="dp-benefit">
+                <div class="dp-benefit__body">
+                  {%- if b.titulo != blank -%}<h3 class="dp-benefit__title">{{ b.titulo | escape }}</h3>{%- endif -%}
+                  {%- if b.texto != blank -%}<p class="dp-benefit__text">{{ b.texto | escape }}</p>{%- endif -%}
+                </div>
+              </li>
+            {%- endfor -%}
+          {%- else -%}
+            {%- for linha in linhas_beneficios -%}
+              {%- assign t_linha = linha | strip -%}
+              {%- if t_linha != blank -%}
+                <li class="dp-benefit">
+                  <div class="dp-benefit__body"><p class="dp-benefit__text">{{ t_linha | escape }}</p></div>
+                </li>
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endif -%}
+        </ol>
+      </section>
+    {%- endif -%}
+
+    {%- if texto_sobre != blank -%}
+      <section class="dp-section" id="dp-alegacoes-{{ sid }}" aria-labelledby="dp-alegacoes-t-{{ sid }}">
+        <div class="dp-card dp-card--claims">
+          <div class="dp-card__head">
+            <span class="dp-card__icon lg-fill--badge" aria-hidden="true">{% render 'icon', name: 'shield-check', size: 20 %}</span>
+            <div>
+              <h2 class="dp-card__title" id="dp-alegacoes-t-{{ sid }}">{{ 'produto.dossie.section_claims' | t }}</h2>
+              <p class="dp-card__note">{{ titulo_sobre | escape }} · {{ 'produto.dossie.claims_note' | t }}</p>
+            </div>
+          </div>
+          <ul class="dp-checks" role="list">
+            {%- for linha in linhas_sobre -%}
+              {%- assign t_linha = linha | strip -%}
+              {%- if t_linha != blank -%}<li>{{ t_linha | escape }}</li>{%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </div>
+      </section>
+    {%- endif -%}
+
+    {%- if n_como > 0 or n_dicas > 0 -%}
+      <div class="dp-split">
+        {%- if n_como > 0 -%}
+          <section class="dp-card" id="dp-como-{{ sid }}" aria-labelledby="dp-como-t-{{ sid }}">
+            <div class="dp-card__head">
+              <span class="dp-card__icon lg-fill--chip" aria-hidden="true">{% render 'icon', name: 'sparkles', size: 20 %}</span>
+              <h2 class="dp-card__title" id="dp-como-t-{{ sid }}">{{ 'produto.dossie.section_how' | t }}</h2>
+            </div>
+            <ol class="dp-steps" role="list">
+              {%- for passo in detalhes.como_age -%}
+                <li class="dp-step"><span class="dp-step__n" aria-hidden="true">{{ forloop.index }}</span><p>{{ passo | escape }}</p></li>
+              {%- endfor -%}
+            </ol>
+          </section>
+        {%- endif -%}
+        {%- if n_dicas > 0 -%}
+          <section class="dp-card" id="dp-dicas-{{ sid }}" aria-labelledby="dp-dicas-t-{{ sid }}">
+            <div class="dp-card__head">
+              <span class="dp-card__icon lg-fill--chip" aria-hidden="true">{% render 'icon', name: 'clock', size: 20 %}</span>
+              <h2 class="dp-card__title" id="dp-dicas-t-{{ sid }}">{{ 'produto.dossie.section_tips' | t }}</h2>
+            </div>
+            <ul class="dp-checks" role="list">
+              {%- for dica in detalhes.dicas_de_uso -%}<li>{{ dica | escape }}</li>{%- endfor -%}
+            </ul>
+          </section>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if n_cuidados > 0 -%}
+      <section class="dp-section" id="dp-cuidados-{{ sid }}" aria-labelledby="dp-cuidados-t-{{ sid }}">
+        <div class="dp-card dp-card--care">
+          <div class="dp-card__head">
+            <span class="dp-card__icon dp-card__icon--care" aria-hidden="true">{% render 'icon', name: 'alert-triangle', size: 20 %}</span>
+            <div>
+              <h2 class="dp-card__title" id="dp-cuidados-t-{{ sid }}">{{ 'produto.dossie.section_care' | t }}</h2>
+              <p class="dp-card__note">{{ 'produto.dossie.care_note' | t }}</p>
+            </div>
+          </div>
+          <ul class="dp-list" role="list">
+            {%- for cuidado in detalhes.cuidados -%}<li>{{ cuidado | escape }}</li>{%- endfor -%}
+          </ul>
+          {%- if dossie.advertencias.value != blank -%}
+            <a class="dp-link" href="{% if embutido %}#dp-advertencias{% else %}{{ product.url }}?view=dossie#dp-advertencias{% endif %}">
+              <span>{{ 'produto.dossie.see_warnings' | t }}</span>
+              {%- render 'icon', name: 'arrow-right', size: 16 -%}
+            </a>
+          {%- endif -%}
+        </div>
+      </section>
+    {%- endif -%}
+
+    {%- if insumos_count > 0 -%}
+      <section class="dp-section" id="dp-insumos-{{ sid }}" aria-labelledby="dp-insumos-t-{{ sid }}">
+        <div class="dp-section__head">
+          <h2 class="dp-section__title" id="dp-insumos-t-{{ sid }}">{{ 'produto.dossie.ingredients_heading' | t }}</h2>
+        </div>
+        <ul class="dp-insumos" role="list">
+          {%- for insumo in insumos_lista -%}
+            {%- if insumo != blank and insumo.nome.value != blank -%}
+              {%- liquid
+                assign i_nome = insumo.nome.value
+                assign i_desc = ''
+                for d in detalhes.insumos
+                  if d.nome == i_nome
+                    assign i_desc = d.descricao_tecnica
+                  endif
+                endfor
+                if i_desc == blank
+                  assign i_desc = insumo.descricao_neutra.value
+                endif
+                assign i_alegacoes = insumo.alegacoes.value
+                assign i_advertencias = insumo.advertencias.value
+              -%}
+              <li class="dp-insumo">
+                <div class="dp-insumo__head">
+                  {%- if insumo.imagem.value != blank -%}
+                    <span class="dp-insumo__img lg-fill--photo">{{ insumo.imagem.value | image_url: width: 160 | image_tag: widths: '80, 160', sizes: '64px', loading: 'lazy', alt: '' }}</span>
+                  {%- else -%}
+                    <span class="dp-insumo__img dp-insumo__img--icon lg-fill--chip" aria-hidden="true">{% render 'icon', name: 'capsule', size: 26 %}</span>
+                  {%- endif -%}
+                  <div>
+                    <h3 class="dp-insumo__name">{{ i_nome | escape }}</h3>
+                    {%- if insumo.quantidade_por_porcao.value != blank -%}
+                      <p class="dp-insumo__dose">{{ insumo.quantidade_por_porcao.value | escape }} <span>{{ 'produto.dossie.per_serving' | t }}</span></p>
+                    {%- endif -%}
+                  </div>
+                </div>
+                {%- if insumo.forma_quimica.value != blank -%}
+                  <p class="dp-insumo__form"><strong>{{ 'produto.dossie.chemical_form' | t }}:</strong> {{ insumo.forma_quimica.value | escape }}</p>
+                {%- endif -%}
+                {%- if i_desc != blank -%}<p class="dp-insumo__desc">{{ i_desc | escape | newline_to_br }}</p>{%- endif -%}
+                {%- if i_alegacoes != blank -%}
+                  <div class="dp-insumo__claims glass-fill">
+                    <p class="dp-insumo__label">{{ 'produto.dossie.claim_label' | t }}</p>
+                    <ul class="dp-checks dp-checks--sm" role="list">
+                      {%- for a in i_alegacoes -%}{%- if a != blank -%}<li>{{ a | escape }}</li>{%- endif -%}{%- endfor -%}
+                    </ul>
+                  </div>
+                {%- elsif insumo.alegacoes_nota.value != blank -%}
+                  <p class="dp-insumo__note">{{ insumo.alegacoes_nota.value | escape }}</p>
+                {%- endif -%}
+                {%- if i_advertencias != blank -%}
+                  <ul class="dp-list dp-list--warn" role="list">
+                    {%- for a in i_advertencias -%}{%- if a != blank -%}<li>{{ a | escape }}</li>{%- endif -%}{%- endfor -%}
+                  </ul>
+                {%- endif -%}
+              </li>
+            {%- endif -%}
+          {%- endfor -%}
+        </ul>
+      </section>
+    {%- endif -%}
+
+    {%- if n_fontes > 0 -%}
+      <details class="dp-sources">
+        <summary class="dp-sources__summary">
+          <span>{{ 'produto.dossie.sources_count' | t: count: n_fontes }}</span>
+          {%- render 'icon', name: 'chevron-down', size: 20, class: 'dp-sources__chev' -%}
+        </summary>
+        <ol class="dp-sources__list">
+          {%- for f in detalhes.fontes -%}
+            {%- comment -%}
+              Etapa 8e, leva B (03/10/2026): o texto da fonte não termina em ponto, e o " Consultado em ..." vinha
+              colado depois dele ("(PDF integral no PMC) Consultado em 30/09/2026."). O ponto entra aqui, no
+              modelo, quando o texto não termina em ponto, ponto de exclamação ou de interrogação; o cadastro
+              não foi reescrito.
+            {%- endcomment -%}
+            {%- assign f_texto = f.fonte | replace: ' – ', ': ' | strip -%}
+            {%- assign f_ultimo = f_texto | slice: -1 -%}
+            <li>
+              {%- if f.url != blank -%}<a href="{{ f.url | escape }}" target="_blank" rel="noopener">{{ f_texto | escape }}</a>{%- else -%}{{ f_texto | escape }}{%- endif -%}
+              {%- if f.consultado_em != blank -%}
+                {%- assign dp = f.consultado_em | split: '-' -%}
+                {%- assign dp_txt = dp[2] | append: '/' | append: dp[1] | append: '/' | append: dp[0] -%}
+                {%- if f_ultimo != '.' and f_ultimo != '!' and f_ultimo != '?' -%}.{%- endif -%}
+                <span class="dp-sources__date"> {{ 'produto.dossie.consulted_on' | t: date: dp_txt }}</span>
+              {%- endif -%}
+            </li>
+          {%- endfor -%}
+        </ol>
+      </details>
+    {%- endif -%}
+
+    {%- unless embutido -%}
+    <aside class="dp-cta" aria-label="{{ 'produto.dossie.more_label' | t }}">
+      <div>
+        <p class="dp-cta__title">{{ 'produto.dossie.cta_title' | t }}</p>
+        <p class="dp-cta__text">{{ 'produto.dossie.cta_text' | t }}</p>
+      </div>
+      <div class="dp-cta__actions">
+        {%- if dossie != blank -%}<a class="button button--secondary dp-button" href="{{ product.url }}?view=dossie">{{ 'produto.dossie.see_full_dossier' | t }}</a>{%- endif -%}
+        {%- if doc_page.content != blank -%}<a class="button button--secondary dp-button" href="{{ doc_page.url }}" target="_blank" rel="noopener">{{ 'produto.dossie.pill_docs' | t }}</a>{%- endif -%}
+        <a class="button button--primary dp-button" href="{{ product.url }}">{{ 'produto.dossie.buy' | t }}</a>
+      </div>
+    </aside>
+    {%- endunless -%}
+  </div>
+</article>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Benefícios do produto",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "embutido",
+      "label": "Dentro da página do produto",
+      "info": "Mostra só o conteúdo, sem a capa e sem a chamada final. Usado no modelo padrão do produto.",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

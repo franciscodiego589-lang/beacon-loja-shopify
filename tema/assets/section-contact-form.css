@@ -1,0 +1,123 @@
+/*
+  Beacon Labs · seção Formulário de contato (sections/contact-form.liquid)
+  Arranjo split: texto à esquerda (5/12) e cartão do formulário à direita (7/12) no computador.
+  Arranjo stacked: texto acima, formulário centralizado com até 720 px.
+  Campos com raio de 12 px e borda #6F8798 vêm de base.css.
+  Etapa 8e, leva C (03/10/2026): o cartão do formulário é o bloco sólido #ECF3F9 (.pb-bloco, paginas-blog.css:
+  sem borda, sem sombra), de raio --radius-tile (28 px; 24 no celular), direto sobre a página branca; no
+  campo noite segue branco sólido. Antes era vidro da v2 dentro de outro vidro (painel da seção + .glass-fill).
+  Os campos e o botão são os controles de sempre (base.css), brancos sobre o bloco. Texto de erro em #9B3915
+  (spec D30). Contraste sobre o bloco: tinta 15,44:1 e apoio #566472 5,42:1.
+*/
+
+.contact-form__grid {
+  display: grid;
+  gap: 24px;
+}
+
+.contact-form__intro {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.contact-form__heading {
+  font-size: 26px;
+  line-height: 1.15;
+}
+
+.contact-form__text {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.contact-form__card {
+  min-width: 0;
+  padding: 20px;
+  border-radius: var(--radius-tile);
+  color: var(--color-ink);
+}
+
+/* No campo noite o cartão é branco sólido: dentro dele o texto e o foco voltam às cores de
+   fundo claro. */
+.pb-scheme--ink .contact-form__card {
+  --color-text: var(--color-ink);
+  --color-text-muted: var(--pb-text-muted-light);
+  --focus-outline: 3px solid var(--color-focus);
+  --lg-focus-outer: var(--color-ink);
+
+  background: var(--color-background);
+}
+
+.pb-scheme--ink .contact-form__card .pb-form__required {
+  color: var(--lg-error-text, var(--color-offer));
+}
+
+.pb-scheme--ink .contact-form__card a:not(.button),
+.pb-scheme--ink .contact-form__card a:not(.button):hover {
+  color: inherit;
+}
+
+.pb-scheme--ink .contact-form__card :where(input:not([type="checkbox"], [type="radio"], [type="hidden"], [type="submit"]), select, textarea) {
+  border-color: var(--color-input-border);
+}
+
+.contact-form__required-note {
+  margin: 0 0 16px;
+}
+
+.contact-form__submit {
+  width: 100%;
+}
+
+@media screen and (min-width: 750px) {
+  .contact-form__card {
+    padding: 32px;
+  }
+
+  .contact-form__submit {
+    width: auto;
+    min-width: 220px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .contact-form--split .contact-form__grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: 64px;
+  }
+
+  .contact-form--split .contact-form__grid--no-intro {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 800px;
+    margin-inline: auto;
+  }
+
+  .contact-form--split .contact-form__intro {
+    position: sticky;
+    top: 24px;
+    padding-top: 8px;
+  }
+
+  .contact-form--stacked .contact-form__grid {
+    max-width: 800px;
+    margin-inline: auto;
+  }
+
+  .contact-form--stacked .contact-form__intro {
+    align-items: center;
+    text-align: center;
+  }
+
+  .contact-form__heading {
+    font-size: 36px;
+  }
+
+  .contact-form__text {
+    font-size: 16px;
+  }
+}

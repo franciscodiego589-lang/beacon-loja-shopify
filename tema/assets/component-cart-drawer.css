@@ -1,0 +1,510 @@
+/*
+  Beacon Labs · gaveta do carrinho (component-cart-drawer.css)
+  Estrutura em snippets/cart-drawer.liquid e sections/cart-drawer-recommendations.liquid.
+  O conteúdo de #CartDrawerContent é trocado pelo JS a cada cart:updated.
+
+  Liquid Glass (spec 8.8): gaveta em vidro espesso com desfoque (.glass--blur; forma e lugar em
+  component-drawer.css). Faixa de frete em preenchimento ink a 4%; itens com foto de 88 px e
+  raio 12 (32 − 20 de recuo); sugestões em bloco sólido #ECF3F9 com raio --radius-card (etapa 8e,
+  03/10/2026; antes, preenchimento branco a 0,72 com raio 16 e fio); rodapé fixo com preenchimento
+  branco a 0,90, fio superior e sombra 0 -8px 24px ink a 6%;
+  preços com números tabulares (spec 5.8). Hover de título na tinta (--lg-link-glass lê
+  --color-ink), com sublinhado.
+*/
+
+.cart-drawer__dialog {
+  --drawer-width: 440px;
+}
+
+.cart-drawer__title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.cart-drawer__count {
+  font-family: var(--font-body-family);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: 0;
+}
+
+.cart-drawer__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.cart-drawer__free-shipping {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  background: var(--lg-fill-ink-04, var(--color-surface-1));
+}
+
+.cart-drawer__free-shipping .free-shipping-bar__text {
+  justify-content: flex-start;
+}
+
+.cart-drawer__form {
+  flex-shrink: 0;
+  padding: 0 20px;
+}
+
+.cart-items__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- Item ---------- */
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+  transition: opacity var(--duration-fast, 150ms) ease;
+}
+
+.cart-item[aria-busy="true"],
+.cart-item.is-loading {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.cart-item__media {
+  display: block;
+  width: 88px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--lg-radius-small, var(--radius-media));
+  background: var(--color-photo-bg);
+}
+
+.cart-item__image,
+.cart-item__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-item__placeholder {
+  fill: var(--color-text-muted);
+}
+
+.cart-item__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cart-item__title {
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.cart-item__title:hover {
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: underline;
+}
+
+/* Alvo de toque do nome (critério 2.5.8; spec 4.2): a linha tem a altura do texto (20 px), então o
+   próprio link ganha recuo vertical com margem negativa de mesmo valor, que leva a caixa a 26 px no
+   computador (mínimo de 24) e a 46 px até 760 px (mínimo de 44) sem mudar o ritmo da gaveta. O
+   link fica posicionado para o recuo valer também sobre a linha da variante, que vem logo abaixo.
+   Só na gaveta: a página do carrinho tem o seu título (section-main-cart-items.css). */
+.cart-drawer .cart-item__title {
+  position: relative;
+  margin-block: -3px;
+  padding-block: 3px;
+}
+
+@media screen and (max-width: 760px) {
+  .cart-drawer .cart-item__title {
+    margin-block: -13px;
+    padding-block: 13px;
+  }
+}
+
+.cart-item__variant,
+.cart-item__plan,
+.cart-item__property {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.cart-item__property-name {
+  font-weight: 600;
+}
+
+.cart-item__discounts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-item__discount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-chip-text);
+}
+
+.cart-item__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.cart-item__prices {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  line-height: 1.25;
+  text-align: right;
+}
+
+.cart-item__compare {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.cart-item__price {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text);
+}
+
+.cart-item__compare {
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-item__remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-left: -8px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cart-item__remove:hover {
+  color: var(--color-ink);
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+}
+
+.cart-item__remove:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.cart-item__error {
+  margin-top: 2px;
+}
+
+/* ---------- Sugestões ---------- */
+
+.cart-drawer__recommendations {
+  flex-shrink: 0;
+  padding: 16px 20px 20px;
+}
+
+.cart-drawer__recommendations:empty {
+  display: none;
+}
+
+.cart-recommendations__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  letter-spacing: 0;
+}
+
+.cart-recommendations__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Sugestão = bloco sólido no tom claro (#ECF3F9, o tom das fotos), como o card de produto: sem borda,
+   sem sombra e sem vidro (conteúdo é sólido; o vidro fica no botão "Adicionar"). Vale para a gaveta e
+   para a página do carrinho (etapa 8e, item 2: a moldura em volta da lista, na página, saiu em
+   component-cart-upsell.css). Raio --radius-card (22 px; 20 px no celular), concêntrico com a foto
+   de 64 px (raio 10) dentro do recuo de 12 px. Contraste sobre o bloco: tinta 15,44:1, apoio 5,42:1. */
+.cart-recommendations__item {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 0;
+  border-radius: var(--radius-card);
+  background: var(--lg-field-claro, var(--color-photo-bg));
+  box-shadow: none;
+}
+
+/* Etapa 8e, leva E, item 6: na gaveta o fundo é vidro cinza translúcido, (240, 242, 244) a (241, 243, 245), e o
+   bloco #ECF3F9 (236, 243, 249) mal se distinguia dele (diferença de 4, 1 e 5 níveis). Só na gaveta o bloco ganha
+   um fio interno de 1 px na divisória do sistema para o contorno aparecer; a página do carrinho, em fundo branco,
+   fica sem fio. O fio é sombra interna, então não muda a medida do bloco. */
+.cart-drawer .cart-recommendations__item {
+  box-shadow: inset 0 0 0 1px var(--lg-divider, var(--color-line));
+}
+
+.cart-recommendations__media {
+  display: block;
+  width: 64px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--color-photo-bg);
+}
+
+.cart-recommendations__image,
+.cart-recommendations__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-recommendations__placeholder {
+  fill: var(--color-text-muted);
+}
+
+.cart-recommendations__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.cart-recommendations__name {
+  display: block;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+/* Corte em duas linhas no <span> de dentro, sem padding (05/10/2026, auditoria de celular): no próprio link, o
+   recuo vertical de 13 px (alvo de toque, abaixo) deixava a ponta da terceira linha aparecer sobre o preço. */
+.cart-recommendations__name-texto {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.cart-recommendations__name:hover {
+  color: var(--lg-link-glass, var(--color-primary));
+}
+
+/* Alvo de toque do nome da sugestão (gaveta e página do carrinho): uma linha mede 19 px, então o
+   recuo vertical com margem negativa de mesmo valor leva a caixa a 25 px no computador (mínimo de
+   24) e a 45 px até 760 px (mínimo de 44) sem mudar a altura da sugestão. Nome de duas linhas
+   (celular) só fica mais alto. Posicionado para o recuo valer também sobre o preço, logo abaixo. */
+.cart-recommendations__name {
+  position: relative;
+  margin-block: -3px;
+  padding-block: 3px;
+}
+
+@media screen and (max-width: 760px) {
+  .cart-recommendations__name {
+    margin-block: -13px;
+    padding-block: 13px;
+  }
+}
+
+.cart-recommendations__form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.cart-recommendations__add {
+  white-space: nowrap;
+}
+
+.cart-recommendations__add-form .form-message {
+  max-width: 160px;
+  font-size: 12px;
+  text-align: right;
+}
+
+.cart-recommendations__price .price__installments {
+  display: none;
+}
+
+/* ---------- Rodapé ---------- */
+
+.cart-drawer__footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  box-shadow: inset 0 1px 0 rgba(var(--color-ink-rgb, 8, 28, 45), 0.1), 0 -8px 24px rgba(var(--color-ink-rgb, 8, 28, 45), 0.06);
+}
+
+.cart-drawer__discounts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.cart-drawer__discount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-chip-text);
+}
+
+.cart-drawer__discount > span:last-child {
+  margin-left: auto;
+}
+
+.cart-drawer__subtotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.cart-drawer__subtotal-label {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cart-drawer__subtotal-value {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 22px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.cart-drawer__note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.cart-drawer__checkout {
+  min-height: 52px;
+  font-size: 16px;
+}
+
+.cart-drawer__view-cart {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+/* ---------- Vazio ---------- */
+
+.cart-drawer__empty {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+/* Carrinho vazio: ícone (não texto) em círculo com a primária a 10%. */
+.cart-drawer__empty-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-primary-10, var(--color-surface-2));
+  color: var(--color-primary);
+}
+
+.cart-drawer__empty-title {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.cart-drawer__empty-text {
+  max-width: 320px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.cart-drawer__continue {
+  max-width: 360px;
+  margin-top: 12px;
+}
+
+@media (prefers-contrast: more) {
+  .cart-item {
+    border-bottom-color: var(--color-ink);
+  }
+
+  .cart-recommendations__item {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .cart-recommendations__item {
+    border: 1px solid CanvasText;
+  }
+}

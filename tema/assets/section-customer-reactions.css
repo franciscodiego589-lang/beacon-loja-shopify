@@ -1,0 +1,15 @@
+/*
+  Beacon Labs · Reações de cliente (section-customer-reactions.css)
+  Área produto. sections/customer-reactions.liquid. Seção host de app: só existe estilo de
+  moldura aqui; o conteúdo visual vem do bloco de app instalado pelo lojista.
+*/
+
+.customer-reactions__blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.customer-reactions__block {
+  min-width: 0;
+}

@@ -1,0 +1,1316 @@
+/*
+  Beacon Labs · Sistema visual Liquid Glass
+  Tokens e classes utilitárias do material, com os modos de reserva.
+
+  Spec: docs/superpowers/specs/2026-09-27-liquid-glass-sistema.md
+  Origem: docs/superpowers/specs/2026-09-27-liquid-glass-tokens.css (copiado em 27/09/2026),
+  com as adaptações ao tema marcadas com "Tema:" nos comentários.
+  Carregado em layout/theme.liquid e layout/password.liquid logo DEPOIS de base.css e DEPOIS
+  do snippet css-variables, para que as variáveis de :root deste arquivo vençam as do tema.
+  Os component-*.css e section-*.css vêm depois deste arquivo: eles não redefinem fundo,
+  borda nem sombra das peças que levam .glass/.glass-layer; só leem as variáveis daqui.
+
+  Tema: as cores que já eram ajustes do tema (settings_schema.json) continuam ligadas a eles.
+  snippets/css-variables.liquid expõe --color-* e --color-*-rgb; este arquivo só os lê, com
+  o valor atual como reserva. O branco das tintas de vidro é do material, não é ajuste.
+
+  Garantias deste arquivo (spec, seções 6 e 9):
+  1. O vidro é o padrão. Só é desligado dentro de (prefers-reduced-transparency: reduce).
+     Nunca é ligado por "no-preference": onde a consulta não existe (Safari, Firefox),
+     ela vira "not all" e o vidro sumiria.
+  2. Sem suporte a backdrop-filter, o material usa um alfa de reserva maior e nunca some.
+  3. Os alfas foram calculados para WCAG 2.2 AA no pior caso, sem contar o desfoque,
+     com ink #001838. Se as cores do tema mudarem nas configurações, refazer a conta.
+     Redesenho v3 (02/10/2026): conta refeita para a paleta nova (ink #081C2D, apoio #566472,
+     vermelho #8A0503), em docs/superpowers/redesign-v3/sdd/pior-caso-vidro.py. Pior caso = o
+     branco do vidro, com alfa a, sobre PRETO, sem contar o desfoque, com a mistura em sRGB (como
+     o navegador compõe) e a razão pela fórmula do WCAG 2.x, a mesma do audita.mjs. Alfas de
+     repouso de cada variante (onde há hover, o alfa do hover é maior). Mínimo de 4,5:1:
+     - tinta #081C2D: a partir de alfa 0,51; passa em todas as variantes, menos o painel 0,50
+       (4,35:1).
+     - apoio #566472: a partir de alfa 0,87; passa só no espesso 0,90 (4,84:1), no denso 0,94
+       (5,31:1) e nas reservas de 0,90 (regular) e 0,96 (espesso).
+     - vermelho #8A0503: a partir de alfa 0,685; falha no fino 0,60 (3,50:1), no cartão 0,66
+       (4,21:1) e no painel 0,50 (2,51:1).
+     Sobre fundo sólido claro conhecido, vale a medida real do audita.mjs, não esta conta.
+  4. Nenhuma regra anima o desfoque nem propriedade de layout (margin, top, inset,
+     border-radius, altura). Animam só transform, opacity, cores e, no hover dos controles
+     pequenos, a sombra. O vidro do cabeçalho e da barra fixa só anima a cor.
+  5. A translucidez vem do alfa do background-color, nunca de opacity.
+  6. Nenhum vidro com desfoque dentro de outro. Por cima de vidro, só preenchimento
+     (seção 6.1 deste arquivo: botão de vidro dentro de vidro vira preenchimento).
+  7. O desfoque real vem DESLIGADO. Só liga com .glass--blur, e só nos componentes que passam
+     por cima de conteúdo (redesenho v3, spec 8, item 3, que substitui a 3.3): a barra fixa de
+     compra, as gavetas do menu e do carrinho e a busca preditiva (vidro espesso). O cabeçalho,
+     que não fixa e nunca passa sobre conteúdo, fica sem desfoque: só a tinta e a luz do vidro.
+  8. O halo branco do foco entra em todo box-shadow do sistema pela variável
+     --lg-focus-shadow; por isso hover e pressionado nunca apagam o anel de foco.
+
+  Ordem das regras (importa, porque as especificidades são iguais):
+  tokens > fundo e campos > materiais > reserva sem desfoque > @supports com desfoque >
+  gancho html.lg-no-blur > estados e foco > preenchimentos e botões >
+  regras de contexto (por cima de vidro) > transparência reduzida > contraste aumentado >
+  cores forçadas > movimento reduzido.
+
+  Como usar o material:
+  - Peça pequena sem filhos fixos: class="glass glass--thin" (o vidro fica no próprio elemento).
+  - Hospedeiro com filhos fixos ou absolutos, painel de seção, rodapé, cabeçalho, barra fixa:
+    class="glass-layer glass--regular glass--blur" (o vidro fica no ::before; o hospedeiro não vira
+    bloco de contenção nem Backdrop Root). O hospedeiro precisa estar posicionado; a regra
+    :where() abaixo dá position: relative com especificidade zero, então um sticky ou fixed
+    do tema continua valendo.
+  - Controles: acrescentar glass--interactive. Desfoque real: acrescentar glass--blur
+    (sem ele, o material é só tinta, borda de luz e sombra).
+*/
+
+/* ==========================================================================
+   1. Tokens
+   ========================================================================== */
+
+:root {
+  /* 1.1 Marca: fill do SVG oficial do logo (marca/logo/logo-beacon-labs-horizontal.svg), lido em 27/09/2026 */
+  --lg-brand-farol: #8A0503;   /* logo e linha pequena acima de título (--color-eyebrow, v3) */
+  --lg-brand-beacon: #081C2D;
+  --lg-brand-labs: #E9AD05;    /* nunca como texto sobre claro (2,011:1 sobre branco) */
+
+  /* 1.2 Site: vêm de snippets/css-variables.liquid; a reserva é o valor atual (v3, 02/10/2026) */
+  --lg-ink: var(--color-ink, #081C2D);
+  --lg-ink-rgb: var(--color-ink-rgb, 8, 28, 45);
+  --lg-primary: var(--color-primary, var(--color-ink));
+  --lg-primary-rgb: var(--color-primary-rgb, 8, 28, 45); /* Tema: ligado ao ajuste color_primary */
+  --lg-accent: var(--color-accent, #E9AD05);
+  --lg-text: var(--color-ink, #081C2D);
+  --lg-text-muted: var(--color-text-muted, #566472);
+  --lg-offer: var(--color-offer, #C2410C);
+  --lg-petroleo: var(--color-petroleo, #15375A);
+  --lg-badge: var(--color-badge-bg, #E9AD05);
+  --lg-chip-bg: var(--color-chip-bg, #ECF3F9);
+  --lg-chip-text: var(--color-chip-text, var(--color-ink));
+  --lg-on-dark: #FFFFFF;
+  --lg-on-dark-muted: var(--color-on-dark-muted, #BFD7E6);
+  --lg-line-decor: var(--color-line, #D9E1E8);
+  --lg-input-border: var(--color-input-border, #6F8798);
+
+  /* 1.3 Cores exigidas pelo piso de contraste (spec 5.1) */
+  --lg-text-muted-glass: #34495A;    /* 4,959:1 no pior caso do regular */
+  /* Link na tinta desde o redesenho v3 (emenda C3; era o azul fixo da spec D6): 17,29:1 no
+     branco e 15,44:1 no campo claro. Dentro de texto corrido o link leva sublinhado (base.css). */
+  --lg-link-glass: var(--color-ink);
+  --lg-input-border-glass: #4A6072;  /* 3,474:1 contra o regular no pior caso */
+  /* Economia (% OFF do kit e da barra fixa): o destaque amarelo com texto ink desde o redesenho
+     v3 (spec 2.2: selo de % OFF em #E9AD05 com texto #081C2D, 8,60:1). Era #0B7A73 com texto
+     branco; com o texto do selo na tinta, o verde-petróleo daria 3,33:1. */
+  --lg-tint-savings: var(--color-accent, #E9AD05);
+  --lg-status-ok: #117A3D;           /* só na névoa e em vidro de conteúdo */
+  --lg-error-text: #9B3915;          /* #C2410C com 20% de ink: 6,431:1 no espesso sem desfoque,
+                                        5,006:1 direto no maré-2 (spec 6.5 e D30, PENDENTE do dono) */
+
+  /* 1.4 Campos (spec 5.2 e 7.1). Arte clara: nenhuma cor com luminância abaixo de 0,698.
+         Arte da noite: nenhuma cor acima de 0,057. */
+  --lg-field-nevoa: #FFFFFF; /* branco puro a pedido do dono em 30/09/2026 (era #EEF3F7) */
+  /* Campo claro do redesenho v3: o tom medido na borda das 27 fotos de pote (#ECF3F9, ajuste
+     color_photo_bg). Campo por baixo, vidro por cima. */
+  --lg-field-claro: var(--color-photo-bg, #ECF3F9);
+  --lg-field-mare-1: #DCE8F4;
+  --lg-field-mare-2: #C9DCEF;
+  --lg-field-farol-1: #FBF0CF;
+  --lg-field-farol-2: #F6E0A0;
+  --lg-field-noite: #081C2D;
+  --lg-field-noite-raio-1: #2C3327;
+  --lg-field-noite-raio-2: #474522;
+
+  /* 1.5 Materiais (spec 5.3). bg = com desfoque; fallback = sem suporte a desfoque. */
+  --glass-thin-bg: rgba(255, 255, 255, 0.60);
+  --glass-thin-bg-hover: rgba(255, 255, 255, 0.70);
+  --glass-thin-bg-fallback: rgba(255, 255, 255, 0.82);
+  --glass-thin-bg-fallback-hover: rgba(255, 255, 255, 0.88);
+  --glass-thin-blur: 12px;
+
+  --glass-regular-bg: rgba(255, 255, 255, 0.74);
+  --glass-regular-bg-hover: rgba(255, 255, 255, 0.80);
+  --glass-regular-bg-fallback: rgba(255, 255, 255, 0.90);
+  --glass-regular-bg-fallback-hover: rgba(255, 255, 255, 0.94);
+  --glass-regular-blur: 20px;
+
+  /* Espesso: 0,90 só com desfoque (barra fixa); sem desfoque (gavetas, busca) usa 0,96 (spec 5.3) */
+  --glass-thick-bg: rgba(255, 255, 255, 0.90);
+  --glass-thick-bg-hover: rgba(255, 255, 255, 0.94);
+  --glass-thick-bg-fallback: rgba(255, 255, 255, 0.96);
+  --glass-thick-bg-fallback-hover: rgba(255, 255, 255, 0.98);
+  --glass-thick-blur: 20px;          /* no máximo o do regular (spec 10, regra 4) */
+
+  --glass-dense-bg: rgba(255, 255, 255, 0.94);
+  --glass-dense-bg-hover: rgba(255, 255, 255, 0.96);
+
+  --glass-dark-bg: rgba(var(--lg-ink-rgb), 0.72);
+  --glass-dark-bg-hover: rgba(var(--lg-ink-rgb), 0.80);
+  --glass-dark-bg-fallback: rgba(var(--lg-ink-rgb), 0.90);
+  --glass-dark-bg-fallback-hover: rgba(var(--lg-ink-rgb), 0.94);
+  --glass-dark-bg-press: rgba(var(--lg-ink-rgb), 0.90);
+  --glass-dark-blur: 20px;
+
+  --glass-card-bg: rgba(255, 255, 255, 0.66);
+  --glass-card-bg-hover: rgba(255, 255, 255, 0.78);
+  --glass-panel-bg: rgba(255, 255, 255, 0.50);
+  --glass-footer-bg: rgba(255, 255, 255, 0.80);
+  --glass-fill-bg: rgba(255, 255, 255, 0.72);
+  --glass-fill-bg-hover: rgba(255, 255, 255, 0.86);
+  --glass-dark-card-bg: rgba(var(--lg-ink-rgb), 0.60);
+  --glass-dark-card-bg-hover: rgba(var(--lg-ink-rgb), 0.68);
+  --glass-dark-bar-bg: rgba(var(--lg-ink-rgb), 0.72);
+
+  --glass-saturate-light: 180%;
+  --glass-saturate-dark: 160%;
+
+  /* Cores sólidas de reserva (transparência reduzida): a paleta chapada atual.
+     Tema: ligadas aos ajustes color_surface_1, color_surface_2, color_ink e color_footer_surface. */
+  --glass-solid-light: #FFFFFF;
+  --glass-solid-panel: var(--color-surface-1, #F5F9FB);
+  --glass-solid-dark: var(--color-ink, #081C2D);
+  --glass-solid-dark-card: var(--color-footer-surface, #082848);
+
+  /* 1.6 Borda de luz, reflexo e sombras (spec 5.4, D25). A luz fica na silhueta, como
+         aproximação da lente sem refração; valores [assumido], PROVISÓRIOS até a validação 6.7. */
+  --lg-rim-light-color: rgba(255, 255, 255, 0.40);
+  --lg-rim-light-inset: inset 1px 1px 0 rgba(255, 255, 255, 0.90), inset -1px -1px 0 rgba(255, 255, 255, 0.35), inset 0 0 6px rgba(255, 255, 255, 0.40);
+  --lg-rim-dark-color: rgba(255, 255, 255, 0.16);
+  --lg-rim-dark-inset: inset 1px 1px 0 rgba(255, 255, 255, 0.28), inset -1px -1px 0 rgba(255, 255, 255, 0.10);
+  --lg-rim-content-inset: inset 0 1px 0 rgba(255, 255, 255, 0.60); /* conteúdo: só a linha de cima (D29) */
+  --lg-rim-fill-line: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --lg-hairline: 0 0 0 1px rgba(var(--lg-ink-rgb), 0.08);
+  --lg-hairline-soft: 0 0 0 1px rgba(var(--lg-ink-rgb), 0.06);
+  --lg-hairline-button: 0 0 0 1px rgba(var(--lg-ink-rgb), 0.16);
+  --lg-hairline-strong: 0 0 0 1px rgba(var(--lg-ink-rgb), 0.30);
+  --lg-divider: rgba(var(--lg-ink-rgb), 0.12);
+
+  /* Reflexo funcional: faixa de aresta de 14 px, não lavagem da superfície (D25).
+     Redesenho v3 (emenda V2): reflexo de cima reforçado sobre o campo claro, de 0,35 para 0,45
+     (o valor que era o do hover), e o hover de 0,45 para 0,55, mantendo o passo de 0,10. */
+  --lg-sheen-functional: linear-gradient(180deg, rgba(255, 255, 255, 0.45) 0, rgba(255, 255, 255, 0) 14px);
+  --lg-sheen-functional-hover: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0, rgba(255, 255, 255, 0) 14px);
+  /* Usado só pelo .lg-button--glass fora de vidro; a família de conteúdo não tem reflexo (D29) */
+  --lg-sheen-content: linear-gradient(180deg, rgba(255, 255, 255, 0.30) 0%, rgba(255, 255, 255, 0) 36%);
+
+  --lg-shadow-none: 0 0 #0000;
+  --lg-shadow-thin: 0 1px 2px rgba(var(--lg-ink-rgb), 0.08), 0 6px 16px rgba(var(--lg-ink-rgb), 0.10);
+  --lg-shadow-regular: 0 1px 3px rgba(var(--lg-ink-rgb), 0.08), 0 10px 28px rgba(var(--lg-ink-rgb), 0.12);
+  --lg-shadow-regular-scrolled: 0 2px 6px rgba(var(--lg-ink-rgb), 0.10), 0 16px 40px rgba(var(--lg-ink-rgb), 0.18);
+  --lg-shadow-thick: 0 2px 8px rgba(var(--lg-ink-rgb), 0.08), 0 28px 72px rgba(var(--lg-ink-rgb), 0.22);
+  --lg-shadow-dense: 0 16px 40px rgba(var(--lg-ink-rgb), 0.14);
+  --lg-shadow-dark: 0 2px 6px rgba(var(--lg-ink-rgb), 0.20), 0 12px 32px rgba(var(--lg-ink-rgb), 0.30);
+  --lg-shadow-card: 0 1px 2px rgba(var(--lg-ink-rgb), 0.04), 0 8px 24px rgba(var(--lg-ink-rgb), 0.06);
+  --lg-shadow-card-hover: 0 2px 4px rgba(var(--lg-ink-rgb), 0.06), 0 16px 40px rgba(var(--lg-ink-rgb), 0.10);
+  --lg-shadow-panel: 0 24px 64px rgba(var(--lg-ink-rgb), 0.05);
+  --lg-shadow-primary: 0 1px 2px rgba(var(--lg-ink-rgb), 0.12), 0 6px 16px rgba(var(--lg-primary-rgb), 0.22);
+  --lg-press-glow: inset 0 0 18px rgba(255, 255, 255, 0.65);
+
+  /* 1.7 Preenchimentos translúcidos (sempre por cima de um material, nunca como vidro) */
+  --lg-fill-ink-02: rgba(var(--lg-ink-rgb), 0.02);
+  --lg-fill-ink-03: rgba(var(--lg-ink-rgb), 0.03);
+  --lg-fill-ink-04: rgba(var(--lg-ink-rgb), 0.04);
+  --lg-fill-ink-06: rgba(var(--lg-ink-rgb), 0.06);
+  --lg-fill-ink-08: rgba(var(--lg-ink-rgb), 0.08);
+  --lg-fill-ink-10: rgba(var(--lg-ink-rgb), 0.10);
+  --lg-fill-primary-10: rgba(var(--lg-primary-rgb), 0.10);
+  --lg-fill-primary-14: rgba(var(--lg-primary-rgb), 0.14);
+  --lg-fill-primary-22: rgba(var(--lg-primary-rgb), 0.22);
+  --lg-fill-primary-28: rgba(var(--lg-primary-rgb), 0.28);
+  --lg-fill-white-14: rgba(255, 255, 255, 0.14);
+  --lg-fill-white-22: rgba(255, 255, 255, 0.22);
+  --lg-fill-white-90: rgba(255, 255, 255, 0.90);
+
+  /* 1.8 Raios (spec 5.6). Valores de computador; o celular está no bloco de 749 px. */
+  --lg-radius-capsule: 999px;
+  --lg-radius-card: 28px;
+  --lg-radius-media-in-card: 12px;
+  --lg-radius-panel: 40px;
+  --lg-radius-sheet: 32px;            /* gavetas, busca preditiva, palco, destaque, banner da categoria */
+  --lg-radius-sticky: 32px;           /* barra fixa de compra (D34) */
+  --lg-radius-box: 24px;
+  --lg-radius-tile: 20px;
+  --lg-radius-inner: 16px;
+  --lg-radius-small: 12px;
+  --lg-radius-min: 8px;
+
+  /* 1.9 Espaços do vidro (spec 5.7). O conteúdo não muda de lugar. */
+  --lg-float-inset: 12px;
+  --lg-sticky-inset: 16px;
+  --lg-panel-inset: 24px;
+  --lg-legend-inset: 8px;
+
+  /* 1.10 Alturas usadas no scroll-padding (critério 2.4.11).
+          --lg-header-height é a altura do que fica preso no topo da janela. O cabeçalho do
+          redesenho v3 não fixa ao rolar, então vale 0 (as alturas de 140 e 124 px de antes eram as
+          do bloco fixo da v2). Lida pelo scroll-padding-top do <html>, abaixo, e pelo topo da
+          navegação fixa das perguntas frequentes (section-faq-list.css). */
+  --lg-header-height: 0px;
+  --lg-sticky-atc-height: 96px;      /* prancheta: 96 e 84 px; o tema usa 76 px hoje. Igualar à altura real. */
+
+  /* 1.11 Tipografia (spec 5.8): fonte e tamanhos do tema não mudam */
+  --lg-font-body: var(--font-body-family, "Plus Jakarta Sans", system-ui, sans-serif);
+  --lg-font-heading: var(--font-heading-family, "Plus Jakarta Sans", system-ui, sans-serif);
+  --lg-weight-small-on-glass: 600;    /* texto abaixo de 14 px sobre vidro fino e regular */
+  --lg-text-min-on-glass: 12px;
+
+  /* 1.12 Movimento (spec 5.9) */
+  --lg-dur-press: 100ms;
+  --lg-dur-hover: 160ms;
+  --lg-dur-state: 240ms;
+  --lg-dur-materialize: 280ms;
+  --lg-dur-sheet: 340ms;
+  --lg-ease-glass: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --lg-ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
+  --lg-press-scale: 0.97;
+  --lg-press-scale-card: 0.99;
+  --lg-lift: -2px;
+  --lg-materialize-scale: 0.96;
+
+  /* 1.13 Foco (spec 5.10): anel duplo; ink ou branco sempre tem 3:1 contra qualquer fundo */
+  --lg-focus-outer: var(--color-ink, #081C2D); /* Tema: ligado ao ajuste color_ink (D7 usa o ink) */
+  --lg-focus-halo: #FFFFFF;
+  --lg-focus-width: 3px;
+  --lg-focus-offset: 2px;
+  --lg-focus-ring: 0 0 0 2px var(--lg-focus-halo);
+  --focus-outline: var(--lg-focus-width) solid var(--lg-focus-outer); /* substitui o token do tema */
+
+  /* 1.14 Camadas: cabeçalho 40, menus 50 e link de pular 100 continuam os do tema */
+  --lg-z-sticky-atc: 30;
+  --lg-z-chat: 35;
+}
+
+@media screen and (max-width: 749px) {
+  :root {
+    --glass-thin-blur: 10px;
+    --glass-regular-blur: 16px;
+    --glass-thick-blur: 16px;
+    --glass-dark-blur: 16px;
+
+    --lg-radius-card: 22px;
+    --lg-radius-media-in-card: 10px;
+    --lg-radius-panel: 28px;
+    --lg-radius-sheet: 24px;
+    --lg-radius-sticky: 28px;        /* foto de 12 com recuo de 16: 28 − 16 = 12 */
+    --lg-radius-box: 20px;
+    --lg-radius-tile: 16px;
+    --lg-radius-inner: 14px;
+
+    --lg-float-inset: 8px;
+    --lg-sticky-inset: 8px;
+    --lg-panel-inset: 8px;
+
+    --lg-sticky-atc-height: 84px;
+  }
+}
+
+/* ==========================================================================
+   2. Fundo da página, rolagem e campos
+   ========================================================================== */
+
+html {
+  scroll-padding-top: calc(var(--lg-header-height) + 8px);
+}
+
+/* O JavaScript da barra fixa acrescenta esta classe no <html> quando ela aparece. */
+html.lg-has-sticky-atc {
+  scroll-padding-bottom: calc(var(--lg-sticky-atc-height) + var(--lg-sticky-inset) + 8px);
+}
+
+/* Não mexer em --color-background: o tema o usa em cards, gavetas, busca e botões. */
+body {
+  background-color: var(--lg-field-nevoa);
+}
+
+.lg-field--nevoa,
+.lg-field--mare,
+.lg-field--farol {
+  background-color: var(--lg-field-nevoa);
+}
+
+.lg-field--noite {
+  background-color: var(--lg-field-noite);
+  color: var(--lg-on-dark);
+}
+
+/* Campo claro do redesenho v3 (alvo .campo, .card, .tile): bloco no tom do fundo das fotos.
+   Texto ink 15,44:1 e apoio #566472 5,42:1 sobre ele. */
+.lg-field--claro {
+  background-color: var(--lg-field-claro);
+}
+
+/* Pote solto no campo (alvo.css linhas 88 a 95): esfuma só a borda do FUNDO da foto, 10% nas
+   laterais e 1,8% em cima e embaixo. O pote vai de 21,1% a 78,4% da largura e de 2,9% a 96,7%
+   da altura (medido nas 27 fotos em 01/10/2026): a máscara não toca o pote nem a sombra.
+   Reserva: num navegador sem mask-composite e sem -webkit-mask-composite, as duas máscaras
+   se somariam em vez de se cruzar; nele a foto aparece inteira, sem máscara (@supports). */
+@supports (mask-composite: intersect) or (-webkit-mask-composite: source-in) {
+  .lg-pote-solto {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 1.8%, #000 98.2%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 10%, #000 90%, transparent 100%), linear-gradient(to bottom, transparent 0, #000 1.8%, #000 98.2%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+}
+
+/* Arte dos campos (spec 7.1, regra 5): assets/campo-mare.svg, campo-farol.svg e campo-noite.svg,
+   desenhados em 28/09/2026 a partir dos path da logo. Aguardam a aprovação do dono (D37 e teto
+   de peso por arquivo, PENDENTE). A arte só aparece onde a marcação acrescenta .lg-field--art;
+   onde ela viraria o elemento de LCP (medição da regra 5), a seção fica só com a cor de base.
+   Contraste aumentado e cores forçadas tiram a arte (blocos 8 e 9 deste arquivo). */
+.lg-field--mare { --lg-field-art: url("campo-mare.svg"); }
+.lg-field--farol { --lg-field-art: url("campo-farol.svg"); }
+.lg-field--noite { --lg-field-art: url("campo-noite.svg"); }
+
+.lg-field--art {
+  background-image: var(--lg-field-art, none);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+}
+
+/* Sem arte azul nos campos claros (capa, rodapé): fundo branco a pedido do dono em 30/09/2026.
+   A arte da noite (seção escura) continua. */
+.lg-field--art:not(.lg-field--noite) {
+  background-image: none;
+}
+
+/* ==========================================================================
+   3. Materiais: cada modificador só define variáveis
+   ========================================================================== */
+
+/* Padrão (.glass sem modificador) = regular, SEM desfoque. --glass-filter-blur guarda o
+   filtro do material; ele só vale com .glass--blur (garantia 7, spec D28). */
+.glass,
+.glass-layer {
+  --glass-bg: var(--glass-regular-bg);
+  --glass-bg-hover: var(--glass-regular-bg-hover);
+  --glass-bg-fallback: var(--glass-regular-bg-fallback);
+  --glass-bg-fallback-hover: var(--glass-regular-bg-fallback-hover);
+  --glass-bg-press: var(--glass-regular-bg-hover);
+  --glass-filter: none;
+  --glass-filter-blur: blur(var(--glass-regular-blur)) saturate(var(--glass-saturate-light));
+  --glass-solid: var(--glass-solid-light);
+  --glass-contrast-bg: #FFFFFF;
+  --glass-contrast-border: var(--lg-ink);
+  --glass-rim-color: var(--lg-rim-light-color);
+  --glass-rim-inset: var(--lg-rim-light-inset);
+  /* Funcional com fio externo escuro de 6% somado à luz interna (redesenho v3, emenda V2: o --fio
+     do alvo; antes, sem fio, a separação vinha só da sombra, D25). Vale para regular, fino,
+     espesso e denso; os materiais escuros e os de conteúdo definem o próprio fio. */
+  --glass-outline: var(--lg-hairline-soft);
+  --glass-sheen: var(--lg-sheen-functional);
+  --glass-sheen-hover: var(--lg-sheen-functional-hover);
+  --glass-shadow: var(--lg-shadow-regular);
+  --glass-press: var(--lg-press-glow);
+  --glass-press-scale: var(--lg-press-scale);
+  color: var(--lg-text);
+}
+
+.glass--thin {
+  --glass-bg: var(--glass-thin-bg);
+  --glass-bg-hover: var(--glass-thin-bg-hover);
+  --glass-bg-fallback: var(--glass-thin-bg-fallback);
+  --glass-bg-fallback-hover: var(--glass-thin-bg-fallback-hover);
+  --glass-bg-press: var(--glass-thin-bg-hover);
+  --glass-filter-blur: blur(var(--glass-thin-blur)) saturate(var(--glass-saturate-light));
+  --glass-shadow: var(--lg-shadow-thin);
+}
+
+.glass--regular {
+  --glass-bg: var(--glass-regular-bg);
+  --glass-bg-hover: var(--glass-regular-bg-hover);
+  --glass-bg-fallback: var(--glass-regular-bg-fallback);
+  --glass-bg-fallback-hover: var(--glass-regular-bg-fallback-hover);
+  --glass-bg-press: var(--glass-regular-bg-hover);
+  --glass-filter-blur: blur(var(--glass-regular-blur)) saturate(var(--glass-saturate-light));
+  --glass-shadow: var(--lg-shadow-regular);
+}
+
+/* Espesso sem desfoque (gavetas, busca preditiva): alfa 0,96, o mesmo da reserva (D28) */
+.glass--thick {
+  --glass-bg: var(--glass-thick-bg-fallback);
+  --glass-bg-hover: var(--glass-thick-bg-fallback-hover);
+  --glass-bg-fallback: var(--glass-thick-bg-fallback);
+  --glass-bg-fallback-hover: var(--glass-thick-bg-fallback-hover);
+  --glass-bg-press: var(--glass-thick-bg-fallback-hover);
+  --glass-filter-blur: blur(var(--glass-thick-blur)) saturate(var(--glass-saturate-light));
+  --glass-shadow: var(--lg-shadow-thick);
+}
+
+/* Espesso com desfoque (barra fixa de compra): alfa 0,90 */
+.glass--thick.glass--blur {
+  --glass-bg: var(--glass-thick-bg);
+  --glass-bg-hover: var(--glass-thick-bg-hover);
+  --glass-bg-press: var(--glass-thick-bg-hover);
+}
+
+/* Materiais com texto secundário: o --color-text-muted do tema passa a #34495A
+   (spec 6.5; o apoio #4A6072 reprova no regular e cai perto do piso com preenchimento ink) */
+.glass--regular,
+.glass--thick,
+.glass--dense {
+  --color-text-muted: var(--lg-text-muted-glass);
+}
+
+/* Denso: mega menu e painéis dentro de outro vidro. Nunca tem desfoque (spec D13). */
+.glass--dense {
+  --glass-bg: var(--glass-dense-bg);
+  --glass-bg-hover: var(--glass-dense-bg-hover);
+  --glass-bg-fallback: var(--glass-dense-bg);
+  --glass-bg-fallback-hover: var(--glass-dense-bg-hover);
+  --glass-bg-press: var(--glass-dense-bg-hover);
+  --glass-filter-blur: none;
+  --glass-shadow: var(--lg-shadow-dense);
+}
+
+/* Escuro funcional: chat, sobreposições dos vídeos, tooltip. Sem reflexo sobre texto. */
+.glass--dark {
+  --glass-bg: var(--glass-dark-bg);
+  --glass-bg-hover: var(--glass-dark-bg-hover);
+  --glass-bg-fallback: var(--glass-dark-bg-fallback);
+  --glass-bg-fallback-hover: var(--glass-dark-bg-fallback-hover);
+  --glass-bg-press: var(--glass-dark-bg-press);
+  --glass-filter-blur: blur(var(--glass-dark-blur)) saturate(var(--glass-saturate-dark));
+  --glass-solid: var(--glass-solid-dark);
+  --glass-contrast-bg: var(--lg-ink);
+  --glass-contrast-border: #FFFFFF;
+  --glass-rim-color: var(--lg-rim-dark-color);
+  --glass-rim-inset: var(--lg-rim-dark-inset);
+  --glass-outline: var(--lg-shadow-none);
+  --glass-sheen: none;
+  --glass-sheen-hover: none;
+  --glass-shadow: var(--lg-shadow-dark);
+  --glass-press: var(--lg-shadow-none);
+  color: var(--lg-on-dark);
+}
+
+/* Tooltip: escuro sem desfoque, alfa 0,94 (branco 15,222:1 no pior caso) */
+.glass--dark.glass--tooltip {
+  --glass-bg: rgba(var(--lg-ink-rgb), 0.94);
+  --glass-bg-fallback: rgba(var(--lg-ink-rgb), 0.94);
+  --glass-filter-blur: none;
+}
+
+/* Conteúdo: sem desfoque real, só sobre campo controlado (spec 6.3). Tinta translúcida,
+   aproximação dos "standard materials": sem reflexo, sem brilho de pressão, sem borda
+   branca; só a linha de luz de cima e o fio ink suave. Realce e brilho ficam na família
+   funcional (spec D29). */
+.glass--card {
+  --glass-bg: var(--glass-card-bg);
+  --glass-bg-hover: var(--glass-card-bg-hover);
+  --glass-bg-fallback: var(--glass-card-bg);
+  --glass-bg-fallback-hover: var(--glass-card-bg-hover);
+  --glass-bg-press: var(--glass-card-bg-hover);
+  --glass-filter-blur: none;
+  --glass-rim-color: transparent;
+  --glass-rim-inset: var(--lg-rim-content-inset);
+  --glass-outline: var(--lg-hairline-soft);
+  --glass-sheen: none;
+  --glass-sheen-hover: none;
+  --glass-shadow: var(--lg-shadow-card);
+  --glass-press: var(--lg-shadow-none);
+  --glass-press-scale: var(--lg-press-scale-card);
+}
+
+.glass--panel {
+  --glass-bg: var(--glass-panel-bg);
+  --glass-bg-hover: var(--glass-panel-bg);
+  --glass-bg-fallback: var(--glass-panel-bg);
+  --glass-bg-fallback-hover: var(--glass-panel-bg);
+  --glass-bg-press: var(--glass-panel-bg);
+  --glass-filter-blur: none;
+  --glass-solid: var(--glass-solid-panel);
+  --glass-rim-color: transparent;
+  --glass-rim-inset: var(--lg-rim-content-inset);
+  --glass-outline: var(--lg-hairline-soft);
+  --glass-sheen: none;
+  --glass-sheen-hover: none;
+  --glass-shadow: var(--lg-shadow-panel);
+  --glass-press: var(--lg-shadow-none);
+  --glass-layer-inset: 0 var(--lg-panel-inset);
+  border-radius: var(--lg-radius-panel);
+}
+
+/* Espaçamento entre painéis de seção (auditoria de arquitetura, 28/09/2026: regra única do
+   material, antes copiada em home-carousel.css, paginas-blog.css, section-collection-seo.css e
+   section-seo-text.css, e por isso ausente nas páginas que não carregam nenhuma delas, como a
+   de produto). Dois painéis de seção seguidos (ex.: Super ofertas, perguntas e SEO na home):
+   cada um recua 12 px na borda que encosta no outro, e fica um vão de 24 px entre eles, como
+   na maquete (.lg-panel-ofertas e .lg-panel-seo). Sem :has(), os painéis ficam encostados. */
+.shopify-section:has(> .glass--panel) + .shopify-section > .glass--panel {
+  --glass-layer-inset: 12px var(--lg-panel-inset) 0;
+}
+
+.shopify-section:has(> .glass--panel):has(+ .shopify-section > .glass--panel) > .glass--panel {
+  --glass-layer-inset: 0 var(--lg-panel-inset) 12px;
+}
+
+.shopify-section:has(> .glass--panel) + .shopify-section:has(+ .shopify-section > .glass--panel) > .glass--panel {
+  --glass-layer-inset: 12px var(--lg-panel-inset);
+}
+
+/* Último painel da página: 24 px de folga até o rodapé, que também é vidro (maquete). O <main>
+   é achado pela classe .main-content (layout/theme.liquid e layout/password.liquid), sem
+   especificidade de id; a última regra (0,6,0) vence a primeira (0,4,0) no painel que é o
+   último e vem depois de outro. */
+.main-content > .shopify-section:last-child > .glass--panel {
+  --glass-layer-inset: 0 var(--lg-panel-inset) 24px;
+}
+
+.main-content > .shopify-section:has(> .glass--panel) + .shopify-section:last-child > .glass--panel {
+  --glass-layer-inset: 12px var(--lg-panel-inset) 24px;
+}
+
+.glass--dark-card,
+.glass--dark-bar {
+  --glass-bg: var(--glass-dark-card-bg);
+  --glass-bg-hover: var(--glass-dark-card-bg-hover);
+  --glass-bg-fallback: var(--glass-dark-card-bg);
+  --glass-bg-fallback-hover: var(--glass-dark-card-bg-hover);
+  --glass-bg-press: var(--glass-dark-card-bg-hover);
+  --glass-filter-blur: none;
+  --glass-solid: var(--glass-solid-dark-card);
+  --glass-contrast-bg: var(--lg-ink);
+  --glass-contrast-border: #FFFFFF;
+  --glass-rim-color: var(--lg-rim-dark-color);
+  --glass-rim-inset: var(--lg-rim-dark-inset);
+  --glass-outline: var(--lg-shadow-none);
+  --glass-sheen: none;
+  --glass-sheen-hover: none;
+  --glass-shadow: var(--lg-shadow-none);
+  --glass-press: var(--lg-shadow-none);
+  --glass-press-scale: var(--lg-press-scale-card);
+  color: var(--lg-on-dark);
+}
+
+.glass--dark-bar {
+  --glass-bg: var(--glass-dark-bar-bg);
+  --glass-bg-fallback: var(--glass-dark-bar-bg);
+  --glass-solid: var(--glass-solid-dark);
+  --glass-rim-color: transparent;
+}
+
+/* Liga o desfoque real. Só na barra fixa de compra, nas gavetas do menu e do carrinho e na
+   busca preditiva (garantia 7 deste arquivo; spec 8, item 3). Conteúdo, denso e tooltip
+   ignoram (filtro "none"). */
+.glass--blur {
+  --glass-filter: var(--glass-filter-blur);
+}
+
+/* Adaptação ao fundo escuro (spec 8.1 e D26). O JavaScript (liquid-glass.js, GlassChat) põe
+   .is-over-dark no botão de atendimento enquanto um campo noite dentro de <main> passa por baixo
+   dele (nunca pela barra de anúncio). O desfoque não muda; só a tinta, a borda de luz, o reflexo
+   e as cores do texto. O cabeçalho do redesenho v3 não fixa e não adapta ao fundo, então não há
+   regra para vidro claro sobre o escuro (a da v2, .glass--regular.is-over-dark, saiu na etapa 8b
+   da tarefa 8: nenhum elemento recebe mais essa classe).
+   Vidro escuro pequeno (chat) sobre o escuro vira claro, com ícone ink (10,054:1 ou mais): */
+.glass--dark.is-over-dark {
+  --glass-bg: var(--glass-regular-bg);
+  --glass-bg-hover: var(--glass-regular-bg-hover);
+  --glass-bg-fallback: var(--glass-regular-bg-fallback);
+  --glass-bg-fallback-hover: var(--glass-regular-bg-fallback-hover);
+  --glass-bg-press: var(--glass-regular-bg-hover);
+  --glass-solid: var(--glass-solid-light);
+  --glass-contrast-bg: #FFFFFF;
+  --glass-contrast-border: var(--lg-ink);
+  --glass-rim-color: var(--lg-rim-light-color);
+  --glass-rim-inset: var(--lg-rim-light-inset);
+  --glass-sheen: var(--lg-sheen-functional);
+  --glass-sheen-hover: var(--lg-sheen-functional-hover);
+  --glass-press: var(--lg-press-glow);
+  color: var(--lg-text);
+}
+
+/* ==========================================================================
+   4. Aplicação do material: primeiro sem desfoque, depois com
+   ========================================================================== */
+
+/* O primeiro item de todo box-shadow do sistema é var(--lg-focus-shadow): vazio fora do
+   foco, halo branco no foco (garantia 8, seção 5). */
+.glass,
+.glass-layer::before {
+  background-color: var(--glass-bg-fallback);
+  background-image: var(--glass-sheen);
+  border: 1px solid var(--glass-rim-color);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--glass-outline), var(--glass-rim-inset), var(--glass-shadow);
+}
+
+:where(.glass-layer) {
+  position: relative;
+}
+
+.glass-layer {
+  isolation: isolate;
+}
+
+/* Só a cor do fundo tem transição; raio, sombra e inset trocam na hora (garantia 4). */
+.glass-layer::before {
+  content: "";
+  position: absolute;
+  inset: var(--glass-layer-inset, 0);
+  z-index: -1;
+  border-radius: inherit; /* o raio vem do hospedeiro */
+  pointer-events: none;
+  transition: background-color var(--lg-dur-hover) var(--lg-ease-glass);
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-layer::before {
+    background-color: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+  }
+}
+
+/* Reserva explícita sem desfoque (spec 9.1): repete, para navegadores que não aceitam
+   nenhuma das duas formas, o que a regra-base acima já faz. Fica escrita para que a
+   reserva não dependa só da ordem das regras. */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-layer::before {
+    background-color: var(--glass-bg-fallback);
+  }
+}
+
+/* Gancho da ordem de corte da seção 10 da spec: com html.lg-no-blur, todo vidro usa o alfa
+   de reserva e perde o desfoque, sem editar componente. Quando ligar: PENDENTE da medição.
+   :where() mantém a especificidade igual à do bloco acima, para os modos de acessibilidade,
+   que vêm depois, continuarem vencendo. */
+:where(html.lg-no-blur) .glass,
+:where(html.lg-no-blur) .glass-layer::before {
+  background-color: var(--glass-bg-fallback);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* Preenchimento: o que fica por cima de um vidro. Nunca desfoque, nunca reflexo. */
+.glass-fill {
+  background-color: var(--glass-fill-bg);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-soft);
+  color: var(--lg-text);
+}
+
+/* Texto sobre vidro (spec 5.1 e 6.5) */
+.lg-text-muted-glass { color: var(--lg-text-muted-glass); }
+.lg-link-glass { color: var(--lg-link-glass); }
+
+/* Raio concêntrico com raio de reserva (spec 5.6, P8). max() só dentro do @supports. */
+.lg-concentric {
+  border-radius: var(--lg-radius-min);
+}
+
+@supports (border-radius: max(1px, 2px)) {
+  .lg-concentric {
+    border-radius: max(var(--lg-radius-min), calc(var(--lg-parent-radius, 16px) - var(--lg-parent-pad, 8px)));
+  }
+}
+
+/* ==========================================================================
+   5. Estados dos controles de vidro (spec 8.0)
+   ========================================================================== */
+
+.glass--interactive {
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover) var(--lg-ease-glass),
+    box-shadow var(--lg-dur-hover) var(--lg-ease-glass),
+    transform var(--lg-dur-press) var(--lg-ease-spring);
+}
+
+@media (hover: hover) {
+  .glass--interactive:hover:not(:disabled):not([aria-disabled="true"]) {
+    --glass-bg: var(--glass-bg-hover);
+    --glass-bg-fallback: var(--glass-bg-fallback-hover);
+    --glass-sheen: var(--glass-sheen-hover);
+  }
+
+  .glass--card.glass--interactive:hover,
+  .glass-fill.lg-fill-link:hover {
+    transform: translateY(var(--lg-lift));
+    --glass-shadow: var(--lg-shadow-card-hover);
+  }
+
+  .glass-fill.lg-fill-link:hover {
+    background-color: var(--glass-fill-bg-hover);
+  }
+}
+
+.glass-fill.lg-fill-link {
+  transition:
+    background-color var(--lg-dur-hover) var(--lg-ease-glass),
+    box-shadow var(--lg-dur-hover) var(--lg-ease-glass),
+    transform var(--lg-dur-press) var(--lg-ease-spring);
+}
+
+.glass-fill.lg-fill-link:active {
+  transform: scale(var(--lg-press-scale-card));
+}
+
+.glass--interactive:active:not(:disabled):not([aria-disabled="true"]) {
+  --glass-bg: var(--glass-bg-press);
+  --glass-bg-fallback: var(--glass-bg-press);
+  transform: scale(var(--glass-press-scale));
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--glass-outline), var(--glass-rim-inset), var(--glass-shadow), var(--glass-press);
+}
+
+.glass--interactive:disabled,
+.glass--interactive[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  --glass-shadow: var(--lg-shadow-none);
+  --glass-sheen: none;
+  --glass-sheen-hover: none;
+}
+
+/* Foco (spec 5.10, D35): contorno ink em outline (sobrevive às cores forçadas) + halo
+   branco no afastamento. O halo entra pela variável --lg-focus-shadow, que todo box-shadow
+   do sistema já inclui; assim hover, pressionado e as regras de contexto não o apagam. */
+.glass--interactive:focus-visible,
+.lg-focus-dual:focus-visible,
+.lg-field-input:focus-visible,
+.lg-fill-link:focus-visible,
+[class*="lg-button--"]:focus-visible,
+[class*="lg-fill--"]:focus-visible {
+  outline: var(--lg-focus-width) solid var(--lg-focus-outer);
+  outline-offset: var(--lg-focus-offset);
+  --lg-focus-shadow: var(--lg-focus-ring);
+}
+
+/* Filho (dentro) de caixa com overflow: hidden (destaque, oferta combo): anel interno,
+   para o recorte não cortar o foco. Halo branco encostado na borda, ink por dentro. */
+.lg-focus-inset:focus-visible {
+  outline: var(--lg-focus-width) solid var(--lg-focus-outer);
+  outline-offset: calc(-1 * (var(--lg-focus-width) + var(--lg-focus-offset)));
+  --lg-focus-shadow: inset 0 0 0 var(--lg-focus-offset) var(--lg-focus-halo);
+}
+
+/* O halo não passa para os filhos do elemento focado. Só as peças do sistema, que leem a
+   variável, precisam do reset; o seletor termina em classe para não custar em toda a árvore. */
+:focus-visible :is(.glass, .glass-layer, .glass-fill, .lg-fill-link, .lg-focus-dual, .lg-focus-inset, .lg-field-input, [class*="lg-button--"], [class*="lg-fill--"]) {
+  --lg-focus-shadow: initial;
+}
+
+/* Elementos sem box-shadow próprio do sistema recebem o halo diretamente. */
+.lg-focus-dual:focus-visible,
+.lg-focus-inset:focus-visible,
+.lg-field-input:focus-visible {
+  box-shadow: var(--lg-focus-shadow);
+}
+
+/* Tema: superfícies claras voltam ao contorno ink, para uma peça clara dentro de uma escura
+   não herdar o foco branco. A regra das superfícies escuras vem logo abaixo e vence no próprio
+   elemento escuro. */
+.glass--thin,
+.glass--regular,
+.glass--thick,
+.glass--dense,
+.glass--card,
+.glass--panel,
+.glass-fill {
+  --lg-focus-outer: var(--color-ink, #081C2D);
+  --focus-outline: var(--lg-focus-width) solid var(--lg-focus-outer);
+}
+
+/* Superfícies escuras: o foco padrão do tema (sem halo) e o contorno das peças do sistema
+   (botões, preenchimentos e vidro interativo, que leem --lg-focus-outer) passam a branco
+   (17,680:1 sobre ink, 9,803:1 sobre o raio-2, 14,757:1 sobre o cartão escuro). Sem isso,
+   o contorno ink ficava invisível sobre o campo noite (1,022:1). */
+.lg-field--noite,
+.glass--dark,
+.glass--dark-card,
+.glass--dark-bar,
+.video-reel__dialog {
+  --lg-focus-outer: var(--lg-focus-halo);
+  --focus-outline: var(--lg-focus-width) solid var(--lg-focus-halo);
+}
+
+.glass--dark.is-over-dark {
+  --lg-focus-outer: var(--color-ink, #081C2D);
+  --focus-outline: var(--lg-focus-width) solid var(--lg-focus-outer);
+}
+
+/* Área de toque de 44 x 44 (spec P21 e 8.0) sem mudar o desenho. Usa ::after para não
+   brigar com o ::before da .glass-layer. O elemento não pode ter overflow: hidden.
+   --lg-hit-min: 24px nos indicadores muito próximos (mínimo do critério 2.5.8). */
+:where(.lg-hit) {
+  position: relative;
+}
+
+.lg-hit::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 100%;
+  height: 100%;
+  min-width: var(--lg-hit-min, 44px);
+  min-height: var(--lg-hit-min, 44px);
+  transform: translate(-50%, -50%);
+}
+
+/* Barra fixa de compra flutuante (spec 8.8, D22). O section-sticky-atc.css do tema, que é
+   carregado depois deste arquivo, hoje fixa left/right/bottom em 0 com a mesma especificidade:
+   ao implementar, tirar esses valores de lá ou usar esta classe com seletor mais forte. */
+.lg-sticky-atc {
+  left: var(--lg-sticky-inset);
+  right: var(--lg-sticky-inset);
+  bottom: var(--lg-sticky-inset);
+  z-index: var(--lg-z-sticky-atc);
+  border-radius: var(--lg-radius-sticky);
+  font-variant-numeric: tabular-nums;
+  --lg-materialize-origin: bottom center;
+}
+
+/* Materialização (spec 5.9, D14, D31): nunca anima o desfoque.
+   - .glass (mega menu, busca preditiva, tooltip, todos sem desfoque): escala e opacidade,
+     crescendo a partir do controle que abriu (--lg-materialize-origin, definido por
+     componente; o mega menu recebe do JavaScript a posição do link).
+   - .glass-layer (barra fixa): só transform no hospedeiro. Opacidade menor que 1 no
+     hospedeiro forma Backdrop Root (FE2) e o desfoque do ::before apareceria de uma vez
+     no último quadro.
+   var() dentro de @keyframes: se um navegador não aceitar, a escala não anima (PROVISÓRIO). */
+@keyframes lg-materialize {
+  from {
+    opacity: 0;
+    transform: scale(var(--lg-materialize-scale));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lg-materialize-layer {
+  from {
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    transform: none;
+  }
+}
+
+.lg-materialize {
+  transform-origin: var(--lg-materialize-origin, top center);
+  animation: lg-materialize var(--lg-dur-materialize) var(--lg-ease-spring) both;
+}
+
+.glass-layer.lg-materialize {
+  animation-name: lg-materialize-layer;
+}
+
+/* ==========================================================================
+   6. Preenchimentos e botões (spec 5.5). Combinar com .button do tema,
+      que já define altura, padding e fonte.
+   ========================================================================== */
+
+.lg-button--primary {
+  background-color: var(--lg-primary);
+  color: #FFFFFF;
+  border-color: transparent;
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line), var(--lg-shadow-primary);
+  transition:
+    background-color var(--lg-dur-hover) var(--lg-ease-glass),
+    transform var(--lg-dur-press) var(--lg-ease-spring);
+}
+
+/* "Adicionar" suave: PENDENTE do dono (D8). Até a decisão, o "Adicionar" usa .lg-button--primary. */
+.lg-button--soft {
+  background-color: var(--lg-fill-primary-14);
+  color: var(--lg-ink);
+  border-color: transparent;
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  transition:
+    background-color var(--lg-dur-hover) var(--lg-ease-glass),
+    transform var(--lg-dur-press) var(--lg-ease-spring);
+}
+
+.lg-button--glass {
+  /* Sem isto o .button:hover do base.css pinta o texto de branco sobre o vidro branco (sumia). */
+  --button-text-hover: var(--lg-ink);
+  background-color: var(--glass-card-bg);
+  background-image: var(--lg-sheen-content);
+  color: var(--lg-ink);
+  border: 1px solid rgba(255, 255, 255, 0.80);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-button), var(--lg-rim-light-inset), var(--lg-shadow-thin);
+  transition:
+    background-color var(--lg-dur-hover) var(--lg-ease-glass),
+    box-shadow var(--lg-dur-hover) var(--lg-ease-glass),
+    transform var(--lg-dur-press) var(--lg-ease-spring);
+}
+
+.lg-button--glass-dark {
+  --button-text-hover: var(--lg-on-dark);
+  background-color: var(--glass-dark-card-bg);
+  color: var(--lg-on-dark);
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-dark-inset);
+  transition:
+    background-color var(--lg-dur-hover) var(--lg-ease-glass),
+    transform var(--lg-dur-press) var(--lg-ease-spring);
+}
+
+/* Hover e pressionado do primário em --color-primary-hover (#15375A): com a primária igual à
+   tinta (redesenho v3), o hover em tinta ficava igual ao repouso (emenda C6). */
+@media (hover: hover) {
+  .lg-button--primary:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--color-primary-hover, #15375A);
+  }
+
+  .lg-button--soft:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--lg-fill-primary-22);
+  }
+
+  .lg-button--glass:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: rgba(255, 255, 255, 0.80);
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-strong), var(--lg-rim-light-inset), var(--lg-shadow-thin);
+  }
+
+  .lg-button--glass-dark:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: rgba(var(--lg-ink-rgb), 0.80);
+  }
+}
+
+.lg-button--primary:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--color-primary-hover, #15375A);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line);
+  transform: scale(var(--lg-press-scale));
+}
+
+.lg-button--soft:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--lg-fill-primary-28);
+  transform: scale(var(--lg-press-scale));
+}
+
+.lg-button--glass:active:not(:disabled):not([aria-disabled="true"]) {
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-strong), var(--lg-rim-light-inset), var(--lg-press-glow);
+  transform: scale(var(--lg-press-scale));
+}
+
+.lg-button--glass-dark:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: rgba(var(--lg-ink-rgb), 0.90);
+  transform: scale(var(--lg-press-scale));
+}
+
+.lg-button--primary:disabled,
+.lg-button--primary[aria-disabled="true"],
+.lg-button--soft:disabled,
+.lg-button--soft[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.lg-button--glass:disabled,
+.lg-button--glass[aria-disabled="true"],
+.lg-button--glass-dark:disabled,
+.lg-button--glass-dark[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Preenchimentos sólidos: linha de luz de 1 px em cima; sem reflexo sobre o texto */
+/* Acento (#E9AD05 desde o redesenho v3): sempre com texto ink (8,60:1), nunca como texto sobre
+   claro (2,01:1 no branco). Selo: texto na cor do ajuste "Texto do selo" (emenda C5; o branco
+   fixo dava 2,01:1 sobre o selo amarelo). */
+.lg-fill--ink { background-color: var(--lg-ink); color: #FFFFFF; box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line); }
+.lg-fill--accent { background-color: var(--lg-accent); color: var(--lg-ink); box-shadow: var(--lg-focus-shadow, 0 0 #0000), inset 0 1px 0 rgba(255, 255, 255, 0.50); }
+.lg-fill--badge { background-color: var(--lg-badge); color: var(--color-badge-text); box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line); }
+.lg-fill--offer { background-color: var(--lg-offer); color: #FFFFFF; box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line); }
+.lg-fill--savings { background-color: var(--lg-tint-savings); color: var(--lg-ink); box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line); }
+.lg-fill--petroleo { background-color: var(--lg-petroleo); color: #FFFFFF; box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line); }
+.lg-fill--chip { background-color: var(--lg-chip-bg); color: var(--lg-chip-text); box-shadow: var(--lg-focus-shadow, 0 0 #0000); }
+.lg-fill--photo { background-color: var(--lg-fill-ink-04); }
+
+@media (hover: hover) {
+  .lg-fill--accent:is(a, button):hover { box-shadow: var(--lg-focus-shadow, 0 0 #0000), inset 0 0 0 1px var(--lg-ink); }
+  .lg-fill--petroleo:is(a, button):hover { background-color: var(--lg-ink); }
+}
+
+.lg-fill--ink:is(a, button):active,
+.lg-fill--accent:is(a, button):active,
+.lg-fill--petroleo:is(a, button):active {
+  transform: scale(var(--lg-press-scale));
+}
+
+/* Campos de formulário (spec 8.9) */
+.lg-field-input {
+  background-color: var(--lg-fill-white-90);
+  border: 1px solid var(--lg-input-border);
+  border-radius: var(--lg-radius-capsule);
+  color: var(--lg-ink);
+  transition: border-color var(--lg-dur-hover) var(--lg-ease-glass);
+}
+
+textarea.lg-field-input {
+  border-radius: var(--lg-radius-inner);
+}
+
+.glass .lg-field-input,
+.glass-layer .lg-field-input {
+  border-color: var(--lg-input-border-glass);
+}
+
+.lg-field-input::placeholder {
+  color: var(--lg-text-muted);
+  opacity: 1; /* texto sempre sólido */
+}
+
+@media (hover: hover) {
+  .lg-field-input:hover:not(:disabled) {
+    border-color: var(--lg-ink);
+  }
+}
+
+.lg-field-input:disabled {
+  opacity: 0.5;
+  background-color: var(--lg-fill-ink-04);
+  cursor: not-allowed;
+}
+
+/* Erro: borda de 2 px #C2410C (componente, 3:1; 4,130:1 no espesso com desfoque e 4,741:1
+   sem desfoque). O TEXTO da mensagem usa --lg-error-text (spec 8.9, D30). */
+.lg-field-input[aria-invalid="true"] {
+  border-width: 2px;
+  border-color: var(--lg-offer);
+}
+
+.form-message--error {
+  color: var(--lg-error-text);
+}
+
+/* ==========================================================================
+   6.1 Regras de contexto: por cima de vidro, só preenchimento (spec P3, D36).
+       Ficam depois dos estados dos botões para vencer pela ordem ou pela especificidade.
+   ========================================================================== */
+
+.glass .lg-button--glass,
+.glass-layer .lg-button--glass {
+  background-color: var(--glass-fill-bg);
+  background-image: none;
+  border-color: transparent;
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-button);
+}
+
+@media (hover: hover) {
+  .glass .lg-button--glass:hover:not(:disabled):not([aria-disabled="true"]),
+  .glass-layer .lg-button--glass:hover:not(:disabled):not([aria-disabled="true"]) {
+    background-color: var(--glass-fill-bg-hover);
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-strong);
+  }
+}
+
+.glass .lg-button--glass:active:not(:disabled):not([aria-disabled="true"]),
+.glass-layer .lg-button--glass:active:not(:disabled):not([aria-disabled="true"]) {
+  background-color: var(--glass-fill-bg-hover);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-hairline-strong);
+}
+
+/* O primário por cima de vidro perde a sombra colorida própria; fica a linha de luz. */
+.glass .lg-button--primary,
+.glass-layer .lg-button--primary {
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-fill-line);
+}
+
+/* ==========================================================================
+   7. Transparência reduzida (Chrome e Edge 118+; spec 9.2)
+      Cada material volta à cor chapada atual. A arte dos campos continua.
+   ========================================================================== */
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass,
+  .glass-layer::before {
+    background-color: var(--glass-solid);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .glass-fill,
+  .glass .lg-button--glass,
+  .glass-layer .lg-button--glass {
+    background-color: #FFFFFF;
+  }
+
+  .lg-button--glass {
+    background-color: #FFFFFF;
+    background-image: none;
+  }
+
+  .lg-button--glass-dark {
+    background-color: var(--glass-solid-dark-card);
+  }
+
+  .lg-field-input {
+    background-color: #FFFFFF;
+  }
+}
+
+/* ==========================================================================
+   8. Contraste aumentado (spec 9.3): preto ou branco sólido com borda
+   ========================================================================== */
+
+@media (prefers-contrast: more) {
+  :root {
+    --lg-text-muted-glass: var(--lg-ink);
+  }
+
+  /* Tema: texto secundário sobre o vidro de conteúdo também passa a ink (spec 9.3); o
+     funcional já passa pela variável acima. */
+  .glass--card,
+  .glass--panel,
+  .glass-fill {
+    --color-text-muted: var(--lg-ink);
+  }
+
+  .glass,
+  .glass-layer {
+    --glass-outline: var(--lg-shadow-none);
+    --glass-rim-inset: var(--lg-shadow-none);
+    --glass-shadow: var(--lg-shadow-none);
+    --glass-press: var(--lg-shadow-none);
+  }
+
+  /* Sem sombra e sem luz; o halo do foco continua (--lg-focus-shadow). */
+  .glass,
+  .glass-layer::before {
+    background-color: var(--glass-contrast-bg);
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--glass-contrast-border);
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+
+  .glass-fill {
+    background-color: #FFFFFF;
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000), inset 0 0 0 1px var(--lg-ink);
+  }
+
+  .lg-button--glass,
+  .glass .lg-button--glass,
+  .glass-layer .lg-button--glass {
+    background-color: #FFFFFF;
+    background-image: none;
+    border-color: var(--lg-ink);
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+
+  .lg-button--glass-dark {
+    background-color: var(--lg-ink);
+    border-color: #FFFFFF;
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+
+  .lg-button--primary,
+  .glass .lg-button--primary,
+  .glass-layer .lg-button--primary,
+  .lg-fill--ink,
+  .lg-fill--badge,
+  .lg-fill--offer,
+  .lg-fill--savings,
+  .lg-fill--petroleo {
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+
+  .lg-field-input {
+    background-color: #FFFFFF;
+    border-color: var(--lg-ink);
+  }
+
+  .lg-field--art {
+    background-image: none;
+  }
+}
+
+/* ==========================================================================
+   9. Cores forçadas (spec 9.4). O navegador mantém o alfa do fundo e não mexe
+      no backdrop-filter, por isso tudo é declarado aqui.
+   ========================================================================== */
+
+@media (forced-colors: active) {
+  .glass,
+  .glass-layer::before,
+  .glass-fill,
+  .lg-button--glass,
+  .glass .lg-button--glass,
+  .glass-layer .lg-button--glass,
+  .lg-button--glass-dark,
+  .lg-field-input {
+    background-color: Canvas;
+    background-image: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border: 1px solid CanvasText;
+  }
+
+  /* Estados selecionados que hoje são só fundo (paginação, chip "Todos", "Quero" e "Tenho",
+     tags) continuam visíveis (spec 9.4). */
+  .lg-fill--ink,
+  [aria-current="page"],
+  [aria-pressed="true"],
+  [aria-selected="true"] {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+  }
+
+  /* Indicadores (bolinhas): o ponto visível leva .lg-dot */
+  .lg-dot {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+
+  .lg-dot.is-active,
+  .lg-dot[aria-current="true"],
+  [aria-current="true"] > .lg-dot {
+    background-color: Highlight;
+  }
+
+  .glass,
+  .glass-layer,
+  .glass-fill,
+  .lg-button--glass,
+  .lg-button--glass-dark {
+    color: CanvasText;
+  }
+
+  .lg-field--art {
+    background-image: none;
+  }
+
+  .glass--interactive:focus-visible,
+  .lg-focus-dual:focus-visible,
+  .lg-focus-inset:focus-visible,
+  .lg-field-input:focus-visible,
+  .lg-fill-link:focus-visible,
+  [class*="lg-button--"]:focus-visible,
+  [class*="lg-fill--"]:focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+/* ==========================================================================
+   10. Movimento reduzido (spec 9.5): sem escala, sem elevação, sem mola,
+       vidro aparece sem esmaecer. Mudança de cor continua.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lg-dur-press: 0ms;
+    --lg-dur-state: 0ms;
+    --lg-dur-materialize: 0ms;
+    --lg-dur-sheet: 0ms;
+    --lg-press-scale: 1;
+    --lg-press-scale-card: 1;
+    --lg-lift: 0px;
+    --lg-materialize-scale: 1;
+    --lg-ease-spring: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .lg-materialize,
+  .glass-layer.lg-materialize {
+    animation: none;
+  }
+}

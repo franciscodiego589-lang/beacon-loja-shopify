@@ -1,0 +1,589 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "topo": {
+      "type": "ajuda-topo",
+      "blocks": {
+        "atalho-rastreio": {
+          "type": "atalho",
+          "settings": {
+            "label": "Rastrear pedido",
+            "link": "",
+            "anchor": "p-rastreio"
+          }
+        },
+        "atalho-desistir": {
+          "type": "atalho",
+          "settings": {
+            "label": "Desistir da compra",
+            "link": "",
+            "anchor": "p-desistir"
+          }
+        },
+        "atalho-defeito": {
+          "type": "atalho",
+          "settings": {
+            "label": "Produto com defeito",
+            "link": "",
+            "anchor": "p-defeito"
+          }
+        },
+        "atalho-dose": {
+          "type": "atalho",
+          "settings": {
+            "label": "Dose diária",
+            "link": "",
+            "anchor": "p-como-tomar"
+          }
+        }
+      },
+      "block_order": [
+        "atalho-rastreio",
+        "atalho-desistir",
+        "atalho-defeito",
+        "atalho-dose"
+      ],
+      "settings": {
+        "show_breadcrumbs": true,
+        "icon": "none",
+        "eyebrow": "Central de ajuda",
+        "heading": "",
+        "heading_tag": "h1",
+        "text": "<p>Respostas rápidas sobre entregas, trocas e produtos.</p>",
+        "updated": "",
+        "aside": "busca",
+        "search_label": "Buscar nas páginas e no blog",
+        "search_placeholder": "Ex.: troca, entrega, rastreio",
+        "search_scope": "conteudo",
+        "shortcuts_heading": "Acesso rápido",
+        "aside_heading": "",
+        "aside_text": "",
+        "aside_note": "",
+        "padding": "small"
+      }
+    },
+    "atalhos": {
+      "type": "multicolumn",
+      "blocks": {
+        "col-entregas": {
+          "type": "column",
+          "settings": {
+            "icon": "truck",
+            "title": "Entregas",
+            "text": "<p>Etapas do envio, rastreio e atrasos</p>",
+            "link_label": "Ver Entregas",
+            "link": "shopify://pages/politica-de-entrega"
+          }
+        },
+        "col-trocas": {
+          "type": "column",
+          "settings": {
+            "icon": "refresh",
+            "title": "Trocas e devoluções",
+            "text": "<p>Desistência, defeito e reembolso</p>",
+            "link_label": "Ver Trocas e devoluções",
+            "link": "shopify://pages/trocas-e-devolucoes"
+          }
+        },
+        "col-rastreio": {
+          "type": "column",
+          "settings": {
+            "icon": "map-pin",
+            "title": "Rastrear pedido",
+            "text": "<p>Acompanhe a entrega do seu pedido</p>",
+            "link_label": "Rastrear pedido",
+            "link": "shopify://pages/rastreie-seu-pedido"
+          }
+        },
+        "col-contato": {
+          "type": "column",
+          "settings": {
+            "icon": "chat",
+            "title": "Fale conosco",
+            "text": "<p>Envie sua mensagem ao atendimento</p>",
+            "link_label": "Ir para Contato",
+            "link": "shopify://pages/contact"
+          }
+        }
+      },
+      "block_order": [
+        "col-entregas",
+        "col-trocas",
+        "col-rastreio",
+        "col-contato"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "",
+        "text": "",
+        "intro_align": "left",
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "layout": "card",
+        "content_align": "left",
+        "image_ratio": "square",
+        "button_label": "",
+        "button_link": "",
+        "button_style": "primary",
+        "color_scheme": "default",
+        "background_overlay": 75,
+        "padding": "small"
+      }
+    },
+    "faq": {
+      "type": "faq-list",
+      "blocks": {
+        "g-pedidos": {
+          "type": "group",
+          "settings": {
+            "title": "Pedidos e pagamento",
+            "icon": "card",
+            "anchor": "cat-pedidos"
+          }
+        },
+        "q-pagamento": {
+          "type": "question",
+          "settings": {
+            "question": "Quais formas de pagamento a loja aceita?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-pagamento"
+          }
+        },
+        "q-cupom": {
+          "type": "question",
+          "settings": {
+            "question": "Onde aplico o cupom de desconto?",
+            "answer": "<p>Na finalização do pedido, no campo Código de desconto, depois clique em Aplicar. O desconto aparece no resumo antes do pagamento. Cada pedido aceita um desconto por vez.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-cupom"
+          }
+        },
+        "q-alterar": {
+          "type": "question",
+          "settings": {
+            "question": "Posso alterar ou cancelar um pedido depois de pagar?",
+            "answer": "<p>Para cancelar, fale com o nosso atendimento, pela página <a href=\"/pages/contact\">Contato</a>, com o número do pedido. Se o pedido ainda não foi faturado nem enviado, o reembolso sai em até 1 dia útil. Se ele já foi enviado, recuse o pacote na hora da entrega: o reembolso sai em até 30 dias depois que a transportadora confirmar a devolução. Para mudar o endereço de entrega, veja a resposta em Entregas e frete.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-alterar-pedido"
+          }
+        },
+        "q-nota": {
+          "type": "question",
+          "settings": {
+            "question": "Como recebo a nota fiscal?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-nota-fiscal"
+          }
+        },
+        "q-promocao": {
+          "type": "question",
+          "settings": {
+            "question": "Como funcionam os descontos?",
+            "answer": "<p>Nos kits, o pote sai mais barato: o kit de 6 potes tem até 15% OFF sobre o preço de 6 potes avulsos, e o preço de cada kit aparece na página do produto. No carrinho, valem os descontos automáticos quando a regra do pedido é atendida, e na primeira vez você pode usar o cupom BEMVINDO10, com 10% OFF no pedido. Os descontos do carrinho e o cupom não se somam entre si. O frete é grátis a partir de R$ 179.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-promocao"
+          }
+        },
+        "g-entregas": {
+          "type": "group",
+          "settings": {
+            "title": "Entregas e frete",
+            "icon": "truck",
+            "anchor": "cat-entregas"
+          }
+        },
+        "q-prazo": {
+          "type": "question",
+          "settings": {
+            "question": "Qual é o prazo de entrega?",
+            "answer": "",
+            "link_label": "Ver a página de Entregas",
+            "link": "shopify://pages/politica-de-entrega",
+            "anchor": "p-prazo-entrega"
+          }
+        },
+        "q-frete": {
+          "type": "question",
+          "settings": {
+            "question": "Quando o frete é grátis?",
+            "answer": "<p>No Brasil, o frete é grátis em pedidos a partir de R$ 179,00. Em pedidos de até R$ 178,99, ele custa R$ 22,00. Para fora do Brasil, o frete é de R$ 99,00, sem frete grátis.</p>",
+            "link_label": "Ver a página de Entregas",
+            "link": "shopify://pages/politica-de-entrega",
+            "anchor": "p-frete-gratis"
+          }
+        },
+        "q-rastreio": {
+          "type": "question",
+          "settings": {
+            "question": "Como rastreio meu pedido?",
+            "answer": "<p>Acompanhe pela página Rastreie seu pedido ou pela área Minha conta, em Pedidos.</p>",
+            "link_label": "Rastrear pedido",
+            "link": "shopify://pages/rastreie-seu-pedido",
+            "anchor": "p-rastreio"
+          }
+        },
+        "q-endereco": {
+          "type": "question",
+          "settings": {
+            "question": "Posso mudar o endereço de entrega?",
+            "answer": "<p>Pode. Peça a mudança ao nosso atendimento, pela página <a href=\"/pages/contact\">Contato</a>, com o número do pedido e o endereço completo. Na mesma cidade, a entrega pode levar até 3 dias úteis a mais. Em outra cidade ou estado, fazemos um novo envio, com a diferença de frete cobrada ou devolvida, e o novo prazo chega por e-mail. Se você ainda não concluiu a compra, basta informar o endereço novo na finalização do pedido.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-endereco"
+          }
+        },
+        "q-ausente": {
+          "type": "question",
+          "settings": {
+            "question": "E se não houver ninguém para receber?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-ausente"
+          }
+        },
+        "g-trocas": {
+          "type": "group",
+          "settings": {
+            "title": "Trocas e devoluções",
+            "icon": "refresh",
+            "anchor": "cat-trocas"
+          }
+        },
+        "q-desistir": {
+          "type": "question",
+          "settings": {
+            "question": "Posso desistir da compra?",
+            "answer": "<p>Sim. Na compra feita pela internet, você pode desistir em até 7 dias corridos, contados do recebimento do produto (Código de Defesa do Consumidor, art. 49). O produto volta em perfeito estado, na embalagem original lacrada, o frete de volta é por nossa conta e você recebe de volta todos os valores pagos.</p>",
+            "link_label": "Ver Trocas e devoluções",
+            "link": "shopify://pages/trocas-e-devolucoes",
+            "anchor": "p-desistir"
+          }
+        },
+        "q-defeito": {
+          "type": "question",
+          "settings": {
+            "question": "Recebi um produto com defeito ou avariado. O que faço?",
+            "answer": "<p>Não consuma o produto. Avise o nosso atendimento, pela página <a href=\"/pages/contact\">Contato</a>, em até 30 dias após o recebimento, com o número do pedido, e envie o produto na embalagem original, seguindo as instruções. Analisamos o produto e fazemos a troca em até 30 dias corridos, contados da solicitação, com os dois fretes por nossa conta. Sem solução nesse prazo, você escolhe: um produto igual e novo, outro de valor equivalente ou o reembolso do valor pago. No defeito oculto, o prazo para reclamar começa quando o defeito aparece (Código de Defesa do Consumidor, art. 26, § 3º).</p>",
+            "link_label": "Falar com o atendimento",
+            "link": "shopify://pages/contact",
+            "anchor": "p-defeito"
+          }
+        },
+        "q-devolver": {
+          "type": "question",
+          "settings": {
+            "question": "Como devolvo um produto?",
+            "answer": "<p>Peça a devolução ao nosso atendimento, pela página <a href=\"/pages/contact\">Contato</a>, com o número do pedido e o motivo, e siga as instruções de envio. Na desistência, o produto volta em perfeito estado, na embalagem original lacrada; no defeito, na embalagem original. Nos dois casos, o frete de volta é por nossa conta.</p>",
+            "link_label": "Ver Trocas e devoluções",
+            "link": "shopify://pages/trocas-e-devolucoes",
+            "anchor": "p-devolver"
+          }
+        },
+        "q-reembolso": {
+          "type": "question",
+          "settings": {
+            "question": "Quando recebo o reembolso?",
+            "answer": "<p>Se o pedido ainda não foi faturado nem enviado, o reembolso sai em até 1 dia útil. Nos demais casos, sai em até 30 dias depois que o produto devolvido chega até nós. Se você pagou com cartão, o estorno é feito no mesmo cartão e o comprovante vai para o seu e-mail; a data em que o valor aparece depende do banco emissor. Se pagou com boleto, devolvemos por transferência bancária ou Pix, para a conta que você informar.</p>",
+            "link_label": "Ver Trocas e devoluções",
+            "link": "shopify://pages/trocas-e-devolucoes",
+            "anchor": "p-reembolso"
+          }
+        },
+        "g-produtos": {
+          "type": "group",
+          "settings": {
+            "title": "Produtos e uso",
+            "icon": "capsule",
+            "anchor": "cat-produtos"
+          }
+        },
+        "q-capsulas": {
+          "type": "question",
+          "settings": {
+            "question": "Quantas cápsulas vêm em cada pote?",
+            "answer": "<p>Cada pote tem 60 cápsulas. Na porção de 2 cápsulas ao dia, ele rende 30 dias.</p>",
+            "link_label": "Ver todos os produtos",
+            "link": "/collections/all",
+            "anchor": "p-capsulas"
+          }
+        },
+        "q-dose": {
+          "type": "question",
+          "settings": {
+            "question": "Quantas cápsulas devo tomar por dia?",
+            "answer": "<p>Adultos com 19 anos ou mais: 2 cápsulas ao dia, que formam a porção de 1 g. Não exceder a recomendação diária de consumo indicada na embalagem.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-como-tomar"
+          }
+        },
+        "q-gluten": {
+          "type": "question",
+          "settings": {
+            "question": "Os produtos contêm glúten?",
+            "answer": "<p>Não. Todos os produtos da linha Pure trazem no rótulo a informação NÃO CONTÉM GLÚTEN.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-gluten"
+          }
+        },
+        "q-medicamento": {
+          "type": "question",
+          "settings": {
+            "question": "Suplemento alimentar é medicamento?",
+            "answer": "<p>Não. Todos os rótulos da linha Pure trazem a advertência: este produto não é um medicamento.</p>",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-medicamento"
+          }
+        },
+        "q-combinar": {
+          "type": "question",
+          "settings": {
+            "question": "Posso tomar mais de um suplemento ao mesmo tempo?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-combinar"
+          }
+        },
+        "q-beneficios": {
+          "type": "question",
+          "settings": {
+            "question": "O que cada suplemento faz?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-beneficios"
+          }
+        },
+        "q-lote": {
+          "type": "question",
+          "settings": {
+            "question": "Onde encontro o lote e a validade?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-lote"
+          }
+        },
+        "g-conta": {
+          "type": "group",
+          "settings": {
+            "title": "Conta e cadastro",
+            "icon": "user",
+            "anchor": "cat-conta"
+          }
+        },
+        "q-conta": {
+          "type": "question",
+          "settings": {
+            "question": "Preciso criar uma conta para comprar?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-conta"
+          }
+        },
+        "q-acesso": {
+          "type": "question",
+          "settings": {
+            "question": "Não consigo entrar na minha conta. O que faço?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-acesso"
+          }
+        },
+        "q-newsletter": {
+          "type": "question",
+          "settings": {
+            "question": "Como deixo de receber e-mails da loja?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-newsletter"
+          }
+        },
+        "g-privacidade": {
+          "type": "group",
+          "settings": {
+            "title": "Privacidade e segurança",
+            "icon": "shield-check",
+            "anchor": "cat-privacidade"
+          }
+        },
+        "q-dados": {
+          "type": "question",
+          "settings": {
+            "question": "Como a loja usa os meus dados?",
+            "answer": "",
+            "link_label": "Ler a Política de Privacidade",
+            "link": "/policies/privacy-policy",
+            "anchor": "p-dados"
+          }
+        },
+        "q-seguranca": {
+          "type": "question",
+          "settings": {
+            "question": "É seguro comprar no site?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-seguranca"
+          }
+        },
+        "q-excluir": {
+          "type": "question",
+          "settings": {
+            "question": "Como peço a exclusão dos meus dados?",
+            "answer": "",
+            "link_label": "",
+            "link": "",
+            "anchor": "p-excluir-dados"
+          }
+        },
+        "q-errado": {
+          "type": "question",
+          "settings": {
+            "question": "Recebi um produto errado ou faltou algum item. O que faço?",
+            "answer": "<p>Vale a mesma regra do produto com defeito: avise o nosso atendimento, pela página <a href=\"/pages/contact\">Contato</a>, em até 30 dias após o recebimento, com o número do pedido. Resolvemos em até 30 dias corridos, contados da solicitação, e o frete fica por nossa conta.</p>",
+            "link_label": "Ver Trocas e devoluções",
+            "link": "shopify://pages/trocas-e-devolucoes",
+            "anchor": "p-errado"
+          }
+        }
+      },
+      "block_order": [
+        "g-pedidos",
+        "q-pagamento",
+        "q-cupom",
+        "q-alterar",
+        "q-nota",
+        "q-promocao",
+        "g-entregas",
+        "q-prazo",
+        "q-frete",
+        "q-rastreio",
+        "q-endereco",
+        "q-ausente",
+        "g-trocas",
+        "q-desistir",
+        "q-defeito",
+        "q-errado",
+        "q-devolver",
+        "q-reembolso",
+        "g-produtos",
+        "q-capsulas",
+        "q-dose",
+        "q-gluten",
+        "q-medicamento",
+        "q-combinar",
+        "q-beneficios",
+        "q-lote",
+        "g-conta",
+        "q-conta",
+        "q-acesso",
+        "q-newsletter",
+        "g-privacidade",
+        "q-dados",
+        "q-seguranca",
+        "q-excluir"
+      ],
+      "settings": {
+        "eyebrow": "",
+        "heading": "",
+        "heading_tag": "h2",
+        "text": "",
+        "intro_align": "left",
+        "layout": "categorias",
+        "link_label": "",
+        "link": "",
+        "nav_heading": "Categorias",
+        "nav_all_label": "Todas as perguntas",
+        "show_counts": true,
+        "count_singular": "pergunta",
+        "count_plural": "perguntas",
+        "nav_help_text": "Não achou o que procurava?",
+        "nav_help_link_label": "Fale com o atendimento",
+        "nav_help_link": "shopify://pages/contact",
+        "open_first": true,
+        "color_scheme": "default",
+        "padding": "small",
+        "mark_google": true
+      }
+    },
+    "contato": {
+      "type": "ajuda-contato",
+      "blocks": {
+        "canal-chat": {
+          "type": "canal",
+          "settings": {
+            "icon": "chat",
+            "rotulo": "Chat",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        },
+        "canal-email": {
+          "type": "canal",
+          "settings": {
+            "icon": "message",
+            "rotulo": "E-mail",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        },
+        "canal-horario": {
+          "type": "canal",
+          "settings": {
+            "icon": "clock",
+            "rotulo": "Horário",
+            "valor": "",
+            "link": "",
+            "nota": ""
+          }
+        }
+      },
+      "block_order": [
+        "canal-chat",
+        "canal-email",
+        "canal-horario"
+      ],
+      "settings": {
+        "anchor": "contato",
+        "icon": "none",
+        "heading": "Não encontrou sua resposta?",
+        "text": "<p>Fale com o nosso atendimento.</p>",
+        "button_label": "Fale conosco",
+        "button_link": "shopify://pages/contact",
+        "button_style": "primary",
+        "padding": "normal"
+      }
+    }
+  },
+  "order": [
+    "topo",
+    "atalhos",
+    "faq",
+    "contato"
+  ]
+}

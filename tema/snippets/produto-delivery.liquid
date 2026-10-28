@@ -1,0 +1,83 @@
+{%- comment -%}
+  Área produto. Bloco "Prazo de entrega" (sections/main-product.liquid), extraído para cá
+  para simplificar a lógica condicional da seção principal (o Theme Check aponta complexidade
+  demais quando este cálculo de datas fica embutido).
+  Parâmetros:
+  - block_settings: block.settings do bloco "entrega" (custom_text, days_min, days_max, business_days)
+  - design_mode: request.design_mode (mostra a nota de editor quando não há prazo configurado)
+  - shopify_attributes: block.shopify_attributes (para o editor de temas destacar o bloco)
+
+  As datas são calculadas a partir do dia da visita (a Shopify pode guardar a página em
+  cache, então a data pode demorar a virar). Sem prazo máximo nem texto fixo, nada renderiza.
+  O formato da data vem da chave de idioma produto.delivery.date_format (dia/mês), como as
+  outras seções que mostram datas (main-order, main-blog, main-article), e não fica escrito aqui.
+  Liquid Glass (spec 8.7): caixa de vidro de conteúdo cartão (.glass .glass--card), raio 16.
+{%- endcomment -%}
+{%- liquid
+  assign delivery_custom = block_settings.custom_text | strip
+  assign delivery_min = block_settings.days_min | plus: 0
+  assign delivery_max = block_settings.days_max | plus: 0
+  if delivery_max < delivery_min
+    assign delivery_swap = delivery_min
+    assign delivery_min = delivery_max
+    assign delivery_max = delivery_swap
+  endif
+  if delivery_min < 0
+    assign delivery_min = 0
+  endif
+  if delivery_max > 60
+    assign delivery_max = 60
+  endif
+
+  assign delivery_start = ''
+  assign delivery_end = ''
+  assign delivery_date_format = 'produto.delivery.date_format' | t
+  if delivery_custom == blank and delivery_max > 0
+    assign now_ts = 'now' | date: '%s' | plus: 0
+    if block_settings.business_days
+      assign day_ts = now_ts
+      assign counted = 0
+      assign start_ts = 0
+      assign end_ts = 0
+      for i in (1..90)
+        assign day_ts = day_ts | plus: 86400
+        assign weekday = day_ts | date: '%u' | plus: 0
+        if weekday < 6
+          assign counted = counted | plus: 1
+          if counted == delivery_min
+            assign start_ts = day_ts
+          endif
+          if counted == delivery_max
+            assign end_ts = day_ts
+            break
+          endif
+        endif
+      endfor
+    else
+      assign start_ts = delivery_min | times: 86400 | plus: now_ts
+      assign end_ts = delivery_max | times: 86400 | plus: now_ts
+    endif
+    if delivery_min > 0 and delivery_min < delivery_max and start_ts > 0
+      assign delivery_start = start_ts | date: delivery_date_format
+    endif
+    if end_ts > 0
+      assign delivery_end = end_ts | date: delivery_date_format
+    endif
+  endif
+-%}
+{%- if delivery_custom != blank or delivery_end != blank -%}
+  <p class="main-product__block delivery glass glass--card" {{ shopify_attributes }}>
+    <span class="delivery__icon" aria-hidden="true">{% render 'icon', name: 'truck', size: 24 %}</span>
+    <span class="delivery__text">
+      {%- if delivery_custom != blank -%}
+        {{ delivery_custom | escape }}
+      {%- elsif delivery_start != blank -%}
+        {{ 'produto.delivery.range_html' | t: start: delivery_start, end: delivery_end }}
+      {%- else -%}
+        {{ 'produto.delivery.single_html' | t: end: delivery_end }}
+      {%- endif -%}
+    </span>
+  </p>
+{%- elsif design_mode -%}
+  <p class="main-product__block main-product__editor-note" {{ shopify_attributes }}>{{ 'produto.editor.delivery_empty' | t }}</p>
+{%- endif -%}

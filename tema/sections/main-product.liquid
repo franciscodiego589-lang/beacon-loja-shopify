@@ -1,0 +1,1049 @@
+{%- comment -%}
+  O cartão de kit (snippets/kit-card.liquid) só aparece nesta seção; a folha dele carrega aqui,
+  antes da folha da seção, e não mais em todas as páginas pelo layout.
+{%- endcomment -%}
+{{ 'component-kit-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-product.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'media-gallery.js' | asset_url }}" type="module"></script>
+<script src="{{ 'kit-selector.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Área produto. Bloco principal da página de produto (maquetes Produto-Desktop e Produto-Mobile).
+  - Coluna da esquerda: bloco "galeria" (<media-gallery>).
+  - Coluna da direita: demais blocos, na ordem do editor.
+  - A seção guarda o cálculo compartilhado (variante inicial, kit, preço, parcelas), o laço de
+    blocos e o ProductData. A marcação dos blocos longos fica em snippets com parâmetros
+    explícitos (auditoria de arquitetura, 28/09/2026): produto-gallery, produto-testimonial,
+    produto-what-is, produto-kit-selector, produto-buy e produto-attributes, além dos que já
+    existiam (produto-delivery, produto-chips, produto-payment-line, produto-trust-badges e
+    produto-combo-offer). O bloco "dossie" (28/09/2026) usa produto-dossie, que carrega a
+    própria folha e o próprio JS só quando tem dado (metaobjetos beacon.dossie e beacon.insumos).
+  - Conteúdo do produto só por metafields do namespace "beacon". Bloco sem dado não renderiza nada.
+  - Ordem dos blocos da maquete de 29/09/2026 (templates/product.json): galeria, título,
+    depoimento, "O que é", prazo de entrega, chips, kit, botão, parcelamento e Pix, selos,
+    cashback, atributos e oferta combo. Promessa sem dado confirmado fica desligada e oculta:
+    parcelamento sem juros (ajuste show_installments do bloco "parcelamento_pix", que vale
+    também para os cartões de kit), selo 2 sem texto padrão (era "Satisfação garantida"),
+    cashback e aviso de frete grátis do combo desligados. O nome curto (snippets/
+    produto-nome-curto) entra no atalho "O que é".
+  - Kit: variantes da opção "Kit"; cápsulas e dias calculados no snippet kit-card (fundação).
+  - Dados para o JS: <script type="application/json" id="ProductData-SECTIONID">.
+  - Evento publicado ao trocar o kit: 'variant:change', detail { variant, sectionId, productId }.
+  - Carrosséis (depoimento e atributos): <carousel-slider> da fundação (assets/carousel-slider.js),
+    já carregado em layout/theme.liquid para todas as páginas. Modo "fade" no depoimento (um por
+    vez) e "scroll" nos atributos (rolagem com setas e pontos), igual aos carrosséis da home.
+  - Liquid Glass (spec 8.7): a página fica na névoa, sem vidro atrás do texto corrido.
+    Vidro de conteúdo (.glass .glass--card, sem desfoque): depoimento, prazo de entrega,
+    cashback, avise-me, oferta combo (os itens dela são .glass-fill, preenchimento) e cartões do
+    kit. Vidro funcional fino sem desfoque (.glass--thin) nos controles sobre a foto: zoom,
+    cápsulas e contador. Sobreposições de vídeo e 3D nas miniaturas: .glass--dark sem desfoque.
+    Nenhuma peça desta seção leva o modificador de desfoque: desfoque real só no cabeçalho, na
+    barra fixa, no chat e nas setas do banner e dos vídeos (spec 10, regra 1).
+{%- endcomment -%}
+
+{%- liquid
+  assign section_id = section.id
+  assign form_id = 'ProductForm-' | append: section_id
+
+  capture initial_index
+    render 'produto-initial-variant', product: product
+  endcapture
+  assign initial_index = initial_index | strip | plus: 0
+  assign current_variant = product.variants[initial_index]
+
+  assign caps_pote = product.metafields.beacon.capsulas_por_pote.value | plus: 0
+  assign caps_dia = product.metafields.beacon.capsulas_por_dia.value | plus: 0
+
+  # A opção de kit se chama "Kit" no modelo do tema e "Quantidade" nos produtos da loja.
+  assign kit_option = product.options_by_name['Kit']
+  if kit_option == blank
+    assign kit_option = product.options_by_name['Quantidade']
+  endif
+  assign kit_index = -1
+  if kit_option != blank
+    assign kit_index = kit_option.position | minus: 1
+  endif
+
+  assign current_price = current_variant.price
+  assign current_compare = current_variant.compare_at_price | default: 0
+  assign on_sale = false
+  assign discount_percent = 0
+  if current_compare > current_price
+    assign on_sale = true
+    assign discount_percent = current_compare | minus: current_price | times: 100 | divided_by: current_compare
+  endif
+
+  # Texto inicial do botão: mesma regra do JS (buyLabel), escrita uma vez em snippets/produto-buy-label.
+  capture buy_label
+    render 'produto-buy-label', variant: current_variant, kit_index: kit_index
+  endcapture
+
+  # Nome curto (título sem a dose): "O que é Pure Taurina?", como na maquete de 29/09/2026.
+  capture nome_curto
+    render 'produto-nome-curto', product: product
+  endcapture
+  assign nome_curto = nome_curto | strip
+
+  # Nome visível (emenda 1 e Ruling 24): título antes de " – ", com a dose, escapado pelo snippet.
+  capture nome_visivel_html
+    render 'v3-nome-visivel', produto: product, modo: 'html'
+  endcapture
+  assign nome_visivel_html = nome_visivel_html | strip
+  # Trilha (etapa 8e, item 17): o nome entra no snippet único da trilha (snippets/colecao-breadcrumb) em
+  # modo 'texto' (já escapado; o snippet usa escape_once, então não duplica o "&amp;").
+  capture nome_visivel_texto
+    render 'v3-nome-visivel', produto: product, modo: 'texto'
+  endcapture
+  assign nome_visivel_texto = nome_visivel_texto | strip
+  # Nome longo (passo 7, parte C): 29 caracteres ou mais ganha título menor no celular, para
+  # quebrar em até duas linhas sem empurrar o preço e o botão.
+  capture nome_visivel_tamanho
+    render 'v3-nome-visivel', produto: product, modo: 'tamanho'
+  endcapture
+  assign nome_visivel_tamanho = nome_visivel_tamanho | strip | plus: 0
+  assign nome_visivel_longo = ''
+  if nome_visivel_tamanho >= 29
+    assign nome_visivel_longo = ' main-product__title--longo'
+  endif
+
+  assign gallery_block = nil
+  assign title_block = nil
+  assign combo_block = nil
+  assign pix_percent = 0
+  assign show_installments = false
+  assign cashback_percent = 0
+  for block in section.blocks
+    case block.type
+      when 'galeria'
+        assign gallery_block = block
+      when 'titulo'
+        assign title_block = block
+      when 'combo_oferta'
+        assign combo_block = block
+      when 'parcelamento_pix'
+        assign pix_percent = block.settings.pix_percent | plus: 0
+        # Parcelamento sem juros só com o ajuste do bloco ligado (29/09/2026): o número de
+        # parcelas das configurações do tema ainda não foi confirmado no meio de pagamento.
+        if block.settings.show_installments
+          assign show_installments = true
+        endif
+      when 'cashback'
+        if block.settings.enabled
+          assign cashback_percent = block.settings.percent | plus: 0
+        endif
+    endcase
+  endfor
+-%}
+
+<section
+  class="main-product lg-field--claro"
+  aria-labelledby="ProductTitle-{{ section_id }}"
+  data-main-product
+  data-section-id="{{ section_id }}"
+>
+  <div class="page-width">
+    {%- if section.settings.show_breadcrumbs -%}
+      {%- liquid
+        if collection
+          assign mp_trilha_pai_texto = collection.title
+          assign mp_trilha_pai_url = collection.url
+        else
+          assign mp_trilha_pai_texto = 'produto.breadcrumbs.all_products' | t
+          assign mp_trilha_pai_url = routes.all_products_collection_url
+        endif
+      -%}
+      {% render 'colecao-breadcrumb',
+        current: nome_visivel_texto,
+        parent_label: mp_trilha_pai_texto,
+        parent_url: mp_trilha_pai_url,
+        class: 'main-product__breadcrumbs'
+      %}
+    {%- endif -%}
+
+    {%- if title_block != blank -%}
+      {%- liquid
+        assign subtitulo = product.metafields.beacon.subtitulo.value
+        assign rating = product.metafields.reviews.rating.value
+        assign rating_count = product.metafields.reviews.rating_count.value | plus: 0
+      -%}
+      <div class="main-product__heading{% if title_block.settings.uppercase %} main-product__heading--upper{% endif %}" {{ title_block.shopify_attributes }}>
+        <h1 class="main-product__title{{ nome_visivel_longo }}" id="ProductTitle-{{ section_id }}">{{ nome_visivel_html }}</h1>
+        {%- if subtitulo != blank -%}
+          <p class="main-product__subtitle">{{ subtitulo | escape | replace: ' mg', '&nbsp;mg' }}</p>
+        {%- endif -%}
+        {%- if title_block.settings.show_rating and rating != blank -%}
+          {% render 'rating-stars',
+            value: rating.rating,
+            scale_max: rating.scale_max,
+            count: rating_count,
+            size: 16,
+            class: 'main-product__rating'
+          %}
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <h1 class="visually-hidden" id="ProductTitle-{{ section_id }}">{{ nome_visivel_html }}</h1>
+    {%- endif -%}
+
+    <div class="main-product__grid{% if gallery_block == blank %} main-product__grid--no-media{% endif %}">
+      {%- if gallery_block != blank -%}
+        {% render 'produto-gallery',
+          gallery_block: gallery_block,
+          product: product,
+          current_variant: current_variant,
+          section_id: section_id,
+          on_sale: on_sale,
+          discount_percent: discount_percent,
+          caps_pote: caps_pote
+        %}
+      {%- endif -%}
+
+      <div class="main-product__col">
+      <div class="main-product__info glass glass--card">
+        {%- for block in section.blocks -%}
+          {%- case block.type -%}
+            {%- when 'galeria' -%}
+              {%- comment -%} A galeria fica na coluna da esquerda (acima). {%- endcomment -%}
+
+            {%- when '@app' -%}
+              <div class="main-product__block main-product__app" {{ block.shopify_attributes }}>
+                {% render block %}
+              </div>
+
+            {%- when 'titulo', 'combo_oferta' -%}
+              {%- comment -%} O título fica acima das duas colunas e o "Compre junto" depois da grade. {%- endcomment -%}
+
+            {%- when 'depoimento_destaque' -%}
+              {% render 'produto-testimonial', block: block %}
+
+            {%- when 'o_que_e' -%}
+              {% render 'produto-what-is', product: product, block: block, name: nome_curto %}
+
+            {%- when 'dossie' -%}
+              {% render 'produto-dossie',
+                product: product,
+                section_id: section_id,
+                design_mode: request.design_mode,
+                shopify_attributes: block.shopify_attributes
+              %}
+
+            {%- when 'entrega' -%}
+              {% render 'produto-delivery', block_settings: block.settings, design_mode: request.design_mode, shopify_attributes: block.shopify_attributes %}
+
+            {%- when 'chips' -%}
+              {%- assign chips = product.metafields.beacon.chips.value -%}
+              {% render 'produto-chips', chips: chips, block_settings: block.settings, shopify_attributes: block.shopify_attributes, design_mode: request.design_mode %}
+
+            {%- when 'kit_selector' -%}
+              {% render 'produto-kit-selector',
+                product: product,
+                block: block,
+                section_id: section_id,
+                kit_index: kit_index,
+                caps_pote: caps_pote,
+                caps_dia: caps_dia,
+                current_variant: current_variant,
+                show_installments: show_installments
+              %}
+
+            {%- when 'botoes_compra' -%}
+              {% render 'produto-buy',
+                product: product,
+                block: block,
+                section_id: section_id,
+                form_id: form_id,
+                current_variant: current_variant,
+                buy_label: buy_label
+              %}
+
+            {%- when 'parcelamento_pix' -%}
+              {% render 'produto-payment-line',
+                product: product,
+                current_variant: current_variant,
+                pix_percent: pix_percent,
+                show_installments: show_installments,
+                shopify_attributes: block.shopify_attributes
+              %}
+
+            {%- when 'selos_confianca' -%}
+              {% render 'produto-trust-badges', block_settings: block.settings, shopify_attributes: block.shopify_attributes %}
+
+            {%- when 'cashback' -%}
+              {%- comment -%}
+                Um valor por variante (padrão da barra fixa): o Liquid faz a conta (preço ×
+                percentual ÷ 100, para baixo) e kit-selector.js só mostra o da variante ativa.
+              {%- endcomment -%}
+              {%- if block.settings.enabled and cashback_percent > 0 -%}
+                <p class="main-product__block cashback glass glass--card" {{ block.shopify_attributes }}>
+                  <span class="cashback__icon" aria-hidden="true">{% render 'icon', name: 'cashback', size: 20 %}</span>
+                  <span>
+                    {{- 'produto.cashback.lead' | t }}
+                    {% for variant in product.variants -%}
+                      {%- assign cashback_value = variant.price | times: cashback_percent | divided_by: 100 -%}
+                      <strong class="cashback__amount" data-cashback-amount data-variant-slot="{{ variant.id }}"{% unless variant.id == current_variant.id %} hidden{% endunless %}>{{ cashback_value | money }}</strong>
+                    {%- endfor %}
+                  </span>
+                </p>
+              {%- endif -%}
+
+            {%- when 'atributos' -%}
+              {% render 'produto-attributes', product: product, block: block %}
+
+          {%- endcase -%}
+        {%- endfor -%}
+      </div>
+
+      {%- comment -%}
+        Marketing abaixo do painel de compra (pedido do dono, 05/10/2026): vantagens da compra,
+        benefícios e garantias. Tudo some quando o dado falta; o ajuste "Mostrar vantagens e
+        benefícios" da seção desliga as três peças.
+      {%- endcomment -%}
+      {% render 'produto-vantagens',
+        product: product,
+        current_variant: current_variant,
+        section_id: section_id,
+        settings_secao: section.settings
+      %}
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="ProductData-{{ section_id }}">
+    {
+      "productId": {{ product.id | json }},
+      "variants": [
+        {%- for variant in product.variants -%}
+          {% render 'produto-variant-json', variant: variant, kit_index: kit_index %}{%- unless forloop.last -%},{%- endunless -%}
+        {%- endfor -%}
+      ],
+      {%- comment -%}
+        Os marcadores {kit} e {price} ficam em variáveis: o Liquid da Shopify encerra
+        um {{ ... }} no primeiro "}", e um texto '{kit}' escrito dentro dele quebra o arquivo.
+      {%- endcomment -%}
+      {%- liquid
+        assign ph_kit = '{kit}'
+        assign ph_price = '{price}'
+      -%}
+      "strings": {
+        "addKit": {{ 'produto.buy.add_kit' | t: kit: ph_kit, price: ph_price | json }},
+        "add": {{ 'produto.buy.add' | t: price: ph_price | json }},
+        "soldOut": {{ 'produto.buy.sold_out' | t | json }}
+      }
+    }
+  </script>
+</section>
+
+{%- comment -%}
+  "Compre junto" (Tarefa 6, parte B): fora do campo claro do topo e fora da grade, na página
+  branca, em bloco claro próprio (alvo.css linhas 321 a 333). Fica depois da seção do topo, não
+  dentro dela, porque o topo já é o campo #ECF3F9 e o bloco claro precisa de fundo branco ao redor
+  para aparecer. Os ganchos do combo (combo-offer.js) são os mesmos de antes.
+{%- endcomment -%}
+{%- if combo_block != blank -%}
+  <div class="main-product-combo">
+    <div class="page-width">
+      {% render 'produto-combo-offer',
+        product: product,
+        current_variant: current_variant,
+        block_settings: combo_block.settings,
+        shopify_attributes: combo_block.shopify_attributes,
+        section_id: section_id,
+        design_mode: request.design_mode
+      %}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Produto",
+  "tag": "div",
+  "class": "section-main-product",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Mostrar trilha (Início / categoria / produto)",
+      "default": true
+    },
+    {
+      "type": "paragraph",
+      "content": "Os textos do produto vêm dos metafields do namespace beacon. Bloco sem dado não aparece na loja."
+    },
+    {
+      "type": "header",
+      "content": "Vantagens e benefícios (abaixo da compra)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vantagens",
+      "label": "Mostrar vantagens, benefícios e garantias",
+      "info": "Cartões \"Vantagens desta compra\" e \"Por que escolher\" e a faixa de garantias, abaixo do painel de compra.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "coupon_code",
+      "label": "Cupom de boas-vindas",
+      "info": "O texto do cartão diz \"10% OFF no pedido\" e \"uma vez por cliente\". Só troque o código se o novo cupom tiver a mesma regra. Vazio, a linha do cupom não aparece.",
+      "default": "BEMVINDO10"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_desconto_potes",
+      "label": "Mostrar os descontos automáticos dos potes avulsos",
+      "info": "\"Leve 2 potes ou mais: 5% OFF\" e \"Acima de R$ 250: 10% OFF\". Só nos potes: nas gotas e nos combos nunca aparecem. Desligue se a loja desativar esses descontos.",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "galeria",
+      "name": "Galeria",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Foto principal com contador e, abaixo, grade de 2 colunas com as demais mídias (tocar numa delas leva para a foto principal). No celular, arrastar a foto principal também troca de mídia. Aceita imagem, vídeo e modelo 3D."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_discount",
+          "label": "Mostrar selo de % OFF",
+          "info": "Calculado com o preço de comparação da variante. Sem preço de comparação, o selo não aparece.",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_selo",
+          "label": "Mostrar selo do metafield beacon.selo",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_capsules",
+          "label": "Mostrar cápsulas por pote na primeira foto",
+          "info": "Usa o metafield beacon.capsulas_por_pote.",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "enable_zoom",
+          "label": "Permitir ampliar as imagens",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "titulo",
+      "name": "Título",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Nome do produto e subtítulo do metafield beacon.subtitulo."
+        },
+        {
+          "type": "checkbox",
+          "id": "uppercase",
+          "label": "Nome em caixa alta",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_rating",
+          "label": "Mostrar estrelas de avaliação",
+          "info": "Aparecem só quando o app de avaliações preenche os metafields reviews.rating e reviews.rating_count.",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "depoimento_destaque",
+      "name": "Depoimento em destaque",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Use só depoimentos reais, com autorização do cliente. Sem texto, o bloco não aparece. Para depoimentos de um app de avaliações, adicione um bloco de app."
+        },
+        {
+          "type": "textarea",
+          "id": "text_1",
+          "label": "Depoimento 1"
+        },
+        {
+          "type": "text",
+          "id": "author_1",
+          "label": "Autor do depoimento 1"
+        },
+        {
+          "type": "textarea",
+          "id": "text_2",
+          "label": "Depoimento 2"
+        },
+        {
+          "type": "text",
+          "id": "author_2",
+          "label": "Autor do depoimento 2"
+        },
+        {
+          "type": "textarea",
+          "id": "text_3",
+          "label": "Depoimento 3"
+        },
+        {
+          "type": "text",
+          "id": "author_3",
+          "label": "Autor do depoimento 3"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_verified",
+          "label": "Mostrar \"Compra verificada\"",
+          "info": "Marque só se todos os depoimentos acima forem de compras confirmadas.",
+          "default": false
+        }
+      ]
+    },
+    {
+      "type": "o_que_e",
+      "name": "O que é (atalhos)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Mostra \"O que é [produto]?\" com atalhos para o conteúdo longo e para as perguntas frequentes. Cada atalho só aparece quando o produto tem o conteúdo."
+        },
+        {
+          "type": "text",
+          "id": "anchor_description",
+          "label": "Âncora do conteúdo longo",
+          "info": "Igual à âncora da seção \"Conteúdo do produto\".",
+          "default": "descricao"
+        },
+        {
+          "type": "text",
+          "id": "anchor_faq",
+          "label": "Âncora das perguntas frequentes",
+          "info": "Igual à âncora da seção \"Perguntas frequentes do produto\".",
+          "default": "faq"
+        }
+      ]
+    },
+    {
+      "type": "dossie",
+      "name": "Dossiê e benefícios",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Botões \"Dossiê\" e \"Benefícios completos\". Cada um abre um painel com os dados dos metafields beacon.dossie (metaobjeto dossie) e beacon.insumos (metaobjetos insumo) e só aparece quando o metafield tem conteúdo. Entrada em rascunho não aparece na loja."
+        },
+        {
+          "type": "paragraph",
+          "content": "O tema não escreve benefício. As alegações aparecem exatamente como estão no campo do insumo, que só pode ter o texto literal autorizado pela ANVISA."
+        }
+      ]
+    },
+    {
+      "type": "entrega",
+      "name": "Prazo de entrega",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "As datas são calculadas a partir do dia da visita. A Shopify pode guardar a página em cache, então a data pode demorar a virar. Confirme o prazo real antes de preencher."
+        },
+        {
+          "type": "number",
+          "id": "days_min",
+          "label": "Prazo mínimo (dias)"
+        },
+        {
+          "type": "number",
+          "id": "days_max",
+          "label": "Prazo máximo (dias)",
+          "info": "Sem prazo máximo, o bloco não aparece (a não ser que o texto fixo abaixo esteja preenchido)."
+        },
+        {
+          "type": "checkbox",
+          "id": "business_days",
+          "label": "Contar só dias úteis (segunda a sexta)",
+          "default": true
+        },
+        {
+          "type": "text",
+          "id": "custom_text",
+          "label": "Texto fixo (opcional)",
+          "info": "Se preenchido, substitui o texto com datas."
+        }
+      ]
+    },
+    {
+      "type": "chips",
+      "name": "Chips",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Textos do metafield beacon.chips. Se existir uma coleção com o mesmo nome, o chip vira link para ela."
+        },
+        {
+          "type": "checkbox",
+          "id": "link_collections",
+          "label": "Ligar chips às coleções de mesmo nome",
+          "default": true
+        },
+        {
+          "type": "select",
+          "id": "icon_1",
+          "label": "Ícone do 1º chip",
+          "options": [
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "capsule-h", "label": "Cápsula deitada" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "sun", "label": "Sol" },
+            { "value": "moon", "label": "Lua" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "clock", "label": "Relógio" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "dumbbell", "label": "Haltere" },
+            { "value": "zap", "label": "Raio" },
+            { "value": "sparkle", "label": "Brilho" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "tag", "label": "Etiqueta" }
+          ],
+          "default": "capsule"
+        },
+        {
+          "type": "select",
+          "id": "icon_2",
+          "label": "Ícone do 2º chip",
+          "options": [
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "capsule-h", "label": "Cápsula deitada" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "sun", "label": "Sol" },
+            { "value": "moon", "label": "Lua" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "clock", "label": "Relógio" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "dumbbell", "label": "Haltere" },
+            { "value": "zap", "label": "Raio" },
+            { "value": "sparkle", "label": "Brilho" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "tag", "label": "Etiqueta" }
+          ],
+          "default": "sun"
+        },
+        {
+          "type": "select",
+          "id": "icon_3",
+          "label": "Ícone do 3º chip",
+          "info": "Do 4º chip em diante, o ícone é a etiqueta.",
+          "options": [
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "capsule-h", "label": "Cápsula deitada" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "sun", "label": "Sol" },
+            { "value": "moon", "label": "Lua" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "clock", "label": "Relógio" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "dumbbell", "label": "Haltere" },
+            { "value": "zap", "label": "Raio" },
+            { "value": "sparkle", "label": "Brilho" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "tag", "label": "Etiqueta" }
+          ],
+          "default": "tag"
+        }
+      ]
+    },
+    {
+      "type": "kit_selector",
+      "name": "Seletor de kit",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Um cartão por variante da opção \"Kit\" (ex.: \"1 pote\", \"3 potes\"). Cápsulas e dias são calculados com beacon.capsulas_por_pote e beacon.capsulas_por_dia. Preço, desconto e parcelamento vêm da variante. A página abre com 1 pote selecionado."
+        },
+        {
+          "type": "text",
+          "id": "legend",
+          "label": "Título do seletor",
+          "info": "Vazio: \"Quantidade.\"."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_legend",
+          "label": "Mostrar o título na tela",
+          "info": "Desmarcado, o título continua disponível para leitores de tela.",
+          "default": false
+        },
+        {
+          "type": "header",
+          "content": "Fita de destaque"
+        },
+        {
+          "type": "checkbox",
+          "id": "highlight_enabled",
+          "label": "Mostrar fita de destaque",
+          "info": "Só ative com dado real (por exemplo, se o kit for de fato o mais vendido).",
+          "default": false
+        },
+        {
+          "type": "number",
+          "id": "highlight_units",
+          "label": "Kit com a fita (número de potes)",
+          "default": 3
+        },
+        {
+          "type": "text",
+          "id": "highlight_label",
+          "label": "Texto da fita",
+          "default": "Mais vendido"
+        }
+      ]
+    },
+    {
+      "type": "botoes_compra",
+      "name": "Botões de compra",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "O texto do botão acompanha o kit escolhido, com o preço da variante."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_dynamic_checkout",
+          "label": "Mostrar botões de checkout dinâmico",
+          "info": "Botões de pagamento acelerado da Shopify, quando ativos na loja.",
+          "default": false
+        },
+        {
+          "type": "checkbox",
+          "id": "show_notify",
+          "label": "Mostrar \"Avise-me\" quando o produto estiver esgotado",
+          "info": "Envia um e-mail pelo formulário de contato da loja.",
+          "default": true
+        }
+      ]
+    },
+    {
+      "type": "parcelamento_pix",
+      "name": "Parcelamento e Pix",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "O parcelamento segue as configurações do tema (Parcelamento). O preço no Pix é calculado com o desconto abaixo. Sem parcelamento e sem Pix, a linha não aparece."
+        },
+        {
+          "type": "checkbox",
+          "id": "show_installments",
+          "label": "Mostrar parcelamento sem juros",
+          "info": "Vale para esta linha e para os cartões de kit. Só ative depois de confirmar no meio de pagamento o número de parcelas sem juros configurado no tema.",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "pix_percent",
+          "label": "Desconto no Pix",
+          "info": "Use 0 para não mostrar o preço no Pix. Confirme o desconto no meio de pagamento antes de ativar.",
+          "min": 0,
+          "max": 30,
+          "step": 1,
+          "unit": "%",
+          "default": 0
+        }
+      ]
+    },
+    {
+      "type": "selos_confianca",
+      "name": "Selos de confiança",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon_1",
+          "label": "Ícone do selo 1",
+          "options": [
+            { "value": "lock", "label": "Cadeado" },
+            { "value": "shield-check", "label": "Escudo com check" },
+            { "value": "eye-off", "label": "Olho riscado" },
+            { "value": "truck", "label": "Caminhão" },
+            { "value": "refresh", "label": "Setas de troca" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "card", "label": "Cartão" },
+            { "value": "check-circle", "label": "Check" }
+          ],
+          "default": "lock"
+        },
+        {
+          "type": "text",
+          "id": "label_1",
+          "label": "Texto do selo 1",
+          "default": "Compra segura"
+        },
+        {
+          "type": "textarea",
+          "id": "info_1",
+          "label": "Explicação do selo 1 (opcional)",
+          "info": "Se preenchida, aparece um botão de ajuda ao lado do texto."
+        },
+        {
+          "type": "select",
+          "id": "icon_2",
+          "label": "Ícone do selo 2",
+          "options": [
+            { "value": "lock", "label": "Cadeado" },
+            { "value": "shield-check", "label": "Escudo com check" },
+            { "value": "eye-off", "label": "Olho riscado" },
+            { "value": "truck", "label": "Caminhão" },
+            { "value": "refresh", "label": "Setas de troca" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "card", "label": "Cartão" },
+            { "value": "check-circle", "label": "Check" }
+          ],
+          "default": "shield-check"
+        },
+        {
+          "type": "text",
+          "id": "label_2",
+          "label": "Texto do selo 2",
+          "info": "Vazio, o selo não aparece. Só preencha (por exemplo, \"Satisfação garantida\") com uma garantia real da loja, publicada na política de troca, e descreva o prazo e as condições na explicação abaixo."
+        },
+        {
+          "type": "textarea",
+          "id": "info_2",
+          "label": "Explicação do selo 2 (opcional)",
+          "info": "Descreva a garantia real da loja (prazo e condições)."
+        },
+        {
+          "type": "select",
+          "id": "icon_3",
+          "label": "Ícone do selo 3",
+          "options": [
+            { "value": "lock", "label": "Cadeado" },
+            { "value": "shield-check", "label": "Escudo com check" },
+            { "value": "eye-off", "label": "Olho riscado" },
+            { "value": "truck", "label": "Caminhão" },
+            { "value": "refresh", "label": "Setas de troca" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "card", "label": "Cartão" },
+            { "value": "check-circle", "label": "Check" }
+          ],
+          "default": "eye-off"
+        },
+        {
+          "type": "text",
+          "id": "label_3",
+          "label": "Texto do selo 3",
+          "default": "Privacidade protegida"
+        },
+        {
+          "type": "textarea",
+          "id": "info_3",
+          "label": "Explicação do selo 3 (opcional)"
+        }
+      ]
+    },
+    {
+      "type": "cashback",
+      "name": "Cashback",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Desligado por padrão. Se o cashback vier de um app, use um bloco de app no lugar deste."
+        },
+        {
+          "type": "checkbox",
+          "id": "enabled",
+          "label": "Mostrar cashback",
+          "default": false
+        },
+        {
+          "type": "range",
+          "id": "percent",
+          "label": "Cashback sobre o preço",
+          "info": "Só ative se o programa de cashback existir e der esse percentual.",
+          "min": 0,
+          "max": 30,
+          "step": 1,
+          "unit": "%",
+          "default": 0
+        }
+      ]
+    },
+    {
+      "type": "atributos",
+      "name": "Atributos (carrossel)",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Textos do metafield beacon.atributos. Quatro por vez no computador e dois no celular."
+        },
+        {
+          "type": "select",
+          "id": "icon_1",
+          "label": "Ícone do 1º atributo",
+          "options": [
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "sun", "label": "Sol" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "shield-check", "label": "Escudo com check" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "sparkle", "label": "Brilho" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "map-pin", "label": "Localização" },
+            { "value": "refresh", "label": "Setas de troca" }
+          ],
+          "default": "capsule"
+        },
+        {
+          "type": "select",
+          "id": "icon_2",
+          "label": "Ícone do 2º atributo",
+          "options": [
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "sun", "label": "Sol" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "shield-check", "label": "Escudo com check" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "sparkle", "label": "Brilho" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "map-pin", "label": "Localização" },
+            { "value": "refresh", "label": "Setas de troca" }
+          ],
+          "default": "sun"
+        },
+        {
+          "type": "select",
+          "id": "icon_3",
+          "label": "Ícone do 3º atributo",
+          "options": [
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "sun", "label": "Sol" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "shield-check", "label": "Escudo com check" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "sparkle", "label": "Brilho" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "map-pin", "label": "Localização" },
+            { "value": "refresh", "label": "Setas de troca" }
+          ],
+          "default": "calendar"
+        },
+        {
+          "type": "select",
+          "id": "icon_4",
+          "label": "Ícone do 4º atributo",
+          "info": "Do 5º atributo em diante, o ícone é o selo com check.",
+          "options": [
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "jar", "label": "Pote" },
+            { "value": "sun", "label": "Sol" },
+            { "value": "calendar", "label": "Calendário" },
+            { "value": "badge-check", "label": "Selo com check" },
+            { "value": "shield-check", "label": "Escudo com check" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "sparkle", "label": "Brilho" },
+            { "value": "heart", "label": "Coração" },
+            { "value": "map-pin", "label": "Localização" },
+            { "value": "refresh", "label": "Setas de troca" }
+          ],
+          "default": "badge-check"
+        }
+      ]
+    },
+    {
+      "type": "combo_oferta",
+      "name": "Oferta combo",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "Mostra este produto e os produtos do metafield beacon.combo, cada um com caixa de seleção. Sem beacon.combo, pode usar as recomendações complementares do app Search & Discovery. Os itens entram no carrinho separados, pelo preço de cada variante."
+        },
+        {
+          "type": "text",
+          "id": "banner_text",
+          "label": "Faixa de destaque",
+          "info": "Não anuncie desconto que o carrinho não aplica. Deixe vazio para esconder a faixa."
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Título",
+          "default": "Compre junto."
+        },
+        {
+          "type": "range",
+          "id": "max_items",
+          "label": "Produtos além deste",
+          "min": 1,
+          "max": 4,
+          "step": 1,
+          "default": 2
+        },
+        {
+          "type": "checkbox",
+          "id": "use_complementary",
+          "label": "Sem beacon.combo, usar recomendações complementares",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "show_free_shipping",
+          "label": "Avisar quando o combo atinge o frete grátis",
+          "info": "Usa a meta de frete grátis das configurações do tema. Só ative se a loja tiver a regra de frete grátis configurada no frete.",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Produto",
+      "blocks": [
+        { "type": "galeria" },
+        { "type": "titulo" },
+        { "type": "depoimento_destaque" },
+        { "type": "o_que_e" },
+        { "type": "dossie" },
+        { "type": "entrega" },
+        { "type": "chips" },
+        { "type": "kit_selector" },
+        { "type": "botoes_compra" },
+        { "type": "parcelamento_pix" },
+        { "type": "selos_confianca" },
+        { "type": "cashback" },
+        { "type": "atributos" },
+        { "type": "combo_oferta" }
+      ]
+    }
+  ]
+}
+{% endschema %}

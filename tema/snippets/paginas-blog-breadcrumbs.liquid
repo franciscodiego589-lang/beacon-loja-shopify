@@ -1,0 +1,54 @@
+{%- comment -%}
+  Trilha de navegação das páginas, do blog e do artigo (área paginas-blog).
+  Parâmetros:
+  - class: classe extra (opcional)
+  Os itens saem do template atual: page (Início / página), blog (Início / blog, ou blog / tags
+  ativas) e article (Início / blog / artigo). Em qualquer outro template não renderiza nada.
+
+  Etapa 8e, item 17 (03/10/2026): este snippet só escolhe os itens e entrega a trilha ao snippet único
+  do tema (snippets/colecao-breadcrumb, estilo em assets/component-colecao-breadcrumb.css, que as seções
+  que o usam carregam). Antes tinha marcação e desenho próprios (.pb-breadcrumbs: 13 px, peso 600, "Início"
+  em tinta), diferentes dos da coleção e do produto. A classe .pb-trilha só dá o espaço de baixo.
+  Os links medem 44 x 44 px de verdade (no CSS do snippet único).
+{%- endcomment -%}
+{%- liquid
+  assign crumb_current = blank
+  case template.name
+    when 'page'
+      assign crumb_current = page.title
+    when 'blog'
+      assign crumb_current = blog.title
+    when 'article'
+      assign crumb_current = article.title
+  endcase
+
+  assign crumb_has_tags = false
+  if template.name == 'blog' and current_tags.size > 0
+    assign crumb_has_tags = true
+  endif
+
+  assign crumb_text = crumb_current
+  if crumb_has_tags
+    assign crumb_text = current_tags | join: ', '
+  endif
+
+  assign crumb_parent_label = blank
+  assign crumb_parent_url = blank
+  if template.name == 'article' or crumb_has_tags
+    assign crumb_parent_label = blog.title
+    assign crumb_parent_url = blog.url
+  endif
+
+  assign crumb_class = 'pb-trilha'
+  if class != blank
+    assign crumb_class = crumb_class | append: ' ' | append: class
+  endif
+-%}
+{%- if crumb_current != blank -%}
+  {% render 'colecao-breadcrumb',
+    current: crumb_text,
+    parent_label: crumb_parent_label,
+    parent_url: crumb_parent_url,
+    class: crumb_class
+  %}
+{%- endif -%}

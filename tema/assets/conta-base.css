@@ -1,0 +1,527 @@
+/*
+  Beacon Labs · conta-base.css (área conta, compartilhado)
+
+  Carregado pelas seções main-login, main-register, main-reset-password,
+  main-activate-account, main-account, main-order e main-addresses.
+  Usa só as variáveis da fundação (snippets/css-variables.liquid e base.css).
+
+  Conteúdo: marca de obrigatório, caixas de erro e de sucesso, campo de senha com botão
+  de mostrar, página da conta (cabeçalho, navegação, cartões, tabela, paginação,
+  endereço e estado vazio).
+
+  Pontos de quebra iguais aos do tema: 750 px e 990 px.
+
+  Liquid Glass (spec docs/superpowers/specs/2026-09-27-liquid-glass-sistema.md, 4.2, 8.4, 8.6
+  e 8.9): cartões, estado vazio e aviso do pedido são vidro de conteúdo (.glass .glass--card na
+  marcação; material de liquid-glass.css), raio 24 (20 no celular); navegação em pílulas de
+  vidro fino sem desfoque com o item destacado em preenchimento ink; paginação como a da
+  categoria; divisórias em ink a 0,12; textos de erro e marca de obrigatório em #9B3915
+  (spec D30). Contraste no cartão (branco a 0,66) sobre o pior campo claro: ink 15,824:1,
+  apoio 5,860:1, #0058B8 6,087:1; #9B3915 sobre a névoa 6,288:1.
+*/
+
+/* ---------- Campos ---------- */
+
+.conta-required {
+  color: var(--lg-error-text, var(--color-offer));
+  font-weight: 700;
+}
+
+.conta-field + .conta-field,
+.conta-field + .field,
+.field + .conta-field {
+  margin-top: 16px;
+}
+
+/* ---------- Mensagens ---------- */
+
+.conta-form-errors {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--color-offer);
+  border-radius: var(--lg-radius-small, var(--radius-input));
+  background: color-mix(in srgb, var(--color-offer) 7%, var(--color-background));
+  color: var(--color-text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.conta-form-errors__title {
+  margin: 0 0 6px;
+  color: var(--lg-error-text, var(--color-offer));
+  font-weight: 700;
+}
+
+.conta-form-errors__list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.conta-form-errors__list li + li {
+  margin-top: 4px;
+}
+
+.conta-form-success {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  border-radius: var(--lg-radius-small, var(--radius-input));
+  background: var(--color-chip-bg);
+  color: var(--color-chip-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.conta-note {
+  margin: 0 0 16px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+/* ---------- Senha com botão de mostrar ---------- */
+
+conta-password-field {
+  display: block;
+}
+
+.conta-password {
+  position: relative;
+}
+
+.conta-password__input {
+  padding-right: 56px;
+}
+
+.conta-password__toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  transform: translateY(-50%);
+  cursor: pointer;
+  transition: background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+.conta-password__toggle:hover {
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+}
+
+.conta-password__toggle:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+}
+
+.conta-password__icon--hide,
+.conta-password__toggle[aria-pressed="true"] .conta-password__icon--show {
+  display: none;
+}
+
+.conta-password__toggle[aria-pressed="true"] .conta-password__icon--hide {
+  display: block;
+}
+
+/* ---------- Links de apoio ---------- */
+
+.conta-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-target);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.conta-back:hover {
+  color: var(--color-ink);
+}
+
+/* ---------- Página da conta ---------- */
+
+.conta-page {
+  padding-top: var(--conta-pad-top, 32px);
+  padding-bottom: var(--conta-pad-bottom, 56px);
+}
+
+.conta-page__header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.conta-page__eyebrow {
+  color: var(--color-text-muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.conta-page__title {
+  font-size: 28px;
+}
+
+.conta-section-title {
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+
+@media screen and (min-width: 990px) {
+  .conta-page__header {
+    margin-bottom: 28px;
+  }
+
+  .conta-page__title {
+    font-size: 40px;
+  }
+
+  .conta-section-title {
+    font-size: 22px;
+  }
+}
+
+/* Navegação da conta: pílulas de 44 px em vidro fino sem desfoque (.glass .glass--thin
+   .glass--interactive na marcação), texto ink 14 px 700 (6,206:1 no pior caso livre); a ativa
+   é preenchimento ink (.lg-fill--ink), texto branco 17,680:1. Hover: alfa 0,70 e fio ink a 0,30. */
+.conta-nav {
+  margin-bottom: 24px;
+}
+
+.conta-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.conta-nav__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--touch-target);
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.conta-nav__link:hover {
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .conta-nav__link.glass--interactive:hover {
+    --glass-outline: var(--lg-hairline-strong);
+  }
+}
+
+.conta-nav__link--active,
+.conta-nav__link--active:hover {
+  border: 1px solid transparent;
+  color: var(--color-on-dark);
+}
+
+@media screen and (min-width: 990px) {
+  .conta-nav {
+    margin-bottom: 32px;
+  }
+}
+
+/* Cartão de conteúdo: vidro de conteúdo (.glass .glass--card na marcação), raio 24 (20). */
+.conta-card {
+  border-radius: var(--lg-radius-box, var(--radius-card-sm));
+  padding: 20px 16px;
+}
+
+@media screen and (min-width: 750px) {
+  .conta-card {
+    padding: 24px;
+  }
+}
+
+/* Estado vazio. */
+.conta-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 32px 20px;
+  border-radius: var(--lg-radius-box, var(--radius-card));
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+/* ---------- Tabela (pedidos e itens) ---------- */
+
+.conta-table {
+  width: 100%;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.conta-table th,
+.conta-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--lg-divider, var(--color-line));
+  text-align: left;
+  vertical-align: top;
+}
+
+.conta-table thead th {
+  padding-top: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.conta-table tbody th {
+  font-weight: 700;
+}
+
+.conta-table th:first-child,
+.conta-table td:first-child {
+  padding-left: 0;
+}
+
+.conta-table th:last-child,
+.conta-table td:last-child {
+  padding-right: 0;
+}
+
+.conta-table .conta-table__num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* No celular cada linha vira um cartão; o rótulo da coluna vem do data-label. */
+@media screen and (max-width: 749px) {
+  .conta-table,
+  .conta-table tbody,
+  .conta-table tr,
+  .conta-table th,
+  .conta-table td {
+    display: block;
+  }
+
+  .conta-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .conta-table tbody tr {
+    margin-bottom: 12px;
+    padding: 8px 16px;
+    border: 1px solid var(--lg-divider, var(--color-line));
+    border-radius: var(--lg-radius-inner, var(--radius-card-sm));
+  }
+
+  .conta-table tbody th,
+  .conta-table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--lg-divider, var(--color-line));
+    text-align: right;
+  }
+
+  .conta-table tbody tr > :last-child {
+    border-bottom: 0;
+  }
+
+  .conta-table tbody [data-label]::before {
+    content: attr(data-label);
+    flex-shrink: 0;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+  }
+}
+
+/* ---------- Paginação ---------- */
+
+.conta-pagination {
+  margin-top: 24px;
+}
+
+.conta-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Paginação (spec 8.6): cápsulas de 44 px; setas em vidro fino sem desfoque; página atual em
+   preenchimento ink; demais transparentes, com o vidro fino (0,70) no hover; pressionado 0,97. */
+.conta-pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--touch-target);
+  height: var(--touch-target);
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  color: var(--color-ink);
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.conta-pagination__link--arrow,
+a.conta-pagination__link:hover {
+  border-color: var(--lg-rim-light-color, var(--color-line));
+  background-color: var(--glass-thin-bg-fallback, var(--color-background));
+  background-image: var(--lg-sheen-functional, none);
+  box-shadow: var(--lg-focus-shadow, 0 0 #0000), var(--lg-rim-light-inset, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .conta-pagination__link--arrow {
+    background-color: var(--glass-thin-bg, var(--color-background));
+  }
+
+  a.conta-pagination__link:hover {
+    background-color: var(--glass-thin-bg-hover, var(--color-background));
+    background-image: var(--lg-sheen-functional-hover, none);
+  }
+}
+
+a.conta-pagination__link:active {
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+a.conta-pagination__link:focus-visible {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.conta-pagination__link--arrow {
+  padding: 0;
+}
+
+.conta-pagination__link--current {
+  border-color: transparent;
+  background: var(--color-ink);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  color: var(--color-on-dark);
+}
+
+.conta-pagination__gap {
+  padding: 0 6px;
+  color: var(--color-text-muted);
+}
+
+/* ---------- Endereço ---------- */
+
+.conta-address {
+  font-style: normal;
+  line-height: 1.6;
+}
+
+.conta-address__line {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.conta-address__line--name {
+  font-weight: 700;
+}
+
+/* ---------- Divulgação (acordeão): editar e remover endereço ---------- */
+/* Usado por sections/main-addresses.liquid. O <summary> é um botão; o painel nasce
+   fechado (o <details> não vem com o atributo open) e some do fluxo até abrir. */
+
+.conta-disclosure-wrap {
+  display: block;
+}
+
+.conta-disclosure__summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+.conta-disclosure__summary::-webkit-details-marker {
+  display: none;
+}
+
+.conta-disclosure__panel {
+  margin-top: 12px;
+}
+
+.conta-disclosure--danger .conta-disclosure__summary {
+  --button-text: var(--lg-error-text, var(--color-offer));
+}
+
+.conta-disclosure__confirm-text {
+  margin: 0 0 16px;
+  color: var(--color-text);
+}
+
+.conta-button--danger {
+  --button-bg: var(--color-offer);
+  --button-text: var(--color-on-dark);
+  --button-bg-hover: var(--color-ink);
+  --button-text-hover: var(--color-on-dark);
+}
+
+/* ---------- Modos de reserva (spec 9) ---------- */
+
+@media (prefers-reduced-transparency: reduce) {
+  .conta-pagination__link--arrow,
+  a.conta-pagination__link:hover {
+    background-color: #FFFFFF;
+    background-image: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .conta-pagination__link--arrow,
+  a.conta-pagination__link:hover {
+    border-color: var(--color-ink);
+    background-color: #FFFFFF;
+    background-image: none;
+    box-shadow: var(--lg-focus-shadow, 0 0 #0000);
+  }
+
+  .conta-table th,
+  .conta-table td,
+  .conta-table tbody tr {
+    border-color: var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .conta-pagination__link--arrow {
+    border-color: CanvasText;
+  }
+}

@@ -1,0 +1,105 @@
+{{ 'section-hero-texto.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Topo da home só de texto (Liquid Glass Apple v2, 01/10/2026): título grande, texto curto,
+  dois botões em cápsula e, ao lado, a foto principal de um produto da loja, usada inteira
+  (sem recorte nem colagem). Entra no lugar do carrossel de banners até os banners novos
+  ficarem prontos: os banners antigos mostram potes com alegação escrita no rótulo.
+  Sem título, a seção não renderiza nada.
+{%- endcomment -%}
+
+{%- liquid
+  assign ht_product = section.settings.product
+  assign ht_image = ht_product.featured_image
+  assign ht_alt = ht_image.alt | default: ht_product.title
+-%}
+
+{%- if section.settings.heading != blank -%}
+  <section class="hero-texto page-width" aria-labelledby="HeroTexto-{{ section.id }}">
+    <div class="hero-texto__inner{% if ht_image != blank %} hero-texto__inner--with-image{% endif %}">
+      <div class="hero-texto__text">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="hero-texto__eyebrow">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        <h1 class="hero-texto__title" id="HeroTexto-{{ section.id }}">{{ section.settings.heading | escape }}</h1>
+        {%- if section.settings.text != blank -%}
+          <p class="hero-texto__lead">{{ section.settings.text | escape }}</p>
+        {%- endif -%}
+        <div class="hero-texto__actions">
+          {%- if section.settings.button_label != blank and section.settings.button_link != blank -%}
+            <a href="{{ section.settings.button_link }}" class="button hero-texto__button">{{ section.settings.button_label | escape }}</a>
+          {%- endif -%}
+          {%- if section.settings.button2_label != blank and section.settings.button2_link != blank -%}
+            <a href="{{ section.settings.button2_link }}" class="hero-texto__button hero-texto__button--glass glass glass--thin glass--interactive">{{ section.settings.button2_label | escape }}</a>
+          {%- endif -%}
+        </div>
+      </div>
+      {%- if ht_image != blank -%}
+        <a href="{{ ht_product.url }}" class="hero-texto__media" aria-label="{{ ht_product.title | escape }}">
+          {{ ht_image | image_url: width: 1200 | image_tag: widths: '480, 720, 960, 1200', sizes: '(min-width: 990px) 520px, 80vw', loading: 'eager', fetchpriority: 'high', alt: ht_alt, class: 'hero-texto__image' }}
+        </a>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Topo só de texto",
+  "tag": "section",
+  "class": "section-hero-texto",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Linha pequena",
+      "default": "Beacon Labs · Linha Pure"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Conheça toda a linha"
+    },
+    {
+      "type": "textarea",
+      "id": "text",
+      "label": "Texto",
+      "default": "Suplementos alimentares em cápsulas. 2 cápsulas ao dia, porção de 1 g, 60 cápsulas por pote. Não contém glúten."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Botão principal",
+      "default": "Ver produtos"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Link do botão principal"
+    },
+    {
+      "type": "text",
+      "id": "button2_label",
+      "label": "Segundo botão",
+      "default": "Super ofertas"
+    },
+    {
+      "type": "url",
+      "id": "button2_link",
+      "label": "Link do segundo botão"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Produto da foto",
+      "info": "Usa a foto principal do produto, inteira, sem recorte."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Topo só de texto"
+    }
+  ]
+}
+{% endschema %}

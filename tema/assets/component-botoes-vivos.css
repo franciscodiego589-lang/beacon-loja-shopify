@@ -1,0 +1,147 @@
+/*
+  Beacon Labs · botões vivos da página do produto (pedido do dono em 03/10/2026: "coloca esses 3
+  como botão de cores diferentes e pulsantes e o botão de venda também ficar pulando").
+  - Benefícios, Dossiê técnico e Documentação (snippets/produto-dossie.liquid) viram três botões
+    coloridos lado a lado, cada um com um anel pulsando na própria cor, em tempos defasados.
+  - O botão de compra (snippets/produto-buy.liquid) dá pulinhos.
+  Acessibilidade: os três botões pulsam sem parar a pedido do dono ("os botões não são para parar de
+  pulsar", 03/10/2026; aviso da WCAG 2.2.2 registrado); o pulo do botão de compra são 5 pulos. Nada
+  disso roda com "reduzir movimento" ligado no aparelho.
+  Contraste do texto: branco sobre #16834F 4,78:1; branco sobre #1E63B8 5,95:1; tinta sobre #E9AD05 8,6:1.
+*/
+.main-product__info .produto-dossie__pills.produto-dossie__pills--vivos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.main-product__info .produto-dossie__pills--vivos .produto-dossie__pill {
+  justify-content: center;
+  min-height: 52px;
+  padding: 10px 8px;
+  border: 0;
+  border-bottom: 0;
+  border-radius: 999px;
+  background: var(--bv-cor);
+  color: var(--bv-texto);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  animation: bv-pulso 2.2s ease-out infinite both;
+  animation-delay: var(--bv-atraso, 0s);
+}
+
+.main-product__info .produto-dossie__pills--vivos .produto-dossie__pill::after {
+  content: none;
+}
+
+.main-product__info .produto-dossie__pills--vivos .produto-dossie__pill:hover {
+  background: var(--bv-cor);
+  color: var(--bv-texto);
+  filter: brightness(1.08);
+}
+
+.main-product__info .produto-dossie__pills--vivos .produto-dossie__pill:focus-visible {
+  outline: 2px solid var(--color-ink, #081C2D);
+  outline-offset: 3px;
+}
+
+.produto-dossie__pill--beneficios {
+  --bv-cor: #16834F;
+  --bv-anel: rgba(22, 131, 79, 0.45);
+  --bv-texto: #FFFFFF;
+  --bv-atraso: 0s;
+}
+
+.produto-dossie__pill--dossie {
+  --bv-cor: #1E63B8;
+  --bv-anel: rgba(30, 99, 184, 0.45);
+  --bv-texto: #FFFFFF;
+  --bv-atraso: 0.7s;
+}
+
+.produto-dossie__pill--docs {
+  --bv-cor: #E9AD05;
+  --bv-anel: rgba(233, 173, 5, 0.55);
+  --bv-texto: #081C2D;
+  --bv-atraso: 1.4s;
+}
+
+@keyframes bv-pulso {
+  0% {
+    box-shadow: 0 0 0 0 var(--bv-anel);
+  }
+
+  70% {
+    box-shadow: 0 0 0 12px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/* Botão de compra: um pulinho a cada 3 s, 5 vezes, junto com o pulso de todos os botões
+   (bp-pulsa, em component-botoes-pulsando.css; um mexe em transform, o outro em scale). O seletor
+   leva .main-product__buy e .button para ganhar da regra geral .button:not(:disabled):not([aria-disabled]). */
+.main-product__buy .button.main-product__add:not([disabled]) {
+  animation: bv-pulo 3s ease-in-out 1s 5 both, bp-pulsa 1.6s ease-in-out 1.2s infinite;
+}
+
+@keyframes bv-pulo {
+  0%, 30%, 100% {
+    transform: translateY(0);
+  }
+
+  10% {
+    transform: translateY(-7px);
+  }
+
+  20% {
+    transform: translateY(0);
+  }
+
+  25% {
+    transform: translateY(-3px);
+  }
+}
+
+@media screen and (max-width: 760px) {
+  .main-product__info .produto-dossie__pills.produto-dossie__pills--vivos {
+    gap: 8px;
+  }
+
+  .main-product__info .produto-dossie__pills--vivos .produto-dossie__pill {
+    min-height: 48px;
+    padding: 6px 4px;
+    font-size: 13px;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* 05/10/2026 (auditoria de celular, 360 px): três colunas de 94 px deixavam "Documentação" encostada nas
+   bordas do botão e quebravam "Dossiê técnico" em duas linhas. Até 380 px: dois botões na primeira
+   linha e o terceiro ocupando a linha de baixo. De 381 px para cima nada muda. */
+@media screen and (max-width: 380px) {
+  .main-product__info .produto-dossie__pills.produto-dossie__pills--vivos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .main-product__info .produto-dossie__pills--vivos li:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .main-product__info .produto-dossie__pills--vivos .produto-dossie__pill {
+    padding-inline: 8px;
+    font-size: 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-product__info .produto-dossie__pills--vivos .produto-dossie__pill,
+  .main-product__buy .button.main-product__add:not([disabled]) {
+    animation: none;
+  }
+}

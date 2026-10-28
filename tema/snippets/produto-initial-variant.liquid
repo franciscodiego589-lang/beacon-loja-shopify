@@ -1,0 +1,53 @@
+{%- comment -%}
+  Área produto. Imprime a posição (0-based) em product.variants da variante que a página de
+  produto mostra ao abrir.
+  Ordem de escolha:
+  1. a variante pedida na URL (?variant=), quando existir (product.selected_variant);
+  2. senão, a primeira variante disponível de 1 pote (primeiro número do valor da opção "Kit" igual a 1);
+  3. senão, product.selected_or_first_available_variant.
+  As três vêm de product.variants, então a posição sempre existe; sem nenhuma, sai 0.
+
+  Uso (a posição sai como texto; o laço que acha a variante fica só aqui, auditoria de
+  arquitetura, 28/09/2026: antes cada chamador repetia um laço pelo id):
+    capture initial_index
+      render 'produto-initial-variant', product: product
+    endcapture
+    assign initial_index = initial_index | strip | plus: 0
+    assign variante = product.variants[initial_index]
+
+  Usado por main-product, sticky-atc, produto-combo-offer e produto-combo-item, para todos
+  começarem na mesma variante.
+{%- endcomment -%}
+{%- liquid
+  assign initial = product.selected_variant
+  if initial == blank
+    assign kit_option = product.options_by_name['Kit']
+    if kit_option != blank
+      assign kit_index = kit_option.position | minus: 1
+      for candidate in product.variants
+        unless candidate.available
+          continue
+        endunless
+        capture candidate_units
+          render 'produto-kit-units', kit: candidate.options[kit_index]
+        endcapture
+        assign candidate_units = candidate_units | strip | plus: 0
+        if candidate_units == 1
+          assign initial = candidate
+          break
+        endif
+      endfor
+    endif
+  endif
+  if initial == blank
+    assign initial = product.selected_or_first_available_variant
+  endif
+  assign initial_index = 0
+  for candidate in product.variants
+    if candidate.id == initial.id
+      assign initial_index = forloop.index0
+      break
+    endif
+  endfor
+  echo initial_index
+-%}

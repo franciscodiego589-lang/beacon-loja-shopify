@@ -1,0 +1,97 @@
+/*
+  Beacon Labs · seção Faixa de selos (sections/seals-strip.liquid)
+  Celular: rolagem por toque (home-carousel-track). Computador (≥ 990 px): grade
+  fixa, sem rolagem, como a faixa "Linha Pure" da maquete.
+
+  Liquid Glass (spec 8.5): a faixa #F5F9FB virou painel de vidro de conteúdo
+  (.glass-layer .glass--panel na marcação, branco a 0,50; reserva #F5F9FB na transparência
+  reduzida). Rótulo "LINHA PURE" em apoio 13 px 800, caixa alta (5,554:1 no painel, pior
+  caso controlado). Selos em preenchimento (.glass-fill, branco a 0,72) com raio 16 (14 no
+  celular) e texto ink 12 px 700 (16,900:1): texto de 11 px só em preenchimento sólido.
+*/
+
+.seals-strip {
+  padding: 20px 0;
+}
+
+.seals-strip__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.seals-strip__heading {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: var(--font-heading-weight);
+  text-transform: uppercase;
+}
+
+.seals-strip__track {
+  gap: 10px;
+  grid-auto-columns: 150px;
+}
+
+.seals-strip__item {
+  min-width: 0;
+  height: 48px;
+  border-radius: var(--lg-radius-inner, var(--radius-input));
+  overflow: hidden;
+}
+
+.seals-strip__item--text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.seals-strip__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+@media screen and (min-width: 750px) {
+  .seals-strip {
+    padding: 24px 0;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .seals-strip__inner {
+    flex-direction: row;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .seals-strip__heading {
+    flex-shrink: 0;
+    width: 180px;
+  }
+
+  .seals-strip__track {
+    flex-grow: 1;
+    display: grid;
+    grid-auto-flow: unset;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    overflow: visible;
+    width: 100%;
+  }
+
+  .seals-strip__item {
+    height: 56px;
+    scroll-snap-align: unset;
+  }
+
+  .seals-strip__item--text {
+    font-size: 12px;
+  }
+}

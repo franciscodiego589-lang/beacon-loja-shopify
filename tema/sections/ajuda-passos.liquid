@@ -1,0 +1,233 @@
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'ajuda-secoes.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Passos numerados das páginas de ajuda (maquete de 29/09/2026): "Do pedido à sua porta"
+  (Entregas) e "Como pedir a troca ou a devolução" (Trocas e devoluções).
+  Arranjos:
+  - cartoes: cada passo num cartão, lado a lado no computador;
+  - linha: passos ligados por uma linha, sem cartão (dentro do painel da seção).
+  Bloco passo: título e texto. Só aparece com os dois preenchidos, e a numeração segue só os
+  passos visíveis. Sem passo visível, a seção não renderiza nada.
+  Nota opcional abaixo dos passos, com ícone, texto e fonte em letra menor.
+  Etapa 8e, item 9 (03/10/2026): no arranjo cartoes, cada passo é um bloco sólido #ECF3F9 (.pb-bloco,
+  paginas-blog.css), sem borda e sem sombra; antes era cartão de vidro de conteúdo da v2. A nota abaixo dos
+  passos é um bloco #ECF3F9.
+{%- endcomment -%}
+
+{%- liquid
+  assign ap_count = 0
+  for block in section.blocks
+    if block.settings.title != blank and block.settings.text != blank
+      assign ap_count = ap_count | plus: 1
+    endif
+  endfor
+
+  assign ap_tag = 'h2'
+  assign ap_step_tag = 'h3'
+  if section.settings.heading == blank
+    assign ap_step_tag = 'h2'
+  endif
+
+  assign ap_card_class = ''
+  if section.settings.layout == 'cartoes'
+    case section.settings.color_scheme
+      when 'surface', 'surface-2'
+        assign ap_card_class = ' glass-fill'
+      else
+        assign ap_card_class = ' pb-bloco'
+    endcase
+  endif
+-%}
+
+{%- if ap_count > 0 -%}
+  <div class="ajuda-passos ajuda-passos--{{ section.settings.layout }} pb-scheme--{{ section.settings.color_scheme }}{% render 'paginas-blog-surface', scheme: section.settings.color_scheme %} pb-pad--{{ section.settings.padding }}"{% if section.settings.anchor != blank %} id="{{ section.settings.anchor | handleize }}"{% endif %}>
+    <div class="page-width">
+      {%- if section.settings.heading != blank or section.settings.text != blank or section.settings.badge != blank -%}
+        <div class="ajuda-cabecalho">
+          <div class="ajuda-cabecalho__textos">
+            {%- if section.settings.heading != blank -%}
+              <{{ ap_tag }} class="ajuda-cabecalho__titulo">{{ section.settings.heading | escape }}</{{ ap_tag }}>
+            {%- endif -%}
+            {%- if section.settings.text != blank -%}
+              <div class="ajuda-cabecalho__texto rte">{{ section.settings.text }}</div>
+            {%- endif -%}
+          </div>
+          {%- if section.settings.badge != blank -%}
+            <span class="chip ajuda-cabecalho__selo">{{ section.settings.badge | escape }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <ol class="ajuda-passos__lista" role="list" style="--ajuda-passos-total: {{ ap_count }};">
+        {%- assign ap_n = 0 -%}
+        {%- for block in section.blocks -%}
+          {%- if block.settings.title != blank and block.settings.text != blank -%}
+            {%- assign ap_n = ap_n | plus: 1 -%}
+            <li class="ajuda-passos__item{{ ap_card_class }}" {{ block.shopify_attributes }}>
+              <span class="ajuda-passos__numero" aria-hidden="true">{{ ap_n }}</span>
+              <div class="ajuda-passos__corpo">
+                <{{ ap_step_tag }} class="ajuda-passos__titulo">
+                  {%- if section.settings.step_label != blank -%}
+                    <span class="visually-hidden">{{ section.settings.step_label | escape }} {{ ap_n }}: </span>
+                  {%- endif -%}
+                  {{- block.settings.title | escape -}}
+                </{{ ap_step_tag }}>
+                <div class="ajuda-passos__texto rte">{{ block.settings.text }}</div>
+              </div>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ol>
+
+      {%- if section.settings.note != blank -%}
+        <div class="ajuda-nota ajuda-passos__nota">
+          {%- if section.settings.note_icon != 'none' -%}
+            <span class="ajuda-nota__icone">{%- render 'icon', name: section.settings.note_icon, size: 20 -%}</span>
+          {%- endif -%}
+          <div class="ajuda-nota__corpo">
+            <div class="ajuda-nota__texto rte">{{ section.settings.note }}</div>
+            {%- if section.settings.note_source != blank -%}
+              <p class="ajuda-nota__fonte">{{ section.settings.note_source | escape }}</p>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+{%- elsif request.design_mode -%}
+  <div class="page-width ajuda-aviso-editor">
+    <p>Passos: esta seção aparece na loja quando pelo menos um passo tiver título e texto.</p>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Ajuda: passos numerados",
+  "tag": "section",
+  "class": "section-ajuda-passos",
+  "max_blocks": 8,
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto de apoio"
+    },
+    {
+      "type": "text",
+      "id": "badge",
+      "label": "Selo ao lado do título",
+      "info": "Ex.: 4 passos. Vazio, não aparece."
+    },
+    {
+      "type": "text",
+      "id": "step_label",
+      "label": "Palavra lida antes do número (leitor de tela)",
+      "default": "Etapa"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Âncora da seção",
+      "info": "Opcional. Ex.: passo-a-passo."
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Arranjo",
+      "options": [
+        { "value": "cartoes", "label": "Cartões lado a lado" },
+        { "value": "linha", "label": "Passos ligados por uma linha" }
+      ],
+      "default": "cartoes"
+    },
+    {
+      "type": "header",
+      "content": "Nota abaixo dos passos"
+    },
+    {
+      "type": "select",
+      "id": "note_icon",
+      "label": "Ícone da nota",
+      "options": [
+        { "value": "none", "label": "Sem ícone" },
+        { "value": "shield-check", "label": "Escudo" },
+        { "value": "alert-triangle", "label": "Alerta" },
+        { "value": "help-circle", "label": "Ajuda" },
+        { "value": "file-text", "label": "Documento" }
+      ],
+      "default": "shield-check"
+    },
+    {
+      "type": "richtext",
+      "id": "note",
+      "label": "Texto da nota",
+      "info": "Vazio, a nota não aparece."
+    },
+    {
+      "type": "text",
+      "id": "note_source",
+      "label": "Fonte da nota (letra menor)"
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "options": [
+        { "value": "default", "label": "Sem painel (névoa)" },
+        { "value": "surface", "label": "Painel de vidro" },
+        { "value": "surface-2", "label": "Painel de vidro (reserva azul clara)" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        { "value": "small", "label": "Pequeno" },
+        { "value": "normal", "label": "Normal" }
+      ],
+      "default": "normal"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "passo",
+      "name": "Passo",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Título"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texto",
+          "info": "Passo sem título ou sem texto não aparece."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Ajuda: passos numerados",
+      "blocks": [
+        { "type": "passo" },
+        { "type": "passo" },
+        { "type": "passo" }
+      ]
+    }
+  ]
+}
+{% endschema %}

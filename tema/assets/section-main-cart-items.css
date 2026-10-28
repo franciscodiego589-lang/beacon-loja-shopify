@@ -1,0 +1,485 @@
+/*
+  Beacon Labs · itens da página do carrinho (section-main-cart-items.css)
+  Estrutura em sections/main-cart-items.liquid.
+
+  A página usa as mesmas classes de item da gaveta (cart-item, cart-item__*), mas
+  component-cart-drawer.css só é carregado quando o carrinho é do tipo gaveta. Por isso
+  todo o visual do item é definido aqui, sempre dentro de .main-cart-items, para não
+  mexer na gaveta quando os dois arquivos estão na página.
+
+  Celular: foto 88 px à esquerda; nome, variante e descontos; abaixo, quantidade e total.
+  A partir de 750 px: linhas com colunas Produto (foto 120 px + dados), Quantidade (200 px)
+  e Total (140 px), com cabeçalho visual das colunas.
+
+  Blocos sólidos (etapa 8e, leva B, 03/10/2026; spec: conteúdo é sólido, vidro só nos controles): a lista,
+  a barra de frete (quando ligada) e a observação são blocos #ECF3F9 (o tom do fundo das fotos), sem borda
+  e sem sombra, com raio --radius-card (22 px; 20 px no celular), como as sugestões do carrinho
+  (component-cart-upsell.css). Antes eram cartões de vidro de conteúdo da v2 (.glass .glass--card na
+  marcação: branco a 0,66, linha de luz de cima, fio ink suave e sombra de cartão), raio 24 (20 no
+  celular). Divisórias em ink a 0,12. Foto do item com raio 12 sobre o fundo de foto do ajuste do tema,
+  que é o mesmo tom do bloco. Contraste sobre o bloco: tinta 15,44:1 e apoio #566472 5,42:1. Remover:
+  cápsula transparente de 44 px, hover ink a 6%, pressionado ink a 10% e escala 0,97. Preços
+  com números tabulares.
+*/
+
+/* Ritmo vertical da coluna do carrinho (etapa 8e, item 20): --cart-gap é o vão entre os blocos
+   (cabeçalho, lista, observação, sugestões e resumo): 24 px a partir de 750 px, 16 px abaixo disso.
+   Antes os vãos eram de 14, 20, 33 e 10 px (1440) e de 16, 19, 16, 24 e 9 px (390). O recuo de baixo da
+   seção zerou: o vão até as sugestões é a margem delas (component-cart-upsell.css) e o do resumo é a
+   margem dele (section-main-cart-footer.css). O recuo de cima continua o da página (24 px; 40 px a
+   partir de 990 px). */
+.main-cart-items {
+  --cart-gap: 16px;
+
+  padding-top: 24px;
+  padding-bottom: 0;
+}
+
+@media screen and (min-width: 750px) {
+  .main-cart-items {
+    --cart-gap: 24px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .main-cart-items {
+    padding-top: 40px;
+  }
+}
+
+/* ---------- Cabeçalho ---------- */
+
+.main-cart-items__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-bottom: var(--cart-gap);
+}
+
+.main-cart-items__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  letter-spacing: -0.02em;
+}
+
+.main-cart-items__count {
+  font-family: var(--font-body-family);
+  font-style: normal;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--color-text-muted);
+}
+
+.main-cart-items__continue {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  font-size: 14px;
+}
+
+/* ---------- Frete grátis ---------- */
+
+.main-cart-items__free-shipping {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+/* Bloco da lista: o conteúdo ganha recuo lateral dentro do bloco claro. */
+.main-cart-items__items {
+  display: block;
+  padding: 4px 16px;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+@media screen and (min-width: 750px) {
+  .main-cart-items__items {
+    padding: 16px 24px 4px;
+  }
+}
+
+.main-cart-items__free-shipping .free-shipping-bar__text {
+  justify-content: flex-start;
+  font-size: 14px;
+}
+
+.main-cart-items__free-shipping .free-shipping-bar__track {
+  height: 8px;
+}
+
+/* ---------- Colunas (só visual; cada item tem seus próprios rótulos acessíveis) ---------- */
+
+.main-cart-items__columns {
+  display: none;
+}
+
+@media screen and (min-width: 750px) {
+  .main-cart-items__columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 200px 140px;
+    gap: 24px;
+    padding: 0 0 12px;
+    border-bottom: 1px solid var(--lg-divider, var(--color-line));
+    font-family: var(--font-heading-family);
+    font-weight: var(--font-heading-weight);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .main-cart-items__columns > span:last-child {
+    text-align: right;
+  }
+}
+
+/* ---------- Lista ---------- */
+
+.main-cart-items .cart-items__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-cart-items .main-cart-item {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-areas:
+    "media info"
+    "media total"
+    "media quantity"
+    "media error";
+  align-items: start;
+  gap: 8px 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--lg-divider, var(--color-line));
+  transition: opacity var(--duration-fast, 150ms) ease;
+}
+
+.main-cart-items .main-cart-item:last-child {
+  border-bottom: 0;
+}
+
+.main-cart-items .main-cart-item[aria-busy="true"],
+.main-cart-items .main-cart-item.is-loading {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.main-cart-items .main-cart-item__media {
+  grid-area: media;
+  display: block;
+  width: 88px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--lg-radius-small, var(--radius-media));
+  background: var(--color-photo-bg);
+}
+
+.main-cart-items .cart-item__image,
+.main-cart-items .cart-item__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.main-cart-items .cart-item__placeholder {
+  fill: var(--color-text-muted);
+}
+
+.main-cart-items .main-cart-item__info {
+  grid-area: info;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* Alvo de toque (sobra da etapa 8b, etapa 8c): o link do título mede 24 px no computador e 44 px até
+   760 px (o título curto tem uma linha só, 20 a 22 px). O recuo vertical é devolvido pela margem
+   negativa igual, então a lista não muda de ritmo (a coluna de informações do item mantém a altura). */
+.main-cart-items .cart-item__title {
+  position: relative;
+  padding-block: 3px;
+  margin-block: -3px;
+  color: var(--color-text);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+@media screen and (max-width: 760px) {
+  .main-cart-items .cart-item__title {
+    padding-block: 12px;
+    margin-block: -12px;
+  }
+}
+
+.main-cart-items .cart-item__title:hover {
+  color: var(--lg-link-glass, var(--color-primary));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.main-cart-items .cart-item__variant,
+.main-cart-items .cart-item__plan,
+.main-cart-items .cart-item__property,
+.main-cart-items .main-cart-item__unit {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.main-cart-items .cart-item__property-name {
+  font-weight: 600;
+}
+
+.main-cart-items .cart-item__discounts {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-cart-items .cart-item__discount {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-chip-text);
+}
+
+.main-cart-items .main-cart-item__quantity {
+  grid-area: quantity;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.main-cart-items .cart-item__remove {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-left: 0;
+  padding: 0 8px;
+  border-radius: var(--radius-pill);
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.main-cart-items .cart-item__remove:hover {
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.main-cart-items .cart-item__remove:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.main-cart-items .main-cart-item__total {
+  grid-area: total;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  margin-left: 0;
+  line-height: 1.25;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.main-cart-items .cart-item__compare {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.main-cart-items .cart-item__price {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.main-cart-items .main-cart-item__error {
+  grid-area: error;
+  margin: 0;
+}
+
+@media screen and (max-width: 749px) {
+  /* Remover vira só ícone ao lado da quantidade; o nome acessível fica no aria-label. */
+  .main-cart-items .cart-item__remove-label {
+    display: none;
+  }
+
+  .main-cart-items .cart-item__remove {
+    justify-content: center;
+    width: 44px;
+    padding: 0;
+  }
+}
+
+@media screen and (min-width: 750px) {
+  .main-cart-items .main-cart-item {
+    grid-template-columns: 120px minmax(0, 1fr) 200px 140px;
+    grid-template-areas:
+      "media info quantity total"
+      "media error error error";
+    gap: 8px 24px;
+    padding: 20px 0;
+  }
+
+  .main-cart-items .main-cart-item__media {
+    width: 120px;
+  }
+
+  .main-cart-items .cart-item__title {
+    font-size: 16px;
+  }
+
+  .main-cart-items .main-cart-item__quantity {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .main-cart-items .cart-item__remove {
+    margin-left: -8px;
+  }
+
+  .main-cart-items .main-cart-item__total {
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 44px;
+    text-align: right;
+  }
+
+  .main-cart-items .cart-item__price {
+    font-size: 18px;
+  }
+
+  .main-cart-items .cart-item__compare {
+    font-size: 13px;
+  }
+}
+
+.main-cart-items__errors {
+  margin-top: 12px;
+}
+
+/* ---------- Observação e atualizar ---------- */
+
+.main-cart-items__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cart-gap) 24px;
+  padding-top: var(--cart-gap);
+}
+
+.main-cart-items__update {
+  flex-shrink: 0;
+}
+
+.main-cart-note {
+  flex: 1 1 320px;
+  max-width: 560px;
+  border-radius: var(--radius-card);
+  background-color: var(--lg-field-claro, #ECF3F9);
+}
+
+.main-cart-note__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.main-cart-note__summary:focus-visible {
+  border-radius: var(--radius-card);
+}
+
+.main-cart-note__icon {
+  color: var(--color-primary);
+}
+
+.main-cart-note__chevron {
+  margin-left: auto;
+  transition: transform var(--duration-fast, 150ms) ease;
+}
+
+.main-cart-note[open] .main-cart-note__chevron {
+  transform: rotate(180deg);
+}
+
+.main-cart-note__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+
+.main-cart-note__label {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+}
+
+.main-cart-note__field {
+  min-height: 96px;
+}
+
+/* Contraste aumentado (spec 9.3): divisórias em ink e anel de tinta nos blocos claros (etapa 8e, leva B:
+   antes o contorno vinha do .glass--card). Cores forçadas: o fundo some, então a borda mantém o contorno. */
+@media (prefers-contrast: more) {
+  .main-cart-items__columns,
+  .main-cart-items .main-cart-item {
+    border-bottom-color: var(--color-ink);
+  }
+
+  .main-cart-items__items,
+  .main-cart-note,
+  .main-cart-items__free-shipping {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .main-cart-items__items,
+  .main-cart-note,
+  .main-cart-items__free-shipping {
+    border: 1px solid CanvasText;
+  }
+}

@@ -1,0 +1,237 @@
+{{ 'section-announcement-bar.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Aviso do topo (redesenho v3, alvo.css, .aviso): texto tinta de 13 px (12 px até 760 px) sobre o
+  campo claro do grupo do cabeçalho, sem barra escura e sem vidro. O fundo (#ECF3F9) é pintado no
+  invólucro da seção, em section-announcement-bar.css, o mesmo do cabeçalho: sem emenda.
+  O texto continua vindo das mensagens da seção (o dono decide o texto, spec 7.3).
+  Com itens no carrinho, a barra mostra o progresso do frete grátis no lugar das mensagens.
+  Sem itens, mostra as mensagens. Sem mensagens, mostra sempre o progresso.
+  O JS alterna o atributo hidden de [data-announcement-messages] e [data-free-shipping-bar]
+  a cada evento cart:updated.
+{%- endcomment -%}
+{%- liquid
+  assign message_count = 0
+  for block in section.blocks
+    if block.type == 'message' and block.settings.text != blank
+      assign message_count = message_count | plus: 1
+    endif
+  endfor
+
+  assign show_free_shipping = false
+  if section.settings.show_free_shipping and settings.free_shipping_threshold > 0
+    assign show_free_shipping = true
+  endif
+
+  assign hide_messages = false
+  assign hide_free_shipping = false
+  if show_free_shipping and message_count > 0
+    if cart.item_count > 0
+      assign hide_messages = true
+    else
+      assign hide_free_shipping = true
+    endif
+  endif
+-%}
+
+{% style %}
+  #shopify-section-{{ section.id }} {
+    --announcement-text: {{ section.settings.color_text }};
+    --announcement-progress: {{ section.settings.color_progress }};
+  }
+{% endstyle %}
+
+{%- if message_count > 0 or show_free_shipping -%}
+  <div class="announcement-bar" role="region" aria-label="{{ 'fundacao.announcement.region_label' | t }}" data-announcement-bar data-show-free-shipping="{{ show_free_shipping }}">
+    <div class="announcement-bar__inner page-width">
+      {%- if message_count > 0 -%}
+        <carousel-slider
+          class="announcement-bar__messages"
+          data-announcement-messages
+          data-autoplay="{{ section.settings.autoplay }}"
+          data-interval="{{ section.settings.interval }}"
+          data-loop="true"
+          {% if hide_messages %}hidden{% endif %}
+        >
+          {%- if message_count > 1 -%}
+            <button type="button" class="announcement-bar__nav announcement-bar__nav--prev" aria-label="{{ 'fundacao.announcement.previous' | t }}" data-carousel-prev>
+              {% render 'icon', name: 'chevron-left', size: 16 %}
+            </button>
+          {%- endif -%}
+
+          <div class="announcement-bar__track" data-carousel-track>
+            {%- assign slide_index = 0 -%}
+            {%- for block in section.blocks -%}
+              {%- if block.type == 'message' and block.settings.text != blank -%}
+                {%- assign slide_index = slide_index | plus: 1 -%}
+                <div class="announcement-bar__slide" data-carousel-slide {{ block.shopify_attributes }}{% if slide_index > 1 %} hidden{% endif %}>
+                  {%- capture message_inner -%}
+                    {%- if block.settings.icon != 'none' -%}
+                      {% render 'icon', name: block.settings.icon, size: 16, stroke: 1.6, class: 'announcement-bar__icon' %}
+                    {%- endif -%}
+                    {%- if block.settings.text_mobile != blank -%}
+                      <span class="announcement-bar__text announcement-bar__text--desktop">{{ block.settings.text | escape }}</span>
+                      <span class="announcement-bar__text announcement-bar__text--mobile">{{ block.settings.text_mobile | escape }}</span>
+                    {%- else -%}
+                      <span class="announcement-bar__text">{{ block.settings.text | escape }}</span>
+                    {%- endif -%}
+                  {%- endcapture -%}
+                  {%- if block.settings.link != blank -%}
+                    <a href="{{ block.settings.link }}" class="announcement-bar__message announcement-bar__message--link">{{ message_inner }}</a>
+                  {%- else -%}
+                    <p class="announcement-bar__message">{{ message_inner }}</p>
+                  {%- endif -%}
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+
+          {%- if message_count > 1 -%}
+            <button type="button" class="announcement-bar__nav announcement-bar__nav--next" aria-label="{{ 'fundacao.announcement.next' | t }}" data-carousel-next>
+              {% render 'icon', name: 'chevron-right', size: 16 %}
+            </button>
+            {%- if section.settings.autoplay -%}
+              {%- comment -%}
+                Botão de rotação no padrão APG, igual ao do banner: o rótulo muda ("Pausar
+                avisos" / "Retomar avisos") e não há aria-pressed, que com o rótulo trocado seria
+                lido como "Retomar avisos, pressionado" (contraditório).
+              {%- endcomment -%}
+              <button
+                type="button"
+                class="announcement-bar__pause"
+                aria-label="{{ 'fundacao.announcement.pause' | t }}"
+                data-carousel-pause
+                data-label-pause="{{ 'fundacao.announcement.pause' | t }}"
+                data-label-play="{{ 'fundacao.announcement.play' | t }}"
+              >
+                {% render 'icon', name: 'pause', size: 14 %}
+              </button>
+            {%- endif -%}
+          {%- endif -%}
+        </carousel-slider>
+      {%- endif -%}
+
+      {%- if show_free_shipping -%}
+        {% render 'free-shipping-bar', class: 'announcement-bar__free-shipping', hidden: hide_free_shipping %}
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Barra de anúncio",
+  "class": "section-announcement",
+  "enabled_on": {
+    "groups": ["header"]
+  },
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "color",
+      "id": "color_text",
+      "label": "Texto",
+      "info": "O aviso fica sobre o campo claro do topo: use cor escura.",
+      "default": "#081C2D"
+    },
+    {
+      "type": "color",
+      "id": "color_progress",
+      "label": "Cor da barra de progresso",
+      "info": "Aparece sobre o campo claro: use cor escura.",
+      "default": "#081C2D"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_free_shipping",
+      "label": "Mostrar progresso do frete grátis",
+      "info": "Com itens no carrinho, o progresso aparece no lugar das mensagens. A meta fica em Configurações do tema > Carrinho.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Trocar mensagens automaticamente",
+      "info": "Um botão de pausa aparece junto das mensagens.",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "interval",
+      "min": 3,
+      "max": 10,
+      "step": 1,
+      "unit": "s",
+      "label": "Tempo de cada mensagem",
+      "default": 5
+    }
+  ],
+  "blocks": [
+    {
+      "type": "message",
+      "name": "Mensagem",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texto",
+          "default": "Até 15% OFF levando 6 potes · Frete grátis a partir de R$ 179"
+        },
+        {
+          "type": "text",
+          "id": "text_mobile",
+          "label": "Texto curto para celular (opcional)",
+          "default": "Até 15% OFF em 6 potes · Frete grátis a partir de R$ 179"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link (opcional)"
+        },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            {
+              "value": "none",
+              "label": "Nenhum"
+            },
+            {
+              "value": "truck",
+              "label": "Caminhão"
+            },
+            {
+              "value": "check-circle",
+              "label": "Confirmação"
+            },
+            {
+              "value": "tag",
+              "label": "Etiqueta"
+            },
+            {
+              "value": "card",
+              "label": "Cartão"
+            },
+            {
+              "value": "lock",
+              "label": "Cadeado"
+            }
+          ],
+          "default": "truck"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Barra de anúncio",
+      "blocks": [
+        {
+          "type": "message"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

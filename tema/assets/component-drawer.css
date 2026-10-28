@@ -1,0 +1,215 @@
+/*
+  Beacon Labs · gaveta lateral (component-drawer.css)
+  Usada pelo menu (drawer--left) e pelo carrinho (drawer--right).
+  A gaveta é um <dialog> aberto com showModal(): o navegador cuida do foco preso,
+  do Esc e do fundo inerte. O JS (global.js, openModal/closeModal) cuida da animação
+  de saída (atributo data-closing), do travamento da rolagem e da volta do foco.
+
+  Liquid Glass (spec 8.8, D22, D28, D34): o <dialog> leva .glass .glass--thick .glass--blur,
+  vidro funcional espesso COM desfoque desde 01/10/2026 (Apple v2), porque há conteúdo da página
+  por trás: branco a 0,90, e 0,96 na reserva sem desfoque. A borda de luz e a sombra espessa vêm
+  de assets/liquid-glass.css. Aqui ficam só a forma e o lugar: folha flutuante com recuo de
+  12 px (8 no celular) das bordas da janela, raio 32 (24 no celular), altura da janela menos
+  os dois recuos. Escurecimento rgba(ink, 0,55) sem desfoque (P19, D23).
+  Contraste no espesso a 0,90: a conta do redesenho v3 está na garantia 3 de
+  assets/liquid-glass.css (a tinta passa a partir do alfa 0,51 e o texto de apoio a partir de 0,87).
+*/
+
+/* Reserva sem liquid-glass.css (especificidade zero: o material vence). */
+:where(dialog.drawer) {
+  border: 0;
+  background: var(--color-background);
+  box-shadow: var(--shadow-drawer);
+}
+
+dialog.drawer {
+  --drawer-width: 420px;
+  --drawer-inset: var(--lg-float-inset, 0px);
+
+  position: fixed;
+  top: var(--drawer-inset);
+  bottom: var(--drawer-inset);
+  width: min(var(--drawer-width), calc(100vw - 2 * var(--drawer-inset)));
+  max-width: calc(100vw - 2 * var(--drawer-inset));
+  height: calc(100% - 2 * var(--drawer-inset));
+  max-height: calc(100dvh - 2 * var(--drawer-inset));
+  margin: 0;
+  padding: 0;
+  border-radius: var(--lg-radius-sheet, 0);
+  overflow: hidden;
+  color: var(--color-text);
+  font-family: var(--font-body-family);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+dialog.drawer--left {
+  left: var(--drawer-inset);
+  right: auto;
+}
+
+dialog.drawer--right {
+  left: auto;
+  right: var(--drawer-inset);
+}
+
+/* Navegadores antigos não herdam variáveis no ::backdrop; o valor reserva é a tinta #081C2D. */
+dialog.drawer::backdrop {
+  background: rgba(var(--color-ink-rgb, 8, 28, 45), 0.55);
+}
+
+/* Entrada: deslize lateral em 340 ms com a curva padrão (spec 8.8). Com movimento reduzido,
+   aparece sem transição. A saída fica abaixo de 400 ms (limite do closeModal do global.js). */
+@media (prefers-reduced-motion: no-preference) {
+  dialog.drawer--left[open] {
+    animation: drawer-in-left var(--lg-dur-sheet, 340ms) var(--lg-ease-glass, var(--ease-out, ease-out));
+  }
+
+  dialog.drawer--right[open] {
+    animation: drawer-in-right var(--lg-dur-sheet, 340ms) var(--lg-ease-glass, var(--ease-out, ease-out));
+  }
+
+  dialog.drawer--left[data-closing] {
+    animation: drawer-out-left 220ms ease-in forwards;
+  }
+
+  dialog.drawer--right[data-closing] {
+    animation: drawer-out-right 220ms ease-in forwards;
+  }
+
+  dialog.drawer[open]::backdrop {
+    animation: backdrop-in var(--lg-dur-sheet, 340ms) ease-out;
+  }
+
+  dialog.drawer[data-closing]::backdrop {
+    animation: backdrop-out 220ms ease-in forwards;
+  }
+}
+
+@keyframes drawer-in-left {
+  from {
+    transform: translateX(calc(-100% - var(--drawer-inset, 0px)));
+  }
+}
+
+@keyframes drawer-in-right {
+  from {
+    transform: translateX(calc(100% + var(--drawer-inset, 0px)));
+  }
+}
+
+@keyframes drawer-out-left {
+  to {
+    transform: translateX(calc(-100% - var(--drawer-inset, 0px)));
+  }
+}
+
+@keyframes drawer-out-right {
+  to {
+    transform: translateX(calc(100% + var(--drawer-inset, 0px)));
+  }
+}
+
+@keyframes backdrop-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes backdrop-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.drawer__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Cabeçalho de 64 px com fio ink a 0,10 (sombra interna: não soma altura). */
+.drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  min-height: 64px;
+  padding: 10px 12px 10px 20px;
+  background: transparent;
+  box-shadow: inset 0 -1px 0 rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+}
+
+.drawer__title {
+  margin: 0;
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+/* Fechar: círculo transparente de 44 px; hover ink a 6%, pressionado ink a 10% e 0,97. */
+.drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.drawer__close:hover {
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+}
+
+.drawer__close:active {
+  background: var(--lg-fill-ink-10, var(--color-surface-2));
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+/* Rodapé fixo: preenchimento branco a 0,90 (os itens rolam por baixo), fio superior. */
+.drawer__footer {
+  flex-shrink: 0;
+  padding: 16px 20px 20px;
+  background: var(--lg-fill-white-90, var(--color-background));
+  box-shadow: inset 0 1px 0 rgba(var(--color-ink-rgb, 8, 28, 45), 0.1);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .drawer__footer {
+    background: #FFFFFF;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .drawer__header {
+    box-shadow: inset 0 -1px 0 var(--color-ink);
+  }
+
+  .drawer__footer {
+    background: #FFFFFF;
+    box-shadow: inset 0 1px 0 var(--color-ink);
+  }
+}
+
+@media (forced-colors: active) {
+  .drawer__header {
+    border-bottom: 1px solid CanvasText;
+  }
+
+  .drawer__footer {
+    border-top: 1px solid CanvasText;
+  }
+}

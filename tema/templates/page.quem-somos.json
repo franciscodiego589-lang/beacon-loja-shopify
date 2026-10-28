@@ -1,0 +1,126 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "hero": {
+      "type": "page-hero",
+      "settings": {
+        "layout": "banner",
+        "image": "shopify://shop_images/quem-somos-topo-2560x1016.png",
+        "eyebrow": "Beacon Labs",
+        "heading_tag": "h1",
+        "text": "<p>Beacon Labs é a marca da linha Pure, de suplementos alimentares em cápsulas. Aqui você encontra quem somos e o que vale para todos os potes da linha.</p>",
+        "text_align": "left"
+      }
+    },
+    "empresa": {
+      "type": "rich-text",
+      "settings": {
+        "eyebrow": "Quem somos",
+        "heading": "A empresa",
+        "heading_tag": "h2",
+        "text": "<p>A Beacon Labs é a marca de DIEGO FRANCISCO CAMARGOS LTDA, empresa de Cuiabá, Mato Grosso, inscrita no CNPJ 64.764.725/0001-39.</p><p>Endereço: Rua Érico Veríssimo, Quadra 05, Lote 10, Santa Cruz, Cuiabá - MT, CEP 78068-190. E-mail: [retirado da cópia pública].</p><p>Nesta loja, vendemos a linha Pure: suplementos alimentares em cápsulas e gotas, cada um com o nome do seu insumo no rótulo.</p>",
+        "alignment": "center",
+        "width": "narrow",
+        "color_scheme": "default"
+      }
+    },
+    "linha": {
+      "type": "rich-text",
+      "settings": {
+        "eyebrow": "Linha Pure",
+        "heading": "Como é a linha Pure",
+        "heading_tag": "h2",
+        "text": "<p>Cada produto da linha leva no nome o insumo que contém, como Vitamina C, Magnésio Bisglicinato ou Coenzima Q10.</p><p>Todos são suplementos alimentares em cápsulas, indicados para adultos com 19 anos ou mais.</p>",
+        "button_label": "Ver a linha Pure",
+        "button_link": "/collections/linha-beacon-labs",
+        "button_style": "accent",
+        "alignment": "left",
+        "width": "wide",
+        "color_scheme": "ink",
+        "background_image": "shopify://shop_images/quem-somos-topo-2560x1016.png",
+        "background_overlay": 75,
+        "padding": "large"
+      }
+    },
+    "onde-conferir": {
+      "type": "rich-text",
+      "settings": {
+        "eyebrow": "Informação",
+        "heading": "Onde conferir cada produto",
+        "heading_tag": "h2",
+        "text": "<p>Na página de cada produto estão a forma de tomar, a composição e as advertências.</p><p>O que vai no rótulo e o que vale para todos os potes está na página Qualidade e Segurança.</p>",
+        "button_label": "Ver Qualidade e Segurança",
+        "button_link": "/pages/qualidade-e-seguranca",
+        "button_style": "primary",
+        "alignment": "center",
+        "width": "narrow",
+        "color_scheme": "default",
+        "boxed": true
+      }
+    },
+    "valores": {
+      "type": "multicolumn",
+      "blocks": {
+        "v1": {
+          "type": "column",
+          "settings": {
+            "icon": "capsule",
+            "title": "2 cápsulas ao dia",
+            "text": "<p>A porção do dia soma 1 g.</p>"
+          }
+        },
+        "v2": {
+          "type": "column",
+          "settings": {
+            "icon": "jar",
+            "title": "60 cápsulas",
+            "text": "<p>Peso líquido de 30 g por pote.</p>"
+          }
+        },
+        "v3": {
+          "type": "column",
+          "settings": {
+            "icon": "calendar",
+            "title": "Rende 30 dias",
+            "text": "<p>São 30 porções em cada pote.</p>"
+          }
+        },
+        "v4": {
+          "type": "column",
+          "settings": {
+            "icon": "check-circle",
+            "title": "NÃO CONTÉM GLÚTEN.",
+            "text": "<p>A frase está no rótulo de todos os potes da linha.</p>"
+          }
+        }
+      },
+      "block_order": ["v1", "v2", "v3", "v4"],
+      "settings": {
+        "eyebrow": "Em cada pote",
+        "heading": "O que todos os produtos Pure têm em comum",
+        "columns_desktop": 4,
+        "columns_mobile": "2",
+        "layout": "plain",
+        "content_align": "center",
+        "color_scheme": "ink",
+        "background_image": "shopify://shop_images/quem-somos-topo-2560x1016.png",
+        "background_overlay": 75
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "empresa",
+    "linha",
+    "onde-conferir",
+    "valores"
+  ]
+}

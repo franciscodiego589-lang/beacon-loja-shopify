@@ -1,0 +1,259 @@
+{{ 'conta-base.css' | asset_url | stylesheet_tag }}
+{{ 'conta-auth.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-login.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'conta-password-field.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Login do cliente (template customers/login, contas de cliente legadas).
+  Formulários conforme a documentação da Shopify:
+  - customer_login: customer[email] e customer[password].
+  - recover_customer_password: email. Com envio certo, o cliente recebe o e-mail de troca.
+  - guest_login: só aparece quando o cliente vem do checkout (shop.checkout.guest_login).
+
+  Troca entre "Entrar" e "Recuperar senha" sem JavaScript: o link "Esqueci minha senha"
+  aponta para #recover e o CSS mostra o painel alvo (:target). Se o formulário de
+  recuperação voltar com erro, o painel já abre pelo Liquid (classe is-open).
+  Os dois formulários são montados antes (capture) para saber o estado de cada um.
+{%- endcomment -%}
+
+{%- liquid
+  assign section_image = section.settings.image
+  assign auth_class = 'conta-auth'
+  if section.settings.show_image
+    if section_image != blank
+      assign auth_class = auth_class | append: ' conta-auth--has-image'
+    else
+      assign auth_class = auth_class | append: ' conta-auth--placeholder'
+    endif
+    if section.settings.image_position == 'left'
+      assign auth_class = auth_class | append: ' conta-auth--media-left'
+    endif
+  else
+    assign auth_class = auth_class | append: ' conta-auth--no-media'
+  endif
+
+  assign recover_success = false
+  assign recover_has_errors = false
+  assign login_errors_id = 'LoginErrors-' | append: section.id
+  assign recover_errors_id = 'RecoverErrors-' | append: section.id
+-%}
+
+{%- capture recover_markup -%}
+  {%- form 'recover_customer_password', class: 'conta-auth__form conta-login__form' -%}
+    {%- if form.posted_successfully? -%}
+      {%- assign recover_success = true -%}
+    {%- endif -%}
+    {%- if form.errors -%}
+      {%- assign recover_has_errors = true -%}
+    {%- endif -%}
+
+    <h1 class="conta-auth__title">{{ 'conta.login.recover_title' | t }}</h1>
+    <p class="conta-auth__text">{{ 'conta.login.recover_text' | t }}</p>
+
+    {%- if form.posted_successfully? -%}
+      <p class="conta-form-success" role="status">{{ 'conta.login.recover_success' | t }}</p>
+    {%- endif -%}
+
+    {%- render 'conta-form-errors', form: form, id: recover_errors_id -%}
+
+    <div class="field conta-field">
+      <label class="field__label" for="RecoverEmail-{{ section.id }}">
+        {{- 'conta.login.email' | t }} <span class="conta-required" aria-hidden="true">*</span>
+      </label>
+      <input
+        type="email"
+        id="RecoverEmail-{{ section.id }}"
+        name="email"
+        autocomplete="email"
+        autocapitalize="off"
+        spellcheck="false"
+        required
+        {% if form.errors %}aria-invalid="true" aria-describedby="{{ recover_errors_id }}"{% endif %}
+      >
+    </div>
+
+    <div class="conta-auth__actions">
+      <button type="submit" class="button button--primary button--full button--large">
+        {{- 'conta.login.recover_submit' | t -}}
+      </button>
+    </div>
+
+    <p class="conta-login__back">
+      <a class="link" href="#login">{{ 'conta.login.recover_back' | t }}</a>
+    </p>
+  {%- endform -%}
+{%- endcapture -%}
+
+{%- capture login_markup -%}
+  {%- form 'customer_login', class: 'conta-auth__form conta-login__form' -%}
+    <h1 class="conta-auth__title">{{ 'conta.login.title' | t }}</h1>
+    <p class="conta-auth__text">{{ 'conta.login.subtitle' | t }}</p>
+
+    {%- comment -%} Painel visível por padrão: a confirmação recebe o foco ao carregar. {%- endcomment -%}
+    {%- if recover_success -%}
+      <p class="conta-form-success" role="status" tabindex="-1" autofocus>{{ 'conta.login.recover_success' | t }}</p>
+    {%- endif -%}
+
+    {%- render 'conta-form-errors', form: form, id: login_errors_id -%}
+
+    <p class="conta-note">{{ 'conta.general.required_note' | t }}</p>
+
+    <div class="field conta-field">
+      <label class="field__label" for="LoginEmail-{{ section.id }}">
+        {{- 'conta.login.email' | t }} <span class="conta-required" aria-hidden="true">*</span>
+      </label>
+      <input
+        type="email"
+        id="LoginEmail-{{ section.id }}"
+        name="customer[email]"
+        value="{{ form.email | escape }}"
+        autocomplete="email"
+        autocapitalize="off"
+        spellcheck="false"
+        required
+        {% if form.errors %}aria-invalid="true" aria-describedby="{{ login_errors_id }}"{% endif %}
+      >
+    </div>
+
+    {%- liquid
+      assign password_invalid = false
+      if form.errors
+        assign password_invalid = true
+      endif
+      assign password_id = 'LoginPassword-' | append: section.id
+      assign password_label = 'conta.login.password' | t
+      render 'conta-password-field', id: password_id, name: 'customer[password]', label: password_label, autocomplete: 'current-password', required: true, invalid: password_invalid, describedby: login_errors_id
+    -%}
+
+    <p class="conta-auth__link-row">
+      <a class="link" href="#recover">{{ 'conta.login.forgot' | t }}</a>
+    </p>
+
+    <div class="conta-auth__actions">
+      <button type="submit" class="button button--primary button--full button--large">
+        {{- 'conta.login.submit' | t -}}
+      </button>
+    </div>
+  {%- endform -%}
+{%- endcapture -%}
+
+<div class="{{ auth_class }}">
+  {%- if section.settings.show_image -%}
+    {%- render 'conta-auth-media', image: section_image -%}
+  {%- endif -%}
+
+  <div class="conta-auth__body">
+    <div class="conta-auth__card conta-login glass glass--card">
+      <div id="recover" class="conta-login__panel conta-login__recover{% if recover_has_errors %} is-open{% endif %}" tabindex="-1">
+        {{ recover_markup }}
+      </div>
+
+      <div id="login" class="conta-login__panel conta-login__main" tabindex="-1">
+        {{ login_markup }}
+
+        {%- if shop.customer_accounts_enabled -%}
+          <p class="conta-divider">{{ 'conta.login.no_account' | t }}</p>
+          <a class="button button--secondary button--full" href="{{ routes.account_register_url }}">
+            {{- 'conta.login.create_account' | t -}}
+          </a>
+        {%- endif -%}
+
+        {%- if shop.checkout.guest_login -%}
+          <div class="conta-login__guest">
+            <p class="conta-login__guest-text">{{ 'conta.login.guest_text' | t }}</p>
+            {%- form 'guest_login' -%}
+              <button type="submit" class="button button--ghost button--full">
+                {{- 'conta.login.guest_submit' | t -}}
+              </button>
+            {%- endform -%}
+          </div>
+        {%- endif -%}
+
+        <div class="conta-auth__blocks">
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when '@app' -%}
+                {% render block %}
+              {%- when 'text' -%}
+                {%- if block.settings.text != blank -%}
+                  <div class="rte conta-auth__block-text" {{ block.shopify_attributes }}>{{ block.settings.text }}</div>
+                {%- endif -%}
+            {%- endcase -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Login do cliente",
+  "tag": "section",
+  "class": "section-main-login",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["customers/login"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Tela de login das contas de cliente legadas, com recuperação de senha. Os textos ficam nas traduções do tema (área conta)."
+    },
+    {
+      "type": "header",
+      "content": "Imagem"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Mostrar imagem",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Imagem lateral",
+      "info": "Sugestão: 1440 × 1500 px. Sem imagem, o computador mostra um espaço reservado e o celular esconde a faixa."
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Posição da imagem no computador",
+      "options": [
+        {
+          "value": "right",
+          "label": "Direita"
+        },
+        {
+          "value": "left",
+          "label": "Esquerda"
+        }
+      ],
+      "default": "right"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    },
+    {
+      "type": "text",
+      "name": "Texto",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Texto"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Login do cliente"
+    }
+  ]
+}
+{% endschema %}

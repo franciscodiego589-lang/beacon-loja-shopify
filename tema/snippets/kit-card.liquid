@@ -1,0 +1,142 @@
+{%- comment -%}
+  Card de kit (uma variante da opção "Kit"), usado dentro de <kit-selector>.
+  O card inteiro é um <label> com um rádio: escolher o card escolhe a variante.
+  Parâmetros:
+  - variant: variante do kit (obrigatório)
+  - units: quantidade de potes do kit (opcional; se vazio, é lida do primeiro número
+           no valor da opção "Kit", ex.: "3 potes" -> 3, pelo snippet produto-kit-units)
+  - capsulas_por_pote: número (metafield beacon.capsulas_por_pote)
+  - capsulas_por_dia: número (metafield beacon.capsulas_por_dia)
+  - selected: true marca o rádio
+  - highlight: texto da fita (ex.: vindo de metafield/ajuste) ou true para o texto padrão
+  - name: atributo name do rádio (padrão 'id')
+  - form_id: id do formulário de produto ao qual o rádio pertence (opcional)
+  - id_prefix: prefixo único para o id do rádio (ex.: section.id)
+  - class: classe extra (opcional)
+  - show_installments: true mostra o parcelamento sem juros no preço do cartão. Falso ou
+    ausente esconde (29/09/2026: o número de parcelas ainda não foi confirmado no meio de
+    pagamento; o ajuste fica no bloco "parcelamento_pix" de sections/main-product.liquid)
+
+  Cálculos (nada fixo no código):
+  - cápsulas do kit = capsulas_por_pote × units
+  - dias = cápsulas do kit ÷ capsulas_por_dia (arredondado para baixo)
+  - custo por dia = preço da variante ÷ dias (arredondado para cima em centavos)
+
+  Redesenho v3 (tarefa 6): o card é uma linha de preenchimento claro dentro do painel de compra
+  (que já é o vidro de conteúdo; nunca vidro sobre vidro); selecionado ganha anel ink de 2 px em
+  border (nunca box-shadow, que some em cores forçadas). Fita "Mais vendido" em preenchimento de selo em cápsula de 24 px.
+
+  Selo "% OFF" (etapa 8e, item 23, 03/10/2026): fica ao lado do nome do kit, como no alvo (alvo.css
+  .opcao, "3 potes 10% OFF"), e não mais dentro do bloco de preço. Dentro do preço ele descia para a
+  quarta linha no celular (quatro linhas à direita, linha de 119 px contra 94 px do alvo). O percentual
+  usa a mesma conta do snippets/price.liquid: (comparativo - preço) x 100 ÷ comparativo, arredondado
+  para baixo; o preço é impresso com show_badge: false para o selo não aparecer duas vezes.
+{%- endcomment -%}
+{%- if variant != blank -%}
+  {%- liquid
+    assign kit_value = variant.title
+    assign kit_option = variant.product.options_by_name['Kit']
+    if kit_option == blank
+      assign kit_option = variant.product.options_by_name['Quantidade']
+    endif
+    if kit_option != blank
+      assign kit_index = kit_option.position | minus: 1
+      assign kit_value = variant.options[kit_index]
+    endif
+
+    assign kit_units = units | plus: 0
+    if kit_units <= 0
+      capture kit_units
+        render 'produto-kit-units', kit: kit_value
+      endcapture
+      assign kit_units = kit_units | strip | plus: 0
+    endif
+
+    assign caps_pote = capsulas_por_pote | plus: 0
+    assign caps_dia = capsulas_por_dia | plus: 0
+    assign kit_caps = 0
+    assign kit_days = 0
+    assign kit_per_day = 0
+    if caps_pote > 0 and kit_units > 0
+      assign kit_caps = caps_pote | times: kit_units
+      if caps_dia > 0
+        assign kit_days = kit_caps | divided_by: caps_dia
+      endif
+    endif
+    if kit_days > 0
+      assign kit_per_day = variant.price | plus: kit_days | minus: 1 | divided_by: kit_days
+      assign kit_per_day_money = kit_per_day | money
+    endif
+
+    assign kit_compare = variant.compare_at_price | default: 0
+    assign kit_percent = 0
+    if kit_compare > variant.price
+      assign kit_percent = kit_compare | minus: variant.price | times: 100 | divided_by: kit_compare
+    endif
+
+    assign highlight_label = ''
+    if highlight == true
+      assign highlight_label = 'fundacao.kit.highlight_default' | t
+    elsif highlight != blank and highlight != false
+      assign highlight_label = highlight | escape_once
+    endif
+
+    assign input_name = name | default: 'id'
+    assign input_id = id_prefix | default: 'Kit' | append: '-' | append: variant.id
+  -%}
+  <label class="kit-card{% if selected %} kit-card--selected{% endif %}{% if highlight_label != blank %} kit-card--highlight{% endif %}{% unless variant.available %} kit-card--sold-out{% endunless %}{% if class != blank %} {{ class }}{% endif %}" for="{{ input_id }}" data-kit-card>
+    <input
+      type="radio"
+      class="kit-card__input"
+      id="{{ input_id }}"
+      name="{{ input_name }}"
+      value="{{ variant.id }}"
+      {% if form_id != blank %}form="{{ form_id }}"{% endif %}
+      {% if selected %}checked{% endif %}
+      {% unless variant.available %}disabled{% endunless %}
+      data-variant-id="{{ variant.id }}"
+      data-units="{{ kit_units }}"
+      data-price="{{ variant.price }}"
+      data-compare-at-price="{{ variant.compare_at_price | default: 0 }}"
+      data-available="{{ variant.available }}"
+    >
+    {%- if highlight_label != blank -%}
+      <span class="kit-card__ribbon">{{ highlight_label }}</span>
+    {%- endif -%}
+    <span class="kit-card__header">
+      <span class="kit-card__radio" aria-hidden="true"></span>
+      <span class="kit-card__text">
+        <span class="kit-card__title-row">
+          <span class="kit-card__title">{{ kit_value | escape }}</span>
+          {%- if kit_percent > 0 -%}
+            <span class="price__badge kit-card__badge" data-price-badge>{{ 'fundacao.price.percent_off' | t: percent: kit_percent }}</span>
+          {%- endif -%}
+        </span>
+        {%- if kit_caps > 0 -%}
+          <span class="kit-card__meta" data-kit-meta>
+            {%- if kit_days > 0 -%}
+              {{- 'fundacao.kit.capsules_days' | t: capsules: kit_caps, days: kit_days -}}
+            {%- else -%}
+              {{- 'fundacao.kit.capsules_only' | t: capsules: kit_caps -}}
+            {%- endif -%}
+          </span>
+        {%- endif -%}
+      </span>
+    </span>
+    {%- liquid
+      assign kit_show_installments = false
+      if show_installments == true
+        assign kit_show_installments = true
+      endif
+    -%}
+    <span class="kit-card__side">
+      {% render 'price', variant: variant, size: 'md', show_installments: kit_show_installments, show_badge: false, class: 'kit-card__price' %}
+      {%- if kit_per_day > 0 -%}
+        <span class="kit-card__per-day" data-kit-per-day>{{ 'fundacao.kit.per_day' | t: amount: kit_per_day_money }}</span>
+      {%- endif -%}
+    </span>
+    {%- unless variant.available -%}
+      <span class="kit-card__sold-out">{{ 'fundacao.kit.sold_out' | t }}</span>
+    {%- endunless -%}
+  </label>
+{%- endif -%}

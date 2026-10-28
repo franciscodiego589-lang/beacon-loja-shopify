@@ -1,0 +1,58 @@
+{%- comment -%}
+  Ícone de traço colorido (cor por tema, num quadrinho da mesma cor bem clara; pedido do dono em 03/10/2026: "coloca cor nos ícones") para um benefício do dossiê, escolhido por palavra do
+  título (pedido do dono em 03/10/2026: ícone por benefício no lugar da foto do insumo).
+  Uso: {% render 'dp-icone-beneficio', titulo: b.titulo %}
+  A ordem das regras importa: a primeira que casar vence. Sem palavra conhecida, sai o visto num círculo.
+{%- endcomment -%}
+{%- liquid
+  assign t = titulo | downcase
+  assign i = 'visto'
+  if t contains 'sono' or t contains 'noite' or t contains 'escurid' or t contains 'relógio'
+    assign i = 'lua'
+  elsif t contains 'visão' or t contains 'córnea'
+    assign i = 'olho'
+  elsif t contains 'antioxid'
+    assign i = 'brilho'
+  elsif t contains 'imune'
+    assign i = 'escudo'
+  elsif t contains 'nervos' or t contains 'mental' or t contains 'alerta' or t contains 'concentra' or t contains 'neurotrans' or t contains 'adenosina'
+    assign i = 'lampada'
+  elsif t contains 'sangue' or t contains 'eletról' or t contains 'coagula' or t contains 'vasos' or t contains 'óxido nítrico' or t contains 'circula'
+    assign i = 'gota'
+  elsif t contains 'osso' or t contains 'dente' or t contains 'cálcio' or t contains 'cartilag' or t contains 'mineraliza'
+    assign i = 'osso'
+  elsif t contains 'energ' or t contains 'atp' or t contains 'cansaço' or t contains 'fadiga' or t contains 'respirat'
+    assign i = 'raio'
+  elsif t contains 'esforço' or t contains 'força' or t contains 'exercício' or t contains 'muscul'
+    assign i = 'haltere'
+  elsif t contains 'água' or t contains 'umidade' or t contains 'gel '
+    assign i = 'ondas'
+  elsif t contains 'pele' or t contains 'cabelo' or t contains 'mucosa' or t contains 'colágeno' or t contains 'queratina' or t contains 'tecido' or t contains 'fibras resistentes' or t contains 'sustenta' or t contains 'conjuntiva'
+    assign i = 'camadas'
+  elsif t contains 'fibra' or t contains 'vegetal' or t contains 'alimento' or t contains 'alimentação' or t contains 'microalga' or t contains 'digerir' or t contains 'nutri'
+    assign i = 'folha'
+  elsif t contains 'produzid' or t contains 'próprio corpo'
+    assign i = 'celula'
+  elsif t contains 'proteín' or t contains 'amino' or t contains 'síntese' or t contains 'enxofre' or t contains 'carnosina' or t contains 'glutationa' or t contains 'ureia' or t contains 'amônia' or t contains 'metabol' or t contains 'metaból' or t contains 'acidez' or t contains 'trivalente' or t contains 'picolinato' or t contains 'carboidrat' or t contains 'composto' or t contains 'divisão celular' or t contains 'homociste' or t contains 'cadeia' or t contains 'hormônio' or t contains 'biliar' or t contains 'bile'
+    assign i = 'molecula'
+  endif
+-%}
+<span class="dp-comp-benef__icone dp-ic--{{ i }}" aria-hidden="true"><svg class="dp-icone-benef" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+  {%- case i -%}
+    {%- when 'lua' -%}<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>
+    {%- when 'olho' -%}<path d="M2.5 12s3.5-6.5 9.5-6.5 9.5 6.5 9.5 6.5-3.5 6.5-9.5 6.5S2.5 12 2.5 12z"/><circle cx="12" cy="12" r="2.8"/>
+    {%- when 'brilho' -%}<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z"/>
+    {%- when 'escudo' -%}<path d="M12 21s7.5-3.5 7.5-9.5V5.5L12 3 4.5 5.5v6C4.5 17.5 12 21 12 21z"/><path d="M9 12l2.2 2.2L15.5 10"/>
+    {%- when 'lampada' -%}<path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/>
+    {%- when 'gota' -%}<path d="M12 21a6.5 6.5 0 0 0 6.5-6.5C18.5 10 12 3 12 3S5.5 10 5.5 14.5A6.5 6.5 0 0 0 12 21z"/>
+    {%- when 'osso' -%}<path d="M17 10c.7-.7 1.69 0 2.5 0a2.5 2.5 0 1 0 0-5 .5.5 0 0 1-.5-.5 2.5 2.5 0 1 0-5 0c0 .81.7 1.8 0 2.5l-7 7c-.7.7-1.69 0-2.5 0a2.5 2.5 0 0 0 0 5c.28 0 .5.22.5.5a2.5 2.5 0 1 0 5 0c0-.81-.7-1.8 0-2.5z"/>
+    {%- when 'raio' -%}<path d="M13 2.5L4.5 13.5H11l-1 8 8.5-11H12z"/>
+    {%- when 'haltere' -%}<path d="M7 7v10"/><path d="M17 7v10"/><path d="M4 9.5v5"/><path d="M20 9.5v5"/><path d="M7 12h10"/>
+    {%- when 'ondas' -%}<path d="M3 8c1.5 0 1.5-1.5 3-1.5S7.5 8 9 8s1.5-1.5 3-1.5S13.5 8 15 8s1.5-1.5 3-1.5S19.5 8 21 8"/><path d="M3 13c1.5 0 1.5-1.5 3-1.5S7.5 13 9 13s1.5-1.5 3-1.5 1.5 1.5 3 1.5 1.5-1.5 3-1.5 1.5 1.5 3 1.5"/><path d="M3 18c1.5 0 1.5-1.5 3-1.5S7.5 18 9 18s1.5-1.5 3-1.5 1.5 1.5 3 1.5 1.5-1.5 3-1.5 1.5 1.5 3 1.5"/>
+    {%- when 'camadas' -%}<path d="M12 3l9 4.5-9 4.5-9-4.5z"/><path d="M3 12l9 4.5 9-4.5"/><path d="M3 16.5L12 21l9-4.5"/>
+    {%- when 'folha' -%}<path d="M5 19c0-8 5-13 15-14-.5 10-6 15-14 15"/><path d="M5 19l7-7"/>
+    {%- when 'celula' -%}<circle cx="12" cy="12" r="8.5"/><circle cx="13" cy="11" r="3"/><path d="M7 15.5h.01"/><path d="M16.5 16.5h.01"/>
+    {%- when 'molecula' -%}<circle cx="12" cy="5" r="2"/><circle cx="5.5" cy="17" r="2"/><circle cx="18.5" cy="17" r="2"/><path d="M11 6.8L6.5 15.2"/><path d="M13 6.8l4.5 8.4"/><path d="M7.5 17h9"/>
+    {%- else -%}<circle cx="12" cy="12" r="9"/><path d="M8 12.2l2.8 2.8L16 9.5"/>
+  {%- endcase -%}
+</svg></span>

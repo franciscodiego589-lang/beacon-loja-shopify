@@ -1,0 +1,191 @@
+/*
+  Beacon Labs · seção Dossiê em destaque da home (sections/dossie-destaque.liquid), redesenho v3, tarefa 4b, parte 2
+  (02/10/2026). Alvo: alvo.css linhas 209 a 221 (bloco e ficha), 375 (até 1080 px) e 423 a 431 (celular); home.html
+  linhas 206 a 218.
+
+  Bloco claro: fundo --color-photo-bg (#ECF3F9), raio --radius-tile (28 px; 24 px até 760 px), sem vidro e sem sombra.
+  Texto à esquerda (linha pequena, título de 48 px, frase de 21 px e botão principal) e, à direita, a ficha do
+  produto em vidro de CONTEÚDO (.glass .glass--card da fundação, sem desfoque: nunca .glass--blur), em coluna de
+  até 420 px. Até 1080 px, uma coluna.
+  Contraste sobre o bloco claro: tinta 15,44:1, apoio #566472 5,42:1, linha pequena #8A0503 8,92:1. Dentro da
+  ficha (branco a 0,66 sobre o bloco claro), o apoio #566472 passa de 5,8:1.
+
+  Espaço entre seções (emenda 15): margin-block: var(--section-gap) no próprio bloco da seção (104 px; 68 px até
+  760 px), sem padding de seção somado. As margens de seções vizinhas se fundem.
+
+  Raios (emenda 7 da tarefa 3): só --radius-tile (bloco), --radius-card (ficha e foto). O alvo usa 24 px na ficha e
+  14 px na foto de 60 px; aqui valem 22 px (20 px até 760 px) nos dois.
+*/
+
+.dossie-destaque {
+  margin-block: var(--section-gap, 64px);
+}
+
+/* ---------- Bloco claro ---------- */
+
+.dossie-destaque__bloco {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: 64px;
+  align-items: center;
+  padding: 64px;
+  border-radius: var(--radius-tile);
+  background-color: var(--color-photo-bg);
+  color: var(--color-text);
+}
+
+.dossie-destaque__texto {
+  min-width: 0;
+}
+
+.dossie-destaque__eyebrow {
+  margin: 0;
+}
+
+.dossie-destaque__titulo {
+  margin: 12px 0 0;
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.dossie-destaque__frase {
+  max-width: 520px;
+  margin: 16px 0 0;
+  color: var(--color-text-muted);
+  font-size: 21px;
+  line-height: 1.38;
+  letter-spacing: -0.01em;
+}
+
+.dossie-destaque__botao {
+  margin-top: 28px;
+}
+
+/* ---------- Ficha do produto (vidro de conteúdo) ---------- */
+
+.dossie-destaque__ficha {
+  min-width: 0;
+  padding: 22px 24px 18px;
+  border-radius: var(--radius-card);
+}
+
+.dossie-destaque__ficha-cab {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.14);
+}
+
+.dossie-destaque__foto {
+  display: block;
+  flex: none;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-card);
+  background-color: var(--color-photo-bg);
+  object-fit: contain;
+}
+
+/* Produto sem foto: espaço reservado do tema, no mesmo bloco claro e no mesmo tamanho. */
+.dossie-destaque__placeholder {
+  fill: var(--color-text-muted);
+}
+
+.dossie-destaque__ficha-titulo {
+  min-width: 0;
+  margin: 0;
+}
+
+.dossie-destaque__ficha-rotulo {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dossie-destaque__ficha-nome {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.dossie-destaque__dados {
+  margin: 0;
+  padding: 0;
+}
+
+.dossie-destaque__linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.08);
+  font-size: 15px;
+}
+
+.dossie-destaque__linha dt {
+  min-width: 0;
+  color: var(--color-text-muted);
+}
+
+.dossie-destaque__linha dd {
+  min-width: 0;
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.dossie-destaque__ficha-link {
+  margin-top: 4px;
+  font-size: 15px;
+}
+
+/* ---------- Aviso do editor (só com request.design_mode) ---------- */
+
+.dossie-destaque__aviso {
+  margin: 0;
+  padding: 16px 20px;
+  border: 1px dashed var(--color-input-border);
+  border-radius: var(--radius-card);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Tela média (até 1080 px): uma coluna ---------- */
+
+@media screen and (max-width: 1080px) {
+  .dossie-destaque__bloco {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 36px;
+    padding: 48px 40px;
+  }
+}
+
+/* ---------- Celular (até 760 px) ---------- */
+
+@media screen and (max-width: 760px) {
+  .dossie-destaque__bloco {
+    gap: 28px;
+    padding: 40px 20px 24px;
+  }
+
+  .dossie-destaque__titulo {
+    font-size: 32px;
+  }
+
+  .dossie-destaque__frase {
+    font-size: 17px;
+  }
+
+  .dossie-destaque__ficha {
+    padding: 18px 18px 14px;
+  }
+}

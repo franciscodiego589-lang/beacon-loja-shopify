@@ -1,0 +1,64 @@
+/*
+  Beacon Labs · section-main-addresses.css (área conta)
+
+  Lista de endereços: "Adicionar endereço" primeiro (acordeão), depois um cartão por
+  endereço, cada um com editar e remover, também em acordeão (ver conta-base.css, bloco
+  de divulgação, e sections/main-addresses.liquid).
+  Computador: cartões em duas colunas. Celular: uma coluna.
+*/
+
+.conta-addresses__new {
+  margin-bottom: 24px;
+}
+
+/* Salvar/Cancelar (e "Sim, remover"/Cancelar) lado a lado quando cabe, em vez de
+   empilhados como o conta-auth__actions padrão das telas de login e cadastro. */
+.conta-auth__actions--row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.conta-auth__actions--row .button {
+  flex: 1 1 140px;
+}
+
+.conta-address-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.conta-address-card {
+  position: relative;
+}
+
+.conta-address-card__badge {
+  display: inline-flex;
+  margin-bottom: 12px;
+}
+
+.conta-address-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.conta-address-card__actions .conta-disclosure-wrap {
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+
+.conta-address-card__actions .conta-disclosure__summary {
+  width: 100%;
+}
+
+@media screen and (min-width: 750px) {
+  .conta-address-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

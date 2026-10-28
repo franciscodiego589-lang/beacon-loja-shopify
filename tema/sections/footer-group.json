@@ -1,0 +1,85 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "Grupo do rodapé",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "coluna1": {
+          "type": "menu",
+          "settings": {
+            "heading": "Comprar",
+            "menu": "rodape-comprar"
+          }
+        },
+        "coluna2": {
+          "type": "menu",
+          "settings": {
+            "heading": "Ajuda",
+            "menu": "rodape-lg-ajuda"
+          }
+        },
+        "coluna3": {
+          "type": "menu",
+          "settings": {
+            "heading": "Institucional",
+            "menu": "rodape-lg-institucional"
+          }
+        },
+        "coluna4": {
+          "type": "menu",
+          "settings": {
+            "heading": "Para você",
+            "menu": "rodape-lg-para-voce"
+          }
+        }
+      },
+      "block_order": [
+        "coluna1",
+        "coluna2",
+        "coluna3",
+        "coluna4"
+      ],
+      "settings": {
+        "show_newsletter": true,
+        "newsletter_heading": "Novidades e ofertas no seu e-mail.",
+        "newsletter_text": "Cadastre-se e use o cupom BEMVINDO10: 10% OFF no pedido, uma vez por cliente.",
+        "newsletter_show_name": true,
+        "newsletter_show_consent": true,
+        "show_social": true,
+        "brand_text": "Beacon Labs é uma marca brasileira de suplementos alimentares em cápsulas e gotas.",
+        "legal_text": "Beacon Labs · CNPJ 64.764.725/0001-39",
+        "show_copyright": true,
+        "show_payment_icons": false,
+        "show_secure_badge": false,
+        "chat_label": "Abrir atendimento"
+      }
+    },
+    "popup-cupom": {
+      "type": "popup-cupom",
+      "settings": {
+        "enabled": true,
+        "delay": 12,
+        "days": 30,
+        "heading": "Ganhe 10% OFF no seu pedido",
+        "text": "Cadastre seu e-mail e use o cupom BEMVINDO10. Vale uma vez por cliente e não se soma a outros descontos.",
+        "button_label": "Quero o cupom",
+        "coupon_code": "BEMVINDO10",
+        "show_consent": true
+      }
+    }
+  },
+  "order": [
+    "footer",
+    "popup-cupom"
+  ]
+}

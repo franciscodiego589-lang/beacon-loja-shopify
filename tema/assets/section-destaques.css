@@ -1,0 +1,243 @@
+/*
+  Beacon Labs · seção Destaques da home (sections/destaques.liquid), redesenho v3, tarefa 4b, parte 1 (02/10/2026).
+  Alvo: alvo.css linhas 190 a 201 (blocos), 371 a 373 (até 1080 px) e 414 a 422 (celular); home.html linhas 73 a 101.
+
+  Grade de duas colunas com blocos claros: fundo --color-photo-bg (#ECF3F9), raio --radius-tile (28 px; 24 px
+  até 760 px), overflow hidden, sem vidro e sem sombra. O bloco largo (tile_largo) ocupa a linha inteira:
+  texto à esquerda e três fotos à direita; até 760 px vira uma coluna, centrada.
+  Contraste sobre o bloco claro: tinta 15,44:1, apoio #566472 5,42:1, linha pequena #8A0503 8,92:1.
+
+  Espaço entre seções (emenda 15): margin-block: var(--section-gap) no próprio bloco da seção (104 px; 68 px até
+  760 px), sem padding de seção somado. As margens de seções vizinhas se fundem (a prateleira de produtos faz o
+  mesmo), então o vão com uma prateleira vizinha é de 104 px.
+  Espaço entre blocos: --grid-gap (20 px; 12 px até 760 px), como o --gap do alvo.
+
+  Desvios do alvo, por pedido da revisão (emenda 4, V5) e por robustez:
+  - A foto do bloco de produto abre 28 px abaixo dos botões (o alvo tem 8 px).
+  - Até 760 px, as três fotos do bloco largo ganham folga embaixo (20 px) para a sombra do pote não ficar
+    colada na borda do bloco.
+  - Linha reservada (.destaques--reserva): quando só um bloco tem frase, o outro guarda a mesma linha vazia, e
+    título, preço, botões e foto ficam alinhados lado a lado.
+  - O preço não quebra de linha entre "R$" e o número (mesma técnica do card, component-price.css).
+  - Entre 761 e 1080 px as fotos do bloco largo encolhem junto com a tela (min(170px, 15.7vw)); o alvo as mantém
+    em 170 px (medido no alvo a 800 px: coluna de texto de 202 px, título em duas linhas, frase em cinco).
+*/
+
+.destaques {
+  margin-block: var(--section-gap, 64px);
+}
+
+.destaques__grade {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--grid-gap, 20px);
+}
+
+/* ---------- Bloco claro ---------- */
+
+.destaques__tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: var(--radius-tile);
+  background-color: var(--color-photo-bg);
+  color: var(--color-text);
+  text-align: center;
+}
+
+.destaques__texto {
+  min-width: 0;
+  padding: 52px 32px 0;
+}
+
+.destaques__linha {
+  margin: 0;
+}
+
+.destaques__titulo {
+  margin: 10px 0 0;
+  font-size: 44px;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+}
+
+.destaques__frase {
+  margin: 8px 0 0;
+  color: var(--color-text-muted);
+  font-size: 21px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.destaques__frase-texto,
+.destaques__preco {
+  display: block;
+}
+
+/* Linha reservada: a frase vazia ocupa a altura de uma linha, para os blocos ficarem alinhados lado a lado.
+   Só vale com duas colunas (a partir de 761 px); no celular os blocos se empilham e não há o que alinhar. */
+@media screen and (min-width: 761px) {
+  .destaques--reserva .destaques__frase-texto {
+    min-height: 1.3em;
+  }
+}
+
+.destaques__preco {
+  white-space: nowrap;
+}
+
+.destaques__botoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+/* ---------- Foto do pote (máscara .lg-pote-solto ou quadro .v3-foto-quadro, pela classe do snippet) ---------- */
+
+.destaques__foto {
+  display: block;
+  width: 100%;
+  max-width: 430px;
+  height: auto;
+  margin-top: 28px;
+}
+
+/* Produto sem foto: espaço reservado do tema, no mesmo bloco claro e no mesmo tamanho. */
+.destaques__placeholder {
+  aspect-ratio: 1;
+  fill: var(--color-text-muted);
+}
+
+/* ---------- Bloco largo ---------- */
+
+.destaques__tile--largo {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  align-items: stretch;
+  text-align: left;
+}
+
+.destaques__tile--largo .destaques__texto {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 56px 0 56px 64px;
+}
+
+.destaques__tile--largo .destaques__botoes {
+  justify-content: flex-start;
+}
+
+.destaques__tile--largo .destaques__frase {
+  max-width: 400px;
+}
+
+.destaques__fotos {
+  display: flex;
+  flex: none;
+  align-items: flex-end;
+}
+
+.destaques__fotos .destaques__foto {
+  width: 250px;
+  max-width: none;
+  margin-top: 0;
+}
+
+/* ---------- Aviso do editor (só com request.design_mode) ---------- */
+
+.destaques__tile--vazio {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 160px;
+  padding: 24px;
+  text-align: left;
+}
+
+.destaques__aviso {
+  margin: 0;
+  padding: 16px 20px;
+  border: 1px dashed var(--color-input-border);
+  border-radius: var(--radius-card);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Tela média (até 1080 px) ---------- */
+
+@media screen and (max-width: 1080px) {
+  .destaques__titulo {
+    font-size: 36px;
+  }
+
+  .destaques__tile--largo .destaques__texto {
+    padding-left: 40px;
+  }
+
+  /* 170 px a 1080 px, como o alvo; abaixo disso as fotos encolhem com a tela (119 px a 761 px) e o texto do
+     bloco largo não fica espremido numa coluna estreita (com 170 px fixos, a 761 px a coluna teria 163 px). */
+  .destaques__fotos .destaques__foto {
+    width: min(170px, 15.7vw);
+  }
+}
+
+/* ---------- Celular (até 760 px): uma coluna ---------- */
+
+@media screen and (max-width: 760px) {
+  .destaques__grade {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .destaques__texto {
+    padding: 40px 20px 0;
+  }
+
+  .destaques__titulo {
+    font-size: 34px;
+  }
+
+  .destaques__frase {
+    font-size: 17px;
+  }
+
+  .destaques__foto {
+    max-width: 320px;
+  }
+
+  .destaques__tile--largo {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .destaques__tile--largo .destaques__texto {
+    align-items: center;
+    padding: 40px 20px 0;
+  }
+
+  .destaques__tile--largo .destaques__botoes {
+    justify-content: center;
+  }
+
+  .destaques__tile--vazio {
+    flex-direction: column;
+  }
+
+  .destaques__fotos {
+    justify-content: center;
+    margin-top: 12px;
+    padding-bottom: 20px;
+  }
+
+  .destaques__fotos .destaques__foto {
+    width: 33.333%;
+  }
+}

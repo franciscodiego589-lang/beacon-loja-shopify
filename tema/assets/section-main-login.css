@@ -1,0 +1,62 @@
+/*
+  Beacon Labs · section-main-login.css (área conta)
+
+  Troca entre os painéis "Entrar" (#login) e "Recuperar senha" (#recover) só com CSS:
+  - padrão: "Entrar" visível, "Recuperar senha" escondido;
+  - #recover no endereço (:target) ou classe is-open (erro no envio): mostra a
+    recuperação e esconde o login;
+  - #login no endereço: volta para o login, mesmo com is-open.
+  Layout geral em conta-auth.css; campos e mensagens em conta-base.css.
+*/
+
+.conta-login__recover {
+  display: none;
+}
+
+.conta-login__recover:target,
+.conta-login__recover.is-open {
+  display: block;
+}
+
+.conta-login__recover:target ~ .conta-login__main,
+.conta-login__recover.is-open ~ .conta-login__main {
+  display: none;
+}
+
+.conta-login:has(.conta-login__main:target) .conta-login__recover {
+  display: none;
+}
+
+.conta-login:has(.conta-login__main:target) .conta-login__main {
+  display: block;
+}
+
+/* Os painéis recebem foco pelo link interno; o contorno fica só nos controles. */
+.conta-login__panel:focus {
+  outline: none;
+}
+
+.conta-login__back {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.conta-login__back .link {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+}
+
+.conta-login__guest {
+  display: grid;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--lg-divider, var(--color-line));
+  text-align: center;
+}
+
+.conta-login__guest-text {
+  color: var(--color-text-muted);
+  font-size: 14px;
+}

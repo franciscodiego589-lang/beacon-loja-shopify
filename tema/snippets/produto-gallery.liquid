@@ -1,0 +1,209 @@
+{%- comment -%}
+  Área produto. Bloco "galeria" da seção main-product (coluna da esquerda): <media-gallery> com
+  as mídias do produto, selo de desconto, selo do produto, zoom, contador, miniaturas, botão de
+  realidade aumentada e o diálogo de zoom. Extraído de sections/main-product.liquid (auditoria de
+  arquitetura, 28/09/2026) para a seção ficar só com o cálculo compartilhado e o laço de blocos.
+  Parâmetros (todos vindos da seção principal):
+  - gallery_block: o bloco "galeria" (ajustes e shopify_attributes)
+  - product: o produto
+  - current_variant: variante que a página mostra ao abrir (define a foto ativa)
+  - section_id: section.id da seção principal (ids únicos)
+  - on_sale / discount_percent: se há preço de comparação e o % de desconto da variante ativa
+  - caps_pote: cápsulas por pote (metafield beacon.capsulas_por_pote)
+{%- endcomment -%}
+{%- liquid
+  assign gb = gallery_block.settings
+  assign media_count = product.media.size
+  assign image_media = product.media | where: 'media_type', 'image'
+  assign model_media = product.media | where: 'media_type', 'model'
+  assign selo = product.metafields.beacon.selo.value
+  assign media_sizes = '(min-width: 1280px) 560px, (min-width: 990px) calc((100vw - 224px) * 0.52), (min-width: 600px) 520px, calc(100vw - 40px)'
+  assign thumb_sizes = '64px'
+  assign active_index = 0
+  if current_variant.featured_media != blank
+    for media in product.media
+      if media.id == current_variant.featured_media.id
+        assign active_index = forloop.index0
+        break
+      endif
+    endfor
+  endif
+  assign active_position = active_index | plus: 1
+
+  # Classe da foto (emenda 15, C9): a primeira mídia leva a classe do snippet da tarefa 3 (pote solto
+  # na coleção "capsulas", quadro nas outras); as demais ficam inteiras em quadro, sem máscara.
+  capture foto_primeira
+    render 'v3-classe-foto', product: product
+  endcapture
+  assign foto_primeira = foto_primeira | strip | escape
+
+  # Nome visível só em texto (aria-label do zoom), pelo snippet único da regra.
+  capture nome_texto
+    render 'v3-nome-visivel', produto: product, modo: 'texto'
+  endcapture
+  assign nome_texto = nome_texto | strip
+-%}
+<div class="main-product__media">
+  <media-gallery
+    class="media-gallery"
+    id="MediaGallery-{{ section_id }}"
+    data-section-id="{{ section_id }}"
+    data-active-index="{{ active_index }}"
+    {{ gallery_block.shopify_attributes }}
+  >
+    <div class="media-gallery__stage">
+      {%- if media_count > 0 -%}
+        <ul class="media-gallery__list" role="list" aria-label="{{ 'produto.gallery.label' | t }}" data-gallery-list>
+          {%- for media in product.media -%}
+            {%- liquid
+              assign is_active = false
+              if forloop.index0 == active_index
+                assign is_active = true
+              endif
+            -%}
+            <li
+              class="media-gallery__item{% if is_active %} is-active{% endif %}"
+              data-gallery-item
+              data-media-id="{{ media.id }}"
+              data-media-type="{{ media.media_type }}"
+              data-index="{{ forloop.index0 }}"
+              tabindex="-1"
+            >
+              {%- liquid
+                assign foto_classe = 'v3-foto-quadro'
+                if forloop.first
+                  assign foto_classe = foto_primeira
+                endif
+              -%}
+              {% render 'produto-media', media: media, product: product, eager: is_active, sizes: media_sizes, photo_class: foto_classe %}
+            </li>
+          {%- endfor -%}
+        </ul>
+      {%- else -%}
+        <div class="media-gallery__placeholder">
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
+      {%- endif -%}
+
+      <div class="media-gallery__badges">
+        {%- if gb.show_discount -%}
+          <span class="media-gallery__discount" data-gallery-discount{% unless on_sale %} hidden{% endunless %}>
+            <span class="media-gallery__discount-value" data-gallery-discount-value>
+              {{- 'produto.gallery.discount_value' | t: percent: discount_percent -}}
+            </span>
+            <span class="media-gallery__discount-label">{{ 'produto.gallery.discount_off' | t }}</span>
+          </span>
+        {%- endif -%}
+        {%- if gb.show_selo and selo != blank -%}
+          {% render 'badge-ribbon', label: selo, tone: 'offer', class: 'media-gallery__selo' %}
+        {%- endif -%}
+      </div>
+
+      {%- if gb.enable_zoom and image_media.size > 0 -%}
+        <button
+          type="button"
+          class="media-gallery__zoom glass glass--thin glass--interactive"
+          aria-label="{{ 'produto.gallery.zoom' | t }}"
+          aria-haspopup="dialog"
+          aria-controls="MediaZoom-{{ section_id }}"
+          aria-expanded="false"
+          data-gallery-zoom
+        >
+          {%- render 'icon', name: 'zoom-in', size: 20 -%}
+        </button>
+      {%- endif -%}
+
+      {%- if gb.show_capsules and caps_pote > 0 -%}
+        <span class="media-gallery__chip glass glass--thin" data-gallery-chip{% if active_index != 0 %} hidden{% endif %}>
+          {{- 'fundacao.product_card.capsules' | t: count: caps_pote -}}
+        </span>
+      {%- endif -%}
+
+      {%- if media_count > 1 -%}
+        <span class="media-gallery__counter glass glass--thin" aria-live="polite" aria-atomic="true">
+          <span class="visually-hidden">{{ 'produto.gallery.counter_prefix' | t }} </span>
+          <span data-gallery-counter>{{ 'produto.gallery.counter' | t: current: active_position, total: media_count }}</span>
+        </span>
+      {%- endif -%}
+    </div>
+
+    {%- if media_count > 1 -%}
+      <ul class="media-gallery__thumbs glass glass--thin" role="list" data-gallery-thumbs>
+        {%- for media in product.media -%}
+          <li class="media-gallery__thumb-item" data-gallery-thumb-item data-media-id="{{ media.id }}"{% if forloop.index0 == active_index %} hidden{% endif %}>
+            <button
+              type="button"
+              class="media-gallery__thumb lg-focus-dual"
+              aria-label="{{ 'produto.gallery.show_image' | t: index: forloop.index, total: media_count }}"
+              data-gallery-thumb
+              data-media-id="{{ media.id }}"
+            >
+              {%- if media.preview_image -%}
+                {{ media.preview_image | image_url: width: 640 | image_tag: widths: '120, 160, 240, 320, 480, 640', sizes: thumb_sizes, loading: 'lazy', alt: '', class: 'media-gallery__thumb-image' }}
+              {%- else -%}
+                {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+              {%- endif -%}
+              {%- if media.media_type == 'video' or media.media_type == 'external_video' -%}
+                <span class="media-gallery__thumb-badge glass glass--dark" aria-hidden="true">{% render 'icon', name: 'play', size: 18 %}</span>
+              {%- elsif media.media_type == 'model' -%}
+                <span class="media-gallery__thumb-badge media-gallery__thumb-badge--text glass glass--dark" aria-hidden="true">{{ 'produto.gallery.model_badge' | t }}</span>
+              {%- endif -%}
+            </button>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+
+    {%- if model_media.size > 0 -%}
+      <button
+        type="button"
+        class="button button--secondary button--small media-gallery__xr"
+        data-shopify-xr
+        data-shopify-model3d-id="{{ model_media.first.id }}"
+        data-shopify-title="{{ product.title | escape }}"
+        data-shopify-xr-hidden
+      >
+        {{ 'produto.gallery.view_in_space' | t }}
+      </button>
+      <script type="application/json" data-gallery-models>{{ model_media | json }}</script>
+    {%- endif -%}
+
+    {%- if gb.enable_zoom and image_media.size > 0 -%}
+      <dialog
+        class="media-gallery__dialog"
+        id="MediaZoom-{{ section_id }}"
+        aria-label="{{ 'produto.gallery.zoom_dialog' | t: title: nome_texto }}"
+        data-gallery-dialog
+      >
+        <div class="media-gallery__dialog-inner">
+          <button type="button" class="icon-button media-gallery__dialog-close" aria-label="{{ 'produto.gallery.close_zoom' | t }}" data-gallery-dialog-close>
+            {%- render 'icon', name: 'close', size: 22 -%}
+          </button>
+          <ul class="media-gallery__zoom-list" role="list">
+            {%- for media in image_media -%}
+              {%- assign zoom_alt = media.alt | default: product.title -%}
+              <li class="media-gallery__zoom-item" data-zoom-media-id="{{ media.id }}">
+                {{ media | image_url: width: 1946 | image_tag: widths: '750, 1100, 1500, 1946', sizes: '(min-width: 1200px) 1100px, 100vw', loading: 'lazy', alt: zoom_alt, class: 'media-gallery__zoom-image' }}
+              </li>
+            {%- endfor -%}
+          </ul>
+        </div>
+      </dialog>
+    {%- endif -%}
+
+    {%- comment -%}
+      Marcadores em variáveis: o Liquid da Shopify encerra um {{ ... }} no primeiro "}".
+    {%- endcomment -%}
+    {%- liquid
+      assign ph_current = '{current}'
+      assign ph_total = '{total}'
+      assign ph_percent = '{percent}'
+    -%}
+    <script type="application/json" data-gallery-strings>
+      {
+        "counter": {{ 'produto.gallery.counter' | t: current: ph_current, total: ph_total | json }},
+        "discount": {{ 'produto.gallery.discount_value' | t: percent: ph_percent | json }}
+      }
+    </script>
+  </media-gallery>
+</div>

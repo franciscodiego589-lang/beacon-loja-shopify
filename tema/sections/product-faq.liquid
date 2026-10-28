@@ -1,0 +1,95 @@
+{{ 'section-product-faq.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Área produto. Perguntas frequentes do produto, a partir do metafield beacon.faq (json):
+    [{"pergunta":"…","resposta":"…"}]
+  Sem o metafield, a seção não renderiza nada. Acordeão com <details>/<summary>, sem JS
+  (o contrato de acessibilidade pede <details>/<summary> para acordeões).
+  A âncora padrão ("faq") é a mesma que o bloco "o_que_e" de sections/main-product.liquid usa
+  por padrão no atalho "Perguntas frequentes".
+  Maquete de 29/09/2026: título "Perguntas frequentes sobre [nome curto]" (ajuste "Título" e
+  nome do produto sem a dose, snippets/produto-nome-curto) e todas as perguntas fechadas.
+  Pergunta sem resposta não aparece.
+  Etapa 8e, item 7 (03/10/2026): o painel de vidro da v2 (.glass-layer .glass--panel, que saía 96 px da
+  coluna de 1200 px e deixava 440 px vazios à direita da lista) saiu. A seção fica na coluna da página,
+  sobre o branco, no desenho do FAQ da home (arranjo "lado" de sections/faq-list.liquid): título à
+  esquerda, perguntas à direita com um fio entre elas e o ícone de mais, que gira ao abrir. Até 1080 px,
+  uma coluna só.
+{%- endcomment -%}
+{%- liquid
+  assign faq = product.metafields.beacon.faq.value
+  assign faq_heading = section.settings.heading | strip
+  assign faq_name = ''
+  if section.settings.append_name
+    capture faq_name
+      render 'produto-nome-curto', product: product
+    endcapture
+    assign faq_name = faq_name | strip
+  endif
+-%}
+{%- if faq != blank -%}
+  <section class="product-faq section" id="{{ section.settings.anchor | default: 'faq' | handle }}" aria-labelledby="ProductFaqTitle-{{ section.id }}">
+    <div class="page-width product-faq__grid">
+      <div class="section-heading">
+        <h2 class="section-heading__title" id="ProductFaqTitle-{{ section.id }}">
+          {{- faq_heading | escape -}}
+          {%- if faq_name != blank %} <span class="product-faq__name">{{ faq_name | escape }}</span>{%- endif -%}
+        </h2>
+      </div>
+      <div class="product-faq__list">
+        {%- for item in faq -%}
+          {%- if item.pergunta != blank and item.resposta != blank -%}
+            <details class="product-faq__item">
+              <summary class="product-faq__summary lg-focus-dual">
+                <span class="product-faq__question">{{ item.pergunta | escape }}</span>
+                <span class="product-faq__chevron" aria-hidden="true">{% render 'icon', name: 'plus', size: 20, stroke: 1.6 %}</span>
+              </summary>
+              <div class="product-faq__answer rte">
+                <p>{{ item.resposta | escape | newline_to_br }}</p>
+              </div>
+            </details>
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- elsif request.design_mode -%}
+  <p class="home-editor-note page-width">{{ 'produto.editor.empty' | t: field: 'beacon.faq' }}</p>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Perguntas frequentes",
+  "tag": "div",
+  "class": "section-product-faq",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "default": "Perguntas frequentes sobre"
+    },
+    {
+      "type": "checkbox",
+      "id": "append_name",
+      "label": "Acrescentar o nome do produto ao título",
+      "info": "Por exemplo, \"Perguntas frequentes sobre Pure Taurina\". Usa o nome do produto sem a dose.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Âncora (link direto)",
+      "default": "faq"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Perguntas frequentes"
+    }
+  ]
+}
+{% endschema %}

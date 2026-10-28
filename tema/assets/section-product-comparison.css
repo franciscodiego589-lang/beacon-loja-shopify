@@ -1,0 +1,219 @@
+/*
+  Beacon Labs · Atributos do produto (section-product-comparison.css)
+  Área produto. sections/product-comparison.liquid.
+  29/09/2026: a coluna "Outras marcas" saiu (a tabela só mostra atributos da própria Beacon).
+  Ficam duas colunas: a dos atributos (preenchimento branco a 0,72 sobre o campo) e a do
+  produto.
+
+  Liquid Glass (spec 8.7 e 7.3): a seção fica sobre o campo farol (.lg-field--farol no Liquid),
+  com a arte dos raios (.lg-field--art, assets/campo-farol.svg, spec 7.1). Tabela sem
+  moldura externa:
+  - coluna do produto: cabeçalho em preenchimento de selo (#0058B8, branco 6,800:1) com raio
+    20 20 0 0 (16 no celular) e células em preenchimento de chip (#E8F1FC, ink 15,507:1);
+  - coluna dos atributos: preenchimento branco a 0,72 (.glass-fill) sobre o campo, mesmo raio
+    no topo;
+  - linhas de 60 px (44 no celular) com fio ink a 0,10; a última linha fecha com raio 0 0 20 20;
+  - "Sim": círculo #0058B8 com check branco e o texto "Sim" ao lado.
+  As bordas arredondadas das células pedem border-collapse: separate.
+*/
+
+/* Vão entre blocos da página do produto (etapa 8e, item 13): --section-gap (104 px; 68 px até 760 px) em
+   cima e embaixo, como margem da própria seção; o recuo de 64 px (40 px no celular) da classe .section
+   saiu, e os dois somavam 128 px até o bloco seguinte ("Atributos" para "O que é": 136 px). */
+.product-comparison.section {
+  margin-block: var(--section-gap);
+  padding-block: 0;
+}
+
+.product-comparison__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.product-comparison__title {
+  margin-bottom: 12px;
+}
+
+.product-comparison__intro {
+  margin: 0;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+@media screen and (min-width: 990px) {
+  .product-comparison__grid {
+    flex-direction: row;
+    align-items: center;
+    gap: 56px;
+  }
+
+  .product-comparison__table-col {
+    flex: 1 1 60%;
+    min-width: 0;
+    /* O título vem antes no HTML (leitor de tela lê o título primeiro), mas a tabela
+       aparece à esquerda no computador, como na maquete. */
+    order: 1;
+  }
+
+  .product-comparison__intro-col {
+    flex: 1 1 34%;
+    order: 2;
+  }
+
+  /* Sem frase de posicionamento nem parágrafo: só a tabela, numa largura de leitura. */
+  .product-comparison__grid--table-only .product-comparison__table-col {
+    flex: 0 1 720px;
+  }
+}
+
+.product-comparison__source {
+  margin: 12px 0 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* position: relative prende os rótulos .visually-hidden (position: absolute) das células
+   dentro da área de rolagem. Sem isso, com a tabela mais larga que a tela, eles contavam para
+   a largura da página e o celular ganhava rolagem horizontal (422 px numa tela de 390,
+   medido no Chromium em 27/09/2026). */
+.product-comparison__scroll {
+  --comparison-radius: 16px;
+
+  position: relative;
+  overflow-x: auto;
+}
+
+/* Duas colunas cabem em 280 px (o texto do atributo quebra linha); abaixo disso, rola. */
+.product-comparison__table {
+  width: 100%;
+  min-width: 280px;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+.product-comparison__table th,
+.product-comparison__table td {
+  height: 44px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.1);
+  text-align: center;
+}
+
+.product-comparison__table tbody tr:last-child th,
+.product-comparison__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.product-comparison__table thead th {
+  color: var(--color-ink);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 15px;
+}
+
+.product-comparison__table th[scope="row"] {
+  color: var(--color-ink);
+  text-align: left;
+  font-weight: 600;
+}
+
+/* Coluna dos atributos: preenchimento branco a 0,72 sobre o campo (1ª coluna). */
+.product-comparison__table thead th:first-child,
+.product-comparison__table tbody th[scope="row"] {
+  background-color: var(--glass-fill-bg, var(--color-background));
+}
+
+.product-comparison__table thead th:first-child {
+  border-radius: var(--comparison-radius) var(--comparison-radius) 0 0;
+  text-align: left;
+}
+
+.product-comparison__our-column {
+  background: var(--color-chip-bg);
+  color: var(--color-ink);
+}
+
+/* Cabeçalho da coluna da loja: preenchimento de selo, com a linha de luz em cima. */
+.product-comparison__table thead .product-comparison__our-column {
+  border-radius: var(--comparison-radius) var(--comparison-radius) 0 0;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+}
+
+.product-comparison__table tbody tr:last-child .product-comparison__our-column,
+.product-comparison__table tbody tr:last-child th[scope="row"] {
+  border-radius: 0 0 var(--comparison-radius) var(--comparison-radius);
+}
+
+.product-comparison__yes-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.product-comparison__yes {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+}
+
+@media screen and (min-width: 750px) {
+  .product-comparison__scroll {
+    --comparison-radius: 20px;
+  }
+
+  .product-comparison__table th,
+  .product-comparison__table td {
+    height: 60px;
+    padding: 10px 16px;
+  }
+}
+
+/* Transparência reduzida: a coluna de preenchimento fica branca sólida. */
+@media (prefers-reduced-transparency: reduce) {
+  .product-comparison__table thead th:first-child,
+  .product-comparison__table tbody th[scope="row"] {
+    background-color: #FFFFFF;
+  }
+}
+
+/* Contraste aumentado: colunas com borda ink, sem sombra. */
+@media (prefers-contrast: more) {
+  .product-comparison__table thead th:first-child,
+  .product-comparison__table tbody th[scope="row"] {
+    background-color: #FFFFFF;
+  }
+
+  .product-comparison__table th,
+  .product-comparison__table td {
+    border-bottom-color: var(--color-ink);
+  }
+
+  .product-comparison__table thead .product-comparison__our-column {
+    box-shadow: none;
+  }
+}
+
+/* Cores forçadas: os fundos somem; as colunas ganham borda real para a tabela ter forma, e os
+   círculos de sim e não também. */
+@media (forced-colors: active) {
+  .product-comparison__our-column,
+  .product-comparison__table thead th:first-child,
+  .product-comparison__table tbody th[scope="row"] {
+    border-inline: 1px solid CanvasText;
+  }
+
+  .product-comparison__yes {
+    border: 1px solid CanvasText;
+  }
+}

@@ -1,0 +1,102 @@
+{{ 'section-trust-strip.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Faixa "Compra e entrega" da home (redesenho v3, emenda 16, pedido do dono em 02/10/2026): quatro itens
+  sem caixa, separados por fio fino, cada um com ícone pequeno, título em seminegrito e uma linha de detalhe.
+  Faixa baixa: 4 colunas no computador, 2 x 2 até 1080 px, uma coluna no celular. Os textos são conferidos
+  em 02/10/2026 (frete grátis, segurança, devolução e kits) e ficam nos ajustes da seção, para o dono trocar
+  no editor: o título é o campo "Texto" e a linha de detalhe é o campo "Detalhe". Sem blocos com texto, a
+  seção não renderiza nada. Nada de parcelamento até o dono informar as condições.
+{%- endcomment -%}
+
+{%- liquid
+  assign trust_count = 0
+  for block in section.blocks
+    if block.type == 'item' and block.settings.text != blank
+      assign trust_count = trust_count | plus: 1
+    endif
+  endfor
+-%}
+
+{%- if trust_count > 0 -%}
+  <div class="trust-strip page-width" role="region" aria-label="{{ 'home.trust_strip.region_label' | t }}">
+    <ul class="trust-strip__list" role="list">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'item' and block.settings.text != blank -%}
+          <li class="trust-strip__item" {{ block.shopify_attributes }}>
+            {%- if block.settings.icon != 'none' -%}
+              <span class="trust-strip__icon">{% render 'icon', name: block.settings.icon, size: 24 %}</span>
+            {%- endif -%}
+            <span class="trust-strip__body">
+              <span class="trust-strip__title">{{ block.settings.text | escape }}</span>
+              {%- if block.settings.detail != blank -%}
+                <span class="trust-strip__detail">{{ block.settings.detail | escape }}</span>
+              {%- endif -%}
+            </span>
+          </li>
+        {%- endif -%}
+      {%- endfor -%}
+    </ul>
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Compra e entrega",
+  "tag": "section",
+  "class": "section-trust-strip",
+  "max_blocks": 8,
+  "settings": [],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Vantagem",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Ícone",
+          "options": [
+            { "value": "none", "label": "Sem ícone" },
+            { "value": "truck", "label": "Caminhão" },
+            { "value": "card", "label": "Cartão" },
+            { "value": "shield-check", "label": "Escudo" },
+            { "value": "badge-check", "label": "Selo de verificado" },
+            { "value": "sparkles", "label": "Brilho" },
+            { "value": "leaf", "label": "Folha" },
+            { "value": "refresh", "label": "Troca" },
+            { "value": "lock", "label": "Cadeado" },
+            { "value": "capsule", "label": "Cápsula" },
+            { "value": "cashback", "label": "Cashback" },
+            { "value": "tag", "label": "Etiqueta" }
+          ],
+          "default": "truck"
+        },
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Texto",
+          "info": "O título do item, em seminegrito."
+        },
+        {
+          "type": "text",
+          "id": "detail",
+          "label": "Detalhe",
+          "info": "Uma linha curta abaixo do título."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Compra e entrega",
+      "blocks": [
+        { "type": "item", "settings": { "icon": "truck", "text": "Frete grátis a partir de R$ 179", "detail": "O prazo sai no carrinho, pelo seu CEP." } },
+        { "type": "item", "settings": { "icon": "shield-check", "text": "Compra 100% segura", "detail": "Pagamento no checkout da Shopify." } },
+        { "type": "item", "settings": { "icon": "refresh", "text": "Devolução em até 7 dias", "detail": "Desistiu? O frete de volta é por nossa conta." } },
+        { "type": "item", "settings": { "icon": "tag", "text": "Kits com desconto", "detail": "Leve 3 ou 6 potes e pague menos por pote." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,719 @@
+/*
+  Beacon Labs · grade de produtos da coleção (section-main-collection-product-grid.css)
+  Estrutura em sections/main-collection-product-grid.liquid, comportamento em
+  assets/facet-filters.js.
+
+  Redesenho v3 (spec 2.5; alvo.css linhas 274 a 280 e 455 a 463; emendas V8, C11, G4 e 8):
+  - Filtros SEMPRE em gaveta, também no computador: não há painel lateral. O <facet-filters> leva
+    data-facets-mode="drawer"; o botão "Filtrar" ([data-facets-open]) abre a gaveta em qualquer
+    largura (a gaveta não é mais escondida por CSS em nenhuma largura). O <aside> só guarda o painel
+    enquanto a gaveta está fechada e fica escondido. Sem JavaScript (html.no-js) a gaveta não abre:
+    o <aside> aparece acima da grade, num bloco claro, e os filtros funcionam por formulário GET.
+  - Barra (.collection-toolbar): "Filtrar" (botão de vidro claro, .button--secondary
+    .button--small), a contagem e a ordenação em <select> nativo, nessa ordem, que é a ordem visual.
+    No celular a contagem da barra fica escondida sem filtro, como no alvo: o topo da coleção traz o
+    total e a gaveta de filtros mostra o número de resultados no botão "Ver N produtos". Com filtro
+    ativo ela aparece (modificador --filtered, posto pelo Liquid na própria região "count") numa
+    segunda linha, para o resultado filtrado não ficar sob o total da coleção sem explicação.
+  - Grade (.collection-grid): 4 colunas a partir de 1081 px, 3 de 761 a 1080 px e 2 até 760 px;
+    colunas de largura igual (minmax(0, 1fr)), por isso a coleção de 1 produto tem um card só, na
+    largura de uma coluna, sem esticar. O card escolhe o próprio modo pela largura da coluna
+    (component-product-card.css, @container).
+  - Espaço entre seções: a seção ganha margem de baixo de --section-gap (104 px; 68 px no
+    celular), no lugar do recuo de baixo que ela tinha.
+
+  Controles na tinta, sem azul (spec 8, item 2). Contraste (conta WCAG 2.x, 02/10/2026): apoio
+  #566472 6,07:1 sobre o branco; tinta 17,29:1; campo da ordenação com a borda do ajuste de campos
+  (--color-input-border, #6F8798, 3,75:1 sobre o branco, acima dos 3:1 de componente).
+*/
+
+facet-filters {
+  display: block;
+}
+
+/* O recuo de baixo virou a margem entre seções; em cima a barra já traz os 22 px do alvo. */
+.section-collection-products {
+  margin-bottom: var(--section-gap);
+}
+
+.collection-products {
+  padding-block: 0;
+}
+
+/* ---------- Layout geral ---------- */
+
+.collection-products__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.collection-products__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* ---------- Filtros: onde o painel fica com a gaveta fechada ---------- */
+
+.collection-facets {
+  display: none;
+}
+
+/* Sem JavaScript a gaveta não abre: os filtros ficam visíveis acima da grade e funcionam pelo
+   formulário GET; "Filtrar" e "Mostrar" (que dependem do JS) somem. */
+.no-js .collection-facets {
+  display: block;
+  margin-top: 22px;
+  padding: 20px;
+  border-radius: var(--radius-panel);
+  background-color: var(--color-photo-bg);
+}
+
+.no-js .collection-toolbar__filter-button,
+.no-js .collection-toolbar__per-page {
+  display: none;
+}
+
+/* "Ver mais" depende do JS: sem ele, todas as opções do filtro ficam à vista. */
+.no-js .facet__item--extra {
+  display: block;
+}
+
+.no-js .facet__more {
+  display: none;
+}
+
+.collection-facets__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.collection-facets__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  border-bottom: 1px solid rgba(var(--color-ink-rgb), 0.1);
+}
+
+.collection-facets__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 18px;
+}
+
+.collection-facets__clear {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.collection-facets__form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.collection-facets__nojs {
+  margin-top: 4px;
+}
+
+.js .collection-facets__nojs,
+.js .collection-toolbar__nojs {
+  display: none;
+}
+
+/* ---------- Um filtro (fieldset) ---------- */
+
+.facet {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.facet__legend {
+  padding: 0;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.facet__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.facet__item--extra {
+  display: none;
+}
+
+.facet--collapsible.is-expanded .facet__item--extra {
+  display: block;
+}
+
+.facet__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.facet__checkbox {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.facet__label {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.facet__count {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.facet__option--disabled {
+  opacity: 0.5;
+}
+
+.facet__option--disabled .facet__checkbox {
+  cursor: not-allowed;
+}
+
+.facet__more {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 6px 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.facet__more:hover {
+  text-decoration-thickness: 2px;
+}
+
+.facet__more-hide {
+  display: none;
+}
+
+.facet--collapsible.is-expanded .facet__more-show {
+  display: none;
+}
+
+.facet--collapsible.is-expanded .facet__more-hide {
+  display: inline;
+}
+
+/* ---------- Filtro de preço ---------- */
+
+.facet__price-fields {
+  display: flex;
+  gap: 10px;
+}
+
+.facet__price-field {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.facet__price-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.facet__price-input-wrap {
+  position: relative;
+}
+
+.facet__currency {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: var(--color-text-muted);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+/* Cápsula de 44 px (.lg-field-input): preenchimento branco a 0,90; borda #4A6072 por estar
+   sempre dentro de vidro (a gaveta). */
+.facet__price-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 12px 0 32px;
+  border-color: var(--lg-input-border-glass, var(--color-input-border));
+  font-size: 14px;
+  color: var(--color-ink);
+}
+
+.facet__price-apply {
+  margin-top: 2px;
+  width: 100%;
+}
+
+/* ---------- Barra: Filtrar, contagem e ordenação ---------- */
+
+.collection-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-block: 22px;
+  margin-bottom: 10px;
+}
+
+.collection-toolbar__filter-button {
+  gap: 8px;
+}
+
+.collection-toolbar__badge-slot:empty {
+  display: none;
+}
+
+.collection-toolbar__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-ink);
+  font-size: 11px;
+  font-weight: var(--font-heading-weight);
+}
+
+.collection-toolbar__count {
+  margin: 0 auto 0 0;
+  color: var(--color-text-muted);
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.collection-toolbar__controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.collection-toolbar__field {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Ordenação e "Mostrar": <select> nativo em cápsula (alvo.css linha 277): fundo branco a 0,90,
+   borda do ajuste de campos e a seta que o base.css desenha como imagem de fundo. 40 px no
+   computador, 44 px em tela de toque, como o botão "Filtrar" ao lado. */
+.collection-toolbar__select {
+  width: auto;
+  min-width: 0;
+  max-width: 100%;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 38px 0 16px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-pill);
+  background-color: var(--lg-fill-white-90, var(--color-background));
+  background-position: right 14px center;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.collection-toolbar__select:hover {
+  border-color: var(--color-ink);
+}
+
+/* Tela de toque: o Safari do iPhone dá zoom na página ao tocar num campo com letra abaixo de 16 px
+   (comportamento documentado do iOS; aqui só a letra computada foi medida, o zoom não, porque nenhum
+   navegador do ambiente de teste o reproduz). O alvo usa 14 px; em toque a ordenação, o "Mostrar" e os
+   campos de preço da gaveta passam a 16 px, como todo campo do tema (base.css). */
+@media (pointer: coarse) {
+  .collection-toolbar__select,
+  .facet__price-input {
+    font-size: 16px;
+  }
+}
+
+/* "Mostrar" (produtos por página): desligado por padrão; quando ligado, texto de apoio e o seletor
+   ao lado, do mesmo tamanho da ordenação. O seletor não encolhe: quem cede espaço no celular é a
+   ordenação. */
+.collection-toolbar__per-page {
+  flex: none;
+}
+
+.collection-toolbar__label {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.collection-toolbar__nojs {
+  flex: none;
+}
+
+/* Mesma medida do .button--small do base.css: 44 px até 760 px e em tela de toque; no computador
+   (mouse) o alvo usa 40 px na barra, para o botão e a ordenação ficarem do mesmo tamanho. */
+@media screen and (min-width: 761px) and (pointer: fine) {
+  .collection-toolbar__filter-button,
+  .collection-toolbar__nojs {
+    min-height: 40px;
+  }
+
+  .collection-toolbar__select {
+    height: 40px;
+    min-height: 40px;
+  }
+}
+
+/* Celular: a barra é uma grade de duas colunas. Primeira linha: "Filtrar" à esquerda e a ordenação à
+   direita (como no alvo). Segunda linha, só quando existe: a contagem com filtro ativo à esquerda e o
+   "Mostrar" (ligado no editor) à direita, com o rótulo visível. O <div> dos controles deixa de ser
+   caixa (display: contents) para a ordenação e o "Mostrar" irem para linhas diferentes. Sem
+   JavaScript entra uma terceira coluna, para o "Aplicar" da ordenação. */
+@media screen and (max-width: 760px) {
+  .collection-toolbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px 16px;
+    padding-block: 16px;
+    margin-bottom: 6px;
+  }
+
+  .no-js .collection-toolbar {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .collection-toolbar__controls {
+    display: contents;
+  }
+
+  .collection-toolbar__filter-button {
+    grid-area: 1 / 1;
+  }
+
+  .collection-toolbar__sort {
+    grid-area: 1 / 2;
+    justify-self: end;
+  }
+
+  .collection-toolbar__nojs {
+    grid-area: 1 / 3;
+  }
+
+  /* Alvo: a contagem da barra some no celular (o topo da coleção mostra o total). */
+  .collection-toolbar__count {
+    display: none;
+  }
+
+  .collection-toolbar__count--filtered {
+    display: block;
+    grid-area: 2 / 1;
+  }
+
+  .collection-toolbar__per-page {
+    grid-area: 2 / 2;
+    justify-self: end;
+  }
+}
+
+/* ---------- Filtros ativos ---------- */
+
+.collection-active:empty {
+  display: none;
+}
+
+.collection-active__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-block: 12px;
+}
+
+.collection-active__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.collection-active__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.collection-active__item {
+  display: flex;
+}
+
+.collection-active__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-ink-06, var(--color-surface-2));
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+.collection-active__chip:hover {
+  background: var(--lg-fill-ink-10, var(--color-chip-bg));
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.collection-active__chip:active {
+  transform: scale(var(--lg-press-scale, 0.97));
+}
+
+.collection-active__clear {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  margin-left: 4px;
+  padding-inline: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Alvo de toque de 44 px no celular e em tela de toque (a altura do próprio elemento). */
+@media screen and (max-width: 760px), (pointer: coarse) {
+  .collection-active__chip,
+  .collection-active__clear,
+  .collection-facets__clear {
+    min-height: 44px;
+  }
+}
+
+/* ---------- Resultados ---------- */
+
+.collection-results[aria-busy="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.collection-error {
+  margin-bottom: 16px;
+}
+
+/* Colunas de largura igual (minmax(0, 1fr)): a coleção de 1 produto fica com um card só, na
+   largura de uma coluna. 2 colunas até 760 px, 3 de 761 a 1080 px e 4 acima (emenda V8). O
+   grid-template-columns daqui vence o do .grid do base.css, que quebra em 750 e 990 px. */
+.collection-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  row-gap: 14px;
+  padding-block: 0;
+}
+
+@media screen and (min-width: 761px) {
+  .collection-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 28px;
+  }
+}
+
+@media screen and (min-width: 1081px) {
+  .collection-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Coleção vazia ou filtro sem resultado: no lugar da grade, só a mensagem do tema (ícone, título,
+   texto e o botão para limpar ou ver tudo), centrada; não há card para esticar. */
+.collection-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  /* Etapa 8e, leva E, item 14: sem recuo de baixo. O vão até o rodapé é o do .main-content::after (104 px; 68 px
+     até 760 px); os 56 px de baixo somavam a ele e a mensagem ficava a 160 px do rodapé. O de cima fica. */
+  padding: 56px 16px 0;
+  text-align: center;
+}
+
+.collection-empty__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-pill);
+  background: var(--color-photo-bg);
+  color: var(--color-ink);
+}
+
+.collection-empty__title {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.collection-empty__text {
+  max-width: 40ch;
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.collection-empty .button {
+  margin-top: 8px;
+}
+
+/* ---------- Carregar mais (celular) ---------- */
+
+.collection-load-more {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-block: 24px 0;
+}
+
+.collection-load-more__status {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.collection-load-more__button {
+  width: 100%;
+  max-width: 360px;
+}
+
+@media screen and (min-width: 990px) {
+  .collection-load-more {
+    display: none;
+  }
+}
+
+/* ---------- Gaveta de filtros (qualquer largura) ---------- */
+
+.facets-drawer .drawer__inner {
+  min-height: 0;
+}
+
+/* overscroll-behavior: ao chegar ao fim da lista de filtros, a rolagem não passa para a
+   página por trás da gaveta (igual às gavetas de menu, carrinho e busca). */
+.facets-drawer__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 20px;
+}
+
+.facets-drawer__body .collection-facets__panel {
+  display: flex;
+}
+
+/* Dentro da gaveta, o título do painel repetiria o título da gaveta ("Filtrar") e o
+   "Limpar tudo" repetiria o "Limpar" do rodapé. */
+.facets-drawer__body .collection-facets__header {
+  display: none;
+}
+
+.facets-drawer__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.facets-drawer__clear {
+  flex-shrink: 0;
+}
+
+.facets-drawer__apply {
+  flex: 1 1 auto;
+}
+
+/* Alvos de 44 px no celular, no tablet e em tela de toque (spec P21): opções, "Ver mais". */
+@media screen and (max-width: 989px), (pointer: coarse) {
+  .facet__option {
+    min-height: 44px;
+  }
+
+  .facet__more {
+    min-height: 44px;
+  }
+}
+
+/* Transparência reduzida (spec 9.2): preenchimentos translúcidos ficam sólidos. */
+@media (prefers-reduced-transparency: reduce) {
+  .collection-toolbar__select {
+    background-color: #FFFFFF;
+  }
+}
+
+/* Contraste aumentado (spec 9.3): fios e filtro ativo com borda ink. */
+@media (prefers-contrast: more) {
+  .collection-facets__header {
+    border-bottom-color: var(--color-ink);
+  }
+
+  .collection-active__chip {
+    box-shadow: inset 0 0 0 1px var(--color-ink);
+  }
+}
+
+/* Cores forçadas (spec 9.4): o filtro ativo, que é só fundo, ganha borda. */
+@media (forced-colors: active) {
+  .collection-active__chip {
+    border: 1px solid CanvasText;
+  }
+}

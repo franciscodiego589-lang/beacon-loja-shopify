@@ -1,0 +1,84 @@
+/*
+  Beacon Labs · Avaliações do produto (section-product-reviews.css)
+  Área produto. sections/product-reviews.liquid. Abas "Avaliações" / "Perguntas"
+  (<produto-tabs>, assets/produto-tabs.js). Seção host de app: o conteúdo visual dos painéis
+  vem do bloco de app instalado pelo lojista.
+
+  Liquid Glass (spec 8.7, avaliações): sobre a névoa, sem vidro (o conteúdo vem do app).
+  Abas: ativa com sublinhado de 3 px ink e texto ink 18 px 800 (16 no celular); inativa em apoio
+  (#4A6072, 5,861:1 na névoa), que vira ink no hover. Cada aba tem 44 px de altura de toque e
+  foco em anel duplo (.lg-focus-dual). Divisória ink a 0,12.
+*/
+
+produto-tabs {
+  display: block;
+}
+
+.product-reviews__tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--lg-divider, var(--color-line));
+}
+
+.product-reviews__tab {
+  position: relative;
+  min-height: 44px;
+  padding: 10px 4px;
+  margin-right: 20px;
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 16px;
+  cursor: pointer;
+  transition: color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+@media (hover: hover) {
+  .product-reviews__tab:hover {
+    color: var(--color-ink);
+  }
+}
+
+.product-reviews__tab::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+}
+
+.product-reviews__tab.is-active {
+  color: var(--color-ink);
+}
+
+.product-reviews__tab.is-active::after {
+  background: var(--color-ink);
+}
+
+@media screen and (min-width: 990px) {
+  .product-reviews__tab {
+    font-size: 18px;
+  }
+}
+
+/* Cores forçadas: o sublinhado da aba ativa continua visível (fundo vira cor do sistema). */
+@media (forced-colors: active) {
+  .product-reviews__tab.is-active::after {
+    forced-color-adjust: none;
+    background: Highlight;
+  }
+}
+
+.product-reviews__panel {
+  min-width: 0;
+}
+
+.product-reviews__block + .product-reviews__block {
+  margin-top: 16px;
+}

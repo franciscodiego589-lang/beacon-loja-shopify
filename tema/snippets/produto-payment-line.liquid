@@ -1,0 +1,83 @@
+{%- comment -%}
+  Área produto. Linha de parcelamento/Pix (bloco "parcelamento_pix", em
+  sections/main-product.liquid), extraída para cá para simplificar a lógica condicional da
+  seção principal (o Theme Check aponta complexidade demais quando este cálculo fica embutido).
+
+  Uma parte da linha por variante (auditoria de arquitetura, 28/09/2026), no padrão da barra
+  fixa: [data-variant-slot="ID"] com display: contents (section-main-product.css), então os
+  textos continuam sendo itens da mesma linha flexível. O Liquid faz todas as contas e
+  kit-selector.js só mostra a parte da variante ativa; quando a variante ativa não tem
+  parcelamento nem Pix, a linha inteira fica escondida. Nenhuma conta repetida no JS.
+
+  Contas (centavos, divisão inteira do Liquid):
+  - parcelas: settings.installments_count, limitado a preço ÷ settings.installments_min_value
+    quando o valor mínimo é maior que zero; só aparece com 2 ou mais parcelas;
+  - valor da parcela: arredondado para cima (mesma conta de snippets/price.liquid);
+  - Pix: preço × (100 − pix_percent) ÷ 100, arredondado para baixo.
+
+  Parâmetros:
+  - product: o produto (uma parte da linha para cada variante)
+  - current_variant: variante que a página mostra ao abrir (a única parte visível)
+  - pix_percent: desconto no Pix, já resolvido pelo bloco (0 desativa)
+  - show_installments: true mostra o parcelamento sem juros (ajuste do bloco; falso ou ausente
+    esconde, 29/09/2026, até o número de parcelas ser confirmado no meio de pagamento)
+  - shopify_attributes: block.shopify_attributes
+{%- endcomment -%}
+{%- liquid
+  assign pix_factor = 0
+  if pix_percent > 0 and pix_percent < 100
+    assign pix_factor = 100 | minus: pix_percent
+  endif
+  assign installments_setting = 0
+  assign installment_min = 0
+  if settings.installments_enabled and show_installments == true
+    assign installments_setting = settings.installments_count | plus: 0
+    assign installment_min = settings.installments_min_value | plus: 0
+  endif
+  assign current_has_payment = false
+-%}
+{%- capture payment_slots -%}
+  {%- for variant in product.variants -%}
+    {%- liquid
+      assign installments = installments_setting
+      if installment_min > 0
+        assign installments_by_min = variant.price | divided_by: installment_min
+        if installments_by_min < installments
+          assign installments = installments_by_min
+        endif
+      endif
+      assign installment_money = ''
+      if installments > 1
+        assign installment_value = variant.price | plus: installments | minus: 1 | divided_by: installments
+        assign installment_money = installment_value | money
+      endif
+      assign pix_money = ''
+      if pix_factor > 0
+        assign pix_value = variant.price | times: pix_factor | divided_by: 100
+        assign pix_money = pix_value | money
+      endif
+    -%}
+    {%- if installments > 1 or pix_money != blank -%}
+      {%- if variant.id == current_variant.id -%}
+        {%- assign current_has_payment = true -%}
+      {%- endif -%}
+      <span class="main-product__payment-slot" data-variant-slot="{{ variant.id }}"{% unless variant.id == current_variant.id %} hidden{% endunless %}>
+        <span class="main-product__installments" data-installments-text{% unless installments > 1 %} hidden{% endunless %}>
+          {%- if installments > 1 -%}
+            {{- 'produto.payment.installments' | t: parcelas: installments, amount: installment_money -}}
+          {%- endif -%}
+        </span>
+        <span class="main-product__pix" data-pix-text{% if pix_money == blank %} hidden{% endif %}>
+          {%- if pix_money != blank -%}
+            {{- 'produto.payment.pix' | t: amount: pix_money -}}
+          {%- endif -%}
+        </span>
+      </span>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if payment_slots != blank -%}
+  <p class="main-product__block main-product__payment" data-payment-line{% unless current_has_payment %} hidden{% endunless %} {{ shopify_attributes }}>
+    {{- payment_slots -}}
+  </p>
+{%- endif -%}

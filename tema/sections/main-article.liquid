@@ -1,0 +1,379 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-article.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Artigo do blog: título, imagem, conteúdo, compartilhar e comentários.
+  - Compartilhar é um link estático (sem script de terceiro): Facebook e WhatsApp, os dois
+    únicos ícones da lista do tema que servem para isso (facebook e chat, este último como
+    mensagem/conversa). Ambos abrem em nova aba com rel="noopener noreferrer".
+  - Comentários: só aparecem quando article.comments_enabled? (ajuste da loja em
+    Conteúdo > Blogs). O formulário usa a tag 'new_comment' da Shopify. Quando o blog é
+    moderado (blog.moderated?), o comentário enviado só aparece depois de aprovado; a
+    mensagem de sucesso muda para avisar isso.
+  - comment.content é texto puro, sem HTML (a API GraphQL da Shopify documenta o campo
+    equivalente "content" como "stripped content ... with HTML tags removed", diferente de
+    "contentHtml"): por isso sai com escape e depois newline_to_br, nunca cru. comment.author
+    é texto simples do autor e também sai com escape.
+{%- endcomment -%}
+
+{%- liquid
+  assign art_date_format = 'paginas_blog.general.date_format' | t
+  assign art_words = article.content | strip_html | split: ' ' | size
+  assign art_minutes = art_words | plus: 199 | divided_by: 200
+  if art_minutes < 1
+    assign art_minutes = 1
+  endif
+  assign art_tag = article.tags.first
+
+  assign art_image = article.image
+  assign art_alt = art_image.alt | default: article.title
+
+  assign art_share_url = shop.url | append: article.url
+  assign art_share_text = article.title | append: ' ' | append: art_share_url
+
+  assign art_show_comments = false
+  if section.settings.show_comments and article.comments_enabled?
+    assign art_show_comments = true
+  endif
+
+  assign art_comment_id = 'ArticleComments-' | append: section.id
+  assign art_comment_anchor = '#' | append: art_comment_id
+  assign art_comment_form_id = art_comment_id | append: '-Form'
+
+  # Liquid Glass (spec 4.2 e P3): cada comentário é cartão de vidro de conteúdo sobre a névoa,
+  # preenchimento dentro do painel e vidro escuro de conteúdo no campo noite.
+  assign art_box_class = ' glass glass--card'
+  case section.settings.color_scheme
+    when 'surface', 'surface-2'
+      assign art_box_class = ' glass-fill'
+    when 'ink'
+      assign art_box_class = ' glass glass--dark-card'
+  endcase
+-%}
+
+<div class="main-article pb-scheme--{{ section.settings.color_scheme }}{% render 'paginas-blog-surface', scheme: section.settings.color_scheme %} pb-pad--{{ section.settings.padding }}">
+  <div class="page-width">
+    <div class="main-article__inner main-article__inner--{{ section.settings.width }}">
+      {%- if section.settings.show_breadcrumbs -%}
+        {% render 'paginas-blog-breadcrumbs' %}
+      {%- endif -%}
+
+      <header class="main-article__header">
+        {%- if section.settings.show_tag and art_tag != blank -%}
+          <a href="{{ blog.url }}/tagged/{{ art_tag | handle }}" class="chip main-article__tag lg-hit">{{ art_tag | escape }}</a>
+        {%- endif -%}
+
+        <h1 class="main-article__title">{{ article.title | escape }}</h1>
+
+        <div class="main-article__meta">
+          {%- if section.settings.show_date -%}
+            <time class="main-article__meta-item" datetime="{{ article.published_at | date: '%Y-%m-%d' }}">
+              {{- article.published_at | date: art_date_format -}}
+            </time>
+          {%- endif -%}
+          {%- if section.settings.show_reading_time -%}
+            <span class="main-article__meta-item">{{ 'paginas_blog.blog.reading_time' | t: count: art_minutes }}</span>
+          {%- endif -%}
+          {%- if section.settings.show_author and article.author != blank -%}
+            <span class="main-article__meta-item">{{ 'paginas_blog.blog.by_author' | t: author: article.author }}</span>
+          {%- endif -%}
+        </div>
+      </header>
+
+      {%- if section.settings.show_image and art_image != blank -%}
+        <div class="main-article__media pb-media pb-media--wide">
+          {{ art_image | image_url: width: 1600 | image_tag: widths: '375, 550, 750, 1000, 1280, 1600', sizes: '(min-width: 990px) 900px, calc(100vw - 32px)', loading: 'eager', fetchpriority: 'high', alt: art_alt, class: 'main-article__image' }}
+        </div>
+      {%- endif -%}
+
+      <div class="main-article__body rte">
+        {{ article.content }}
+      </div>
+
+      {%- if section.settings.show_share -%}
+        <div class="main-article__share">
+          <span class="main-article__share-label">{{ 'paginas_blog.article.share_label' | t }}</span>
+          <ul class="main-article__share-list" role="list">
+            <li>
+              <a
+                href="https://www.facebook.com/sharer/sharer.php?u={{ art_share_url | url_encode }}"
+                class="main-article__share-link glass glass--thin glass--interactive"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="{{ 'paginas_blog.article.share_facebook' | t }}"
+              >
+                {%- render 'icon', name: 'facebook', size: 20 -%}
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://wa.me/?text={{ art_share_text | url_encode }}"
+                class="main-article__share-link glass glass--thin glass--interactive"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="{{ 'paginas_blog.article.share_whatsapp' | t }}"
+              >
+                {%- render 'icon', name: 'chat', size: 20 -%}
+              </a>
+            </li>
+          </ul>
+        </div>
+      {%- endif -%}
+
+      {%- if art_show_comments -%}
+        <div class="main-article__comments" id="{{ art_comment_id }}">
+          <h2 class="main-article__comments-title">
+            {{- 'paginas_blog.article.comments_title' | t -}}
+            {%- if article.comments_count > 0 -%}
+              <span class="main-article__comments-count">{{ 'paginas_blog.article.comments_count' | t: count: article.comments_count }}</span>
+            {%- endif -%}
+          </h2>
+
+          {%- if article.comments_count > 0 -%}
+            {%- paginate article.comments by 20 -%}
+              <ol class="main-article__comments-list" role="list">
+                {%- for comment in article.comments -%}
+                  <li class="main-article__comment{{ art_box_class }}" id="{{ comment.id }}">
+                    <div class="main-article__comment-header">
+                      <span class="main-article__comment-author">{{ comment.author | escape }}</span>
+                      <time class="main-article__comment-date" datetime="{{ comment.created_at | date: '%Y-%m-%d' }}">
+                        {{- comment.created_at | date: art_date_format -}}
+                      </time>
+                    </div>
+                    <div class="main-article__comment-content">{{ comment.content | escape | newline_to_br }}</div>
+                  </li>
+                {%- endfor -%}
+              </ol>
+
+              {% render 'paginas-blog-pagination', paginate: paginate, anchor: art_comment_anchor %}
+            {%- endpaginate -%}
+          {%- else -%}
+            <p class="main-article__comments-empty">{{ 'paginas_blog.article.comments_empty' | t }}</p>
+          {%- endif -%}
+
+          {%- form 'new_comment', article, id: art_comment_form_id, class: 'main-article__comment-form pb-form' -%}
+            {%- liquid
+              # A mensagem volta pronta na página: recebe o foco ao carregar (autofocus) para o
+              # leitor de tela ler. Campos com erro ficam ligados ao resumo por aria-describedby.
+              assign art_status_id = art_comment_id | append: '-Status'
+              assign art_author_error = false
+              assign art_email_error = false
+              assign art_body_error = false
+              if form.errors
+                if form.errors contains 'author'
+                  assign art_author_error = true
+                endif
+                if form.errors contains 'email'
+                  assign art_email_error = true
+                endif
+                if form.errors contains 'body'
+                  assign art_body_error = true
+                endif
+              endif
+            -%}
+            {%- if form.posted_successfully? -%}
+              <div class="pb-status pb-status--success" id="{{ art_status_id }}" role="status" tabindex="-1" autofocus>
+                {%- render 'icon', name: 'check-circle', size: 20 -%}
+                {%- if blog.moderated? -%}
+                  <p>{{ 'paginas_blog.article.comment_pending' | t }}</p>
+                {%- else -%}
+                  <p>{{ 'paginas_blog.article.comment_success' | t }}</p>
+                {%- endif -%}
+              </div>
+            {%- elsif form.errors -%}
+              <div class="pb-status pb-status--error" id="{{ art_status_id }}" role="alert" tabindex="-1" autofocus>
+                {%- render 'icon', name: 'help-circle', size: 20 -%}
+                <div>
+                  <p class="pb-status__title">{{ 'paginas_blog.form.error_title' | t }}</p>
+                  <ul class="pb-status__list">
+                    {%- for field in form.errors -%}
+                      <li>
+                        {%- if field == 'form' -%}
+                          {{ form.errors.messages[field] | escape }}
+                        {%- else -%}
+                          {{ form.errors.translated_fields[field] | capitalize | escape }} {{ form.errors.messages[field] | escape }}
+                        {%- endif -%}
+                      </li>
+                    {%- endfor -%}
+                  </ul>
+                </div>
+              </div>
+            {%- endif -%}
+
+            <div class="pb-form__grid">
+              <div class="field pb-form__field">
+                <label class="field__label" for="{{ art_comment_id }}-author">{{ 'paginas_blog.article.comment_name' | t }}</label>
+                <input
+                  type="text"
+                  id="{{ art_comment_id }}-author"
+                  name="comment[author]"
+                  autocomplete="name"
+                  maxlength="120"
+                  value="{{ form.author | default: customer.name | escape }}"
+                  required
+                  {% if art_author_error %}
+                    aria-invalid="true"
+                    aria-describedby="{{ art_status_id }}"
+                  {% endif %}
+                >
+              </div>
+              <div class="field pb-form__field">
+                <label class="field__label" for="{{ art_comment_id }}-email">{{ 'paginas_blog.article.comment_email' | t }}</label>
+                <input
+                  type="email"
+                  id="{{ art_comment_id }}-email"
+                  name="comment[email]"
+                  autocomplete="email"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  maxlength="254"
+                  value="{{ form.email | default: customer.email | escape }}"
+                  required
+                  {% if art_email_error %}
+                    aria-invalid="true"
+                    aria-describedby="{{ art_status_id }} {{ art_comment_id }}-email-note"
+                  {% else %}
+                    aria-describedby="{{ art_comment_id }}-email-note"
+                  {% endif %}
+                >
+                <p class="field__hint" id="{{ art_comment_id }}-email-note">{{ 'paginas_blog.article.comment_email_note' | t }}</p>
+              </div>
+              <div class="field pb-form__field pb-form__field--full">
+                <label class="field__label" for="{{ art_comment_id }}-body">{{ 'paginas_blog.article.comment_body' | t }}</label>
+                <textarea
+                  id="{{ art_comment_id }}-body"
+                  name="comment[body]"
+                  rows="5"
+                  maxlength="3000"
+                  required
+                  {% if art_body_error %}
+                    aria-invalid="true"
+                    aria-describedby="{{ art_status_id }}"
+                  {% endif %}
+                >{{ form.body | escape }}</textarea>
+              </div>
+            </div>
+
+            <button type="submit" class="button button--large button--primary pb-form__submit">
+              {{- 'paginas_blog.article.comment_submit' | t -}}
+            </button>
+          {%- endform -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Artigo",
+  "tag": "section",
+  "class": "section-main-article",
+  "enabled_on": {
+    "templates": ["article"]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Mostrar trilha de navegação",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Cabeçalho"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tag",
+      "label": "Mostrar categoria (primeira tag)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Mostrar data",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reading_time",
+      "label": "Mostrar tempo de leitura",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Mostrar autor",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Conteúdo"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Mostrar imagem de destaque",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Largura do texto",
+      "options": [
+        { "value": "narrow", "label": "Estreita (leitura)" },
+        { "value": "normal", "label": "Larga" }
+      ],
+      "default": "narrow"
+    },
+    {
+      "type": "header",
+      "content": "Compartilhar e comentários"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "Mostrar links de compartilhar",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_comments",
+      "label": "Mostrar comentários",
+      "info": "Só aparece quando os comentários estão ativos no blog (Conteúdo > Blogs, no admin).",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Aparência"
+    },
+    {
+      "type": "select",
+      "id": "color_scheme",
+      "label": "Fundo",
+      "options": [
+        { "value": "default", "label": "Branco" },
+        { "value": "surface", "label": "Cinza-azulado claro" }
+      ],
+      "default": "default"
+    },
+    {
+      "type": "select",
+      "id": "padding",
+      "label": "Espaçamento vertical",
+      "options": [
+        { "value": "small", "label": "Pequeno" },
+        { "value": "normal", "label": "Normal" }
+      ],
+      "default": "small"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Artigo"
+    }
+  ]
+}
+{% endschema %}

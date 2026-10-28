@@ -1,0 +1,240 @@
+{{ 'conta-base.css' | asset_url | stylesheet_tag }}
+{{ 'section-main-addresses.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'conta-country-province.js' | asset_url }}" type="module"></script>
+<script src="{{ 'conta-details-toggle.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Endereços do cliente (template customers/addresses, contas de cliente legadas).
+  Listar, criar, editar e remover, conforme a documentação da Shopify:
+  - customer.addresses: lista de endereços do cliente (sem paginação nativa documentada;
+    a Shopify já limita o total por cliente, por isso a lista não é paginada aqui).
+  - customer.default_address: endereço marcado como principal.
+  - form 'customer_address', customer.new_address: cria (action /account/addresses).
+  - form 'customer_address', address: edita o endereço (mesma ação, com o id do endereço).
+  - Cada campo em snippets/conta-address-fields.liquid.
+
+  Criar e editar abrem em <details> (acordeão), sem exigir JavaScript: o <summary> já
+  abre e fecha nativamente. A <details-disclosure> da fundação fecha com Esc e devolve o
+  foco ao <summary>; o <conta-details-toggle> desta área só cuida do botão "Cancelar".
+
+  Remover: confirmação em duas etapas, também em <details> (resumo "Remover" leva ao
+  texto de confirmação e ao botão "Sim, remover", nunca um clique só). O envio em si usa
+  o mesmo formulário customer_address do endereço, com um campo oculto _method=delete.
+  Esse é o padrão consolidado dos temas de referência da Shopify (Dawn e antecessores)
+  para apagar um endereço nas contas de cliente legadas; as páginas atuais do
+  shopify.dev não documentam mais esse detalhe porque o conteúdo de contas clássicas
+  foi retirado da documentação em 2026, junto da depreciação (ver nota do projeto).
+  Como este tema só existe em arquivos locais (sem loja publicada), não há como testar
+  esse envio numa Shopify de verdade; confirmar numa loja de teste antes de publicar.
+{%- endcomment -%}
+
+{%- liquid
+  assign addresses_title_id = 'AddressesTitle-' | append: section.id
+  assign new_title_id = 'AddressNewTitle-' | append: section.id
+  # As opções de país (all_country_option_tags) usam o NOME do país no value, não o código
+  # (exemplo da documentação: value="Canada"); o código "BR" nunca casava. Vai o nome.
+  assign default_country = shop.address.country.name | default: shop.address.country
+  assign new_id_prefix = 'AddressNew-' | append: section.id
+  assign new_errors_id = 'AddressNewErrors-' | append: section.id
+  assign new_is_default = false
+  if customer.addresses_count == 0
+    assign new_is_default = true
+  endif
+-%}
+
+<div class="conta-page conta-addresses page-width" style="--conta-pad-top: {{ section.settings.padding_top }}px; --conta-pad-bottom: {{ section.settings.padding_bottom }}px;">
+  <header class="conta-page__header">
+    <h1 class="conta-page__title">{{ 'conta.addresses.title' | t }}</h1>
+  </header>
+
+  {%- render 'conta-account-nav', current: 'addresses' -%}
+
+  <section aria-labelledby="{{ addresses_title_id }}">
+    <h2 class="visually-hidden" id="{{ addresses_title_id }}">{{ 'conta.addresses.list_label' | t }}</h2>
+
+    {%- comment -%}
+      O formulário é montado antes (capture) para saber se voltou com erro: nesse caso o
+      <details> já abre, senão o resumo de erros ficaria escondido no painel fechado.
+    {%- endcomment -%}
+    {%- assign new_has_errors = false -%}
+    {%- capture new_address_form -%}
+      {%- form 'customer_address', customer.new_address, class: 'conta-auth__form' -%}
+        {%- if form.errors -%}
+          {%- assign new_has_errors = true -%}
+        {%- endif -%}
+        <h3 class="conta-section-title" id="{{ new_title_id }}">{{ 'conta.addresses.add_title' | t }}</h3>
+
+        {%- render 'conta-form-errors', form: form, id: new_errors_id -%}
+
+        <p class="conta-note">{{ 'conta.general.required_note' | t }}</p>
+
+        {%- render 'conta-address-fields', form: form, id_prefix: new_id_prefix, is_default: new_is_default, default_country: default_country, errors_id: new_errors_id -%}
+
+        <div class="conta-auth__actions conta-auth__actions--row">
+          <button type="submit" class="button button--primary">{{ 'conta.addresses.save' | t }}</button>
+          <button type="button" class="button button--ghost" data-details-close>{{ 'conta.addresses.cancel' | t }}</button>
+        </div>
+      {%- endform -%}
+    {%- endcapture -%}
+
+    <details-disclosure class="conta-disclosure-wrap conta-addresses__new">
+      <conta-details-toggle>
+        <details class="conta-disclosure" id="AddressNew-{{ section.id }}"{% if new_has_errors %} open{% endif %}>
+          <summary class="conta-disclosure__summary button button--secondary">
+            {%- render 'icon', name: 'plus', size: 18 -%}
+            <span>{{ 'conta.addresses.add' | t }}</span>
+          </summary>
+          <div class="conta-disclosure__panel conta-card glass glass--card">
+            {{ new_address_form }}
+          </div>
+        </details>
+      </conta-details-toggle>
+    </details-disclosure>
+
+    {%- if customer.addresses.size > 0 -%}
+      <ul class="conta-address-list" role="list">
+        {%- for address in customer.addresses -%}
+          {%- liquid
+            assign address_is_default = false
+            if customer.default_address and customer.default_address.id == address.id
+              assign address_is_default = true
+            endif
+            assign address_id_prefix = 'Address-' | append: address.id
+            assign edit_errors_id = 'AddressEditErrors-' | append: address.id
+          -%}
+          <li class="conta-card conta-address-card glass glass--card" id="Address-{{ address.id }}">
+            {%- if address_is_default -%}
+              <span class="chip conta-address-card__badge">{{ 'conta.addresses.default_badge' | t }}</span>
+            {%- endif -%}
+
+            {%- render 'conta-address', address: address -%}
+
+            {%- assign edit_has_errors = false -%}
+            {%- capture edit_address_form -%}
+              {%- form 'customer_address', address, class: 'conta-auth__form' -%}
+                {%- if form.errors -%}
+                  {%- assign edit_has_errors = true -%}
+                {%- endif -%}
+                <h3 class="visually-hidden">{{ 'conta.addresses.edit_title' | t }}</h3>
+
+                {%- render 'conta-form-errors', form: form, id: edit_errors_id -%}
+
+                {%- render 'conta-address-fields', form: form, id_prefix: address_id_prefix, is_default: address_is_default, errors_id: edit_errors_id -%}
+
+                <div class="conta-auth__actions conta-auth__actions--row">
+                  <button type="submit" class="button button--primary">{{ 'conta.addresses.save' | t }}</button>
+                  <button type="button" class="button button--ghost" data-details-close>{{ 'conta.addresses.cancel' | t }}</button>
+                </div>
+              {%- endform -%}
+            {%- endcapture -%}
+
+            <div class="conta-address-card__actions">
+              <details-disclosure class="conta-disclosure-wrap">
+                <conta-details-toggle>
+                  <details class="conta-disclosure"{% if edit_has_errors %} open{% endif %}>
+                    <summary class="conta-disclosure__summary button button--secondary button--small">
+                      {{- 'conta.addresses.edit' | t -}}
+                    </summary>
+                    <div class="conta-disclosure__panel">
+                      {{ edit_address_form }}
+                    </div>
+                  </details>
+                </conta-details-toggle>
+              </details-disclosure>
+
+              <details-disclosure class="conta-disclosure-wrap">
+                <conta-details-toggle>
+                  <details class="conta-disclosure conta-disclosure--danger">
+                    <summary class="conta-disclosure__summary button button--ghost button--small">
+                      {%- render 'icon', name: 'trash', size: 16 -%}
+                      <span>{{ 'conta.addresses.delete' | t }}</span>
+                    </summary>
+                    <div class="conta-disclosure__panel">
+                      <p class="conta-disclosure__confirm-text">{{ 'conta.addresses.delete_confirm_text' | t }}</p>
+                      {%- form 'customer_address', address, class: 'conta-address-card__delete-form' -%}
+                        <input type="hidden" name="_method" value="delete">
+                        <div class="conta-auth__actions conta-auth__actions--row">
+                          <button type="submit" class="button button--primary conta-button--danger">
+                            {{- 'conta.addresses.delete_confirm' | t -}}
+                          </button>
+                          <button type="button" class="button button--ghost" data-details-close>{{ 'conta.addresses.cancel' | t }}</button>
+                        </div>
+                      {%- endform -%}
+                    </div>
+                  </details>
+                </conta-details-toggle>
+              </details-disclosure>
+            </div>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      <div class="conta-empty glass glass--card">
+        <p>{{ 'conta.addresses.empty' | t }}</p>
+      </div>
+    {%- endif -%}
+  </section>
+
+  {%- if section.blocks.size > 0 -%}
+    <div class="conta-addresses__blocks">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when '@app' -%}
+            {% render block %}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Endereços",
+  "tag": "section",
+  "class": "section-main-addresses",
+  "limit": 1,
+  "enabled_on": {
+    "templates": ["customers/addresses"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Lista de endereços da conta do cliente, com criação, edição e remoção. Os textos ficam nas traduções do tema (área conta)."
+    },
+    {
+      "type": "header",
+      "content": "Espaçamento"
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espaço acima",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espaço abaixo",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 64
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Endereços"
+    }
+  ]
+}
+{% endschema %}

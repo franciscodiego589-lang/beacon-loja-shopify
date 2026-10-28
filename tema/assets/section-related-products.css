@@ -1,0 +1,22 @@
+/*
+  Beacon Labs · Produtos relacionados (section-related-products.css)
+  Área produto. sections/related-products.liquid.
+
+  A seção nasce vazia (a Product Recommendations API só existe pelo endpoint Ajax da
+  Shopify) e related-products.js troca o conteúdo depois.
+
+  Redesenho v3 (etapa 8b da tarefa 8, emenda 14): o miolo carregado usa a prateleira das vitrines
+  da home (.product-carousel, .trilho; assets/section-product-carousel.css, carregado pela seção),
+  com título, link, setas, cards e espaço iguais aos delas. O espaço de uma seção (--section-gap)
+  fica na margem do miolo carregado (.product-carousel), não no wrapper da Shopify: sem produto
+  relacionado, a seção não deixa faixa em branco. Por isso este arquivo ficou só com a regra do
+  elemento: as regras de cabeçalho, trilho e cards de 160, 220 e 270 px, que eram da v2 desta
+  seção, saíram.
+
+  <related-products> não está na lista de custom elements com display:block do base.css
+  (fundação): a regra abaixo cobre isso aqui, só para esta seção.
+*/
+
+.related-products {
+  display: block;
+}

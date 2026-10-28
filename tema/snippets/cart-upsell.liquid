@@ -1,0 +1,111 @@
+{%- comment -%}
+  Sugestões curadas do carrinho ("Aproveite e leve também"), na gaveta (snippets/cart-drawer) e na
+  página do carrinho (sections/main-cart-upsell). Pedido do dono em 29/09/2026: melhorar o checkout
+  com produtos para a pessoa adicionar antes de pagar.
+
+  Por que aqui e não na etapa de pagamento: as extensões que mostram conteúdo nas etapas de
+  informações, entrega e pagamento do checkout só existem no Shopify Plus (shopify.dev, "About
+  checkout app extensions", consultado em 29/09/2026), e a loja está no plano Basic. O carrinho é o
+  último lugar que o tema controla.
+
+  De onde vêm os produtos: metafield beacon.combo (lista de produtos) de cada item do carrinho, na
+  ordem dos itens; desde 03/10/2026 a lista é completada com os Mais Vendidos e depois com a linha
+  inteira, até o limite (10 na gaveta e na página). Fora da lista: produto que já está no carrinho, repetido, indisponível ou em
+  rascunho. Sem nenhum candidato, não imprime nada (a gaveta então usa as sugestões automáticas da
+  Shopify, se ligadas).
+
+  Parâmetros:
+  - limit: quantas sugestões mostrar (padrão 3)
+
+  Marcação e classes iguais às das sugestões automáticas (sections/cart-drawer-recommendations), para
+  usar o mesmo CSS (assets/component-cart-drawer.css) e o mesmo <product-form> (adiciona sem sair da
+  página e atualiza a gaveta e as seções da página do carrinho).
+{%- endcomment -%}
+{%- liquid
+  assign up_limit = limit | default: 3 | plus: 0
+  assign up_cart_ids = cart.items | map: 'product_id'
+  assign up_seen = '|'
+  assign up_shown = 0
+-%}
+{%- comment -%}
+  Candidatos em três passadas (pedido do dono em 03/10/2026: "coloca mais uns 10 produtos"):
+  1) o beacon.combo de cada item do carrinho, na ordem dos itens; 2) os Mais Vendidos; 3) a linha
+  inteira (collections.all). O laço tira repetidos, o que já está no carrinho e o indisponível, e
+  para no limite. (Juntar as listas com concat devolvia lista vazia com a lista do metafield.)
+{%- endcomment -%}
+{%- assign up_um = 'x' | split: ',' -%}
+{%- capture up_cards -%}
+  {%- for up_fonte in (1..3) -%}
+    {%- if up_shown >= up_limit -%}{%- break -%}{%- endif -%}
+    {%- if up_fonte == 1 -%}{%- assign up_grupos = cart.items -%}{%- else -%}{%- assign up_grupos = up_um -%}{%- endif -%}
+    {%- for up_g in up_grupos -%}
+      {%- if up_shown >= up_limit -%}{%- break -%}{%- endif -%}
+      {%- case up_fonte -%}
+        {%- when 1 -%}{%- assign up_lista = up_g.product.metafields.beacon.combo.value -%}
+        {%- when 2 -%}{%- assign up_lista = collections['mais-vendidos'].products -%}
+        {%- else -%}{%- assign up_lista = collections.all.products -%}
+      {%- endcase -%}
+  {%- for cand in up_lista -%}
+      {%- if up_shown >= up_limit -%}
+        {%- break -%}
+      {%- endif -%}
+      {%- assign up_key = cand.id | prepend: '|' | append: '|' -%}
+      {%- if up_cart_ids contains cand.id or up_seen contains up_key or cand.available == false -%}
+        {%- continue -%}
+      {%- endif -%}
+      {%- assign up_seen = up_seen | append: cand.id | append: '|' -%}
+      {%- assign up_shown = up_shown | plus: 1 -%}
+      {%- liquid
+        # Nome sem o trecho depois de " – " (emenda 2 da tarefa 3, G3), pela fonte única
+        # snippets/v3-nome-visivel (emenda 15 da tarefa 8). Os três já saem escapados (S1): 'html' vai
+        # entre tags; 'texto' vai ao rótulo (o filtro t não escapa de novo); o alt leva | escape_once,
+        # porque o image_tag escaparia o texto uma segunda vez.
+        capture up_nome_html
+          render 'v3-nome-visivel', produto: cand, modo: 'html'
+        endcapture
+        assign up_nome_html = up_nome_html | strip
+        capture up_nome
+          render 'v3-nome-visivel', produto: cand, modo: 'texto'
+        endcapture
+        assign up_nome = up_nome | strip
+        assign up_nome_alt = up_nome | escape_once
+        assign up_variant = cand.selected_or_first_available_variant
+        assign up_form_id = 'CartUpsellForm-' | append: cand.id | append: '-' | append: section.id
+      -%}
+      <li class="cart-recommendations__item">
+        <a href="{{ cand.url }}" class="cart-recommendations__media" tabindex="-1" aria-hidden="true">
+          {%- if cand.featured_media -%}
+            {%- assign up_alt = cand.featured_media.alt | default: up_nome_alt -%}
+            {{ cand.featured_media | image_url: width: 160 | image_tag: widths: '80, 120, 160', sizes: '80px', loading: 'lazy', alt: up_alt, class: 'cart-recommendations__image' }}
+          {%- else -%}
+            {{ 'product-1' | placeholder_svg_tag: 'cart-recommendations__placeholder' }}
+          {%- endif -%}
+        </a>
+        <div class="cart-recommendations__info">
+          <a href="{{ cand.url }}" class="cart-recommendations__name"><span class="cart-recommendations__name-texto">{{ up_nome_html }}</span></a>
+          {% render 'price', product: cand, size: 'sm', show_installments: false, class: 'cart-recommendations__price' %}
+        </div>
+        <product-form class="cart-recommendations__form" data-section-id="cart-upsell">
+          {%- form 'product', cand, id: up_form_id, class: 'cart-recommendations__add-form', novalidate: 'novalidate', data-type: 'add-to-cart-form' -%}
+            <input type="hidden" name="id" value="{{ up_variant.id }}">
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" name="add" class="button button--secondary button--small cart-recommendations__add" data-product-form-submit>
+              <span class="button__label">{{ 'fundacao.product_card.add' | t }}</span>
+              <span class="visually-hidden">{{ 'fundacao.product_card.add_suffix' | t: title: up_nome }}</span>
+            </button>
+            <p class="form-message form-message--error" role="alert" hidden data-product-form-error></p>
+          {%- endform -%}
+        </product-form>
+      </li>
+  {%- endfor -%}
+    {%- endfor -%}
+  {%- endfor -%}
+{%- endcapture -%}
+{%- if up_shown > 0 -%}
+  <div class="cart-recommendations cart-upsell" data-cart-upsell>
+    <h3 class="cart-recommendations__title">{{ 'fundacao.cart.recommendations_title' | t }}</h3>
+    <ul class="cart-recommendations__list" role="list">
+      {{- up_cards -}}
+    </ul>
+  </div>
+{%- endif -%}

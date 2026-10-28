@@ -1,0 +1,116 @@
+/*
+  Beacon Labs · seção Destaque de linha (sections/feature-banner.liquid)
+  Cartão de fundo claro com imagem de um lado e texto do outro, como
+  "Conheça toda a linha Beacon Labs" na maquete.
+
+  Liquid Glass (spec 8.5): cartão em vidro de conteúdo (.glass .glass--card na marcação),
+  raio 32 (24 no celular), overflow: hidden com a foto encostada (os cantos da foto seguem o
+  raio do cartão). Fundo da foto enquanto carrega: preenchimento ink a 4%. Selo em
+  preenchimento (.glass-fill) com texto ink 12 px 800 (17,147:1 no pior caso controlado).
+  Título ink 34 px 800 (24 no celular), texto em apoio (5,860:1), botão primário. Nenhum
+  filho focável encosta na borda do cartão (o botão fica dentro do padding), por isso o anel
+  de foco não é cortado pelo overflow.
+*/
+
+/* Sem a borda transparente de 1 px do .glass: por ela aparecia o fundo branco do cartão, um fio
+   claro entre a foto e o contorno (print do dono, 28/09/2026). O contorno continua no fio ink
+   externo do vidro. Em contraste aumentado e cores forçadas a borda volta, como no liquid-glass.css. */
+.feature-banner__card {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--lg-radius-sheet, var(--radius-card-lg));
+  border-width: 0;
+  overflow: hidden;
+}
+
+@media (prefers-contrast: more), (forced-colors: active) {
+  .feature-banner__card {
+    border-width: 1px;
+  }
+}
+
+.feature-banner__media {
+  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--lg-fill-ink-04, var(--color-surface-2));
+}
+
+.feature-banner__image,
+.feature-banner__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feature-banner__content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px;
+}
+
+.feature-banner__eyebrow {
+  color: var(--color-ink);
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+}
+
+.feature-banner__heading {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.feature-banner__text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.feature-banner__button {
+  margin-top: 4px;
+}
+
+@media screen and (min-width: 990px) {
+  .feature-banner__content {
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 56px;
+  }
+
+  .feature-banner__heading {
+    font-size: 34px;
+  }
+
+  .feature-banner__text {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+
+/* Entre 990 e 1279 px o cartão fica empilhado, com a foto em 2:1 (menos alta que os 16:9 do
+   celular) sem cortar pote nenhum da arte da linha completa. */
+@media screen and (min-width: 990px) and (max-width: 1279px) {
+  .feature-banner__media {
+    aspect-ratio: 2 / 1;
+  }
+}
+
+/* Lado a lado só a partir de 1280 px: a foto mantém os 16:9 da regra-base e dita a altura do
+   cartão; o texto centraliza ao lado. A coluna antiga de min(520px, 50%) ficava entre 1,28:1 e
+   1,64:1 e o cover cortava os potes das pontas em qualquer largura do computador. A altura
+   mínima de 320 px continua para o caso de um título longo. */
+@media screen and (min-width: 1280px) {
+  .feature-banner__card {
+    flex-direction: row;
+    min-height: 320px;
+  }
+
+  .feature-banner__media {
+    flex: 0 0 55%;
+    width: auto;
+  }
+}

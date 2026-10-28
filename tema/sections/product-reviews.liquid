@@ -1,0 +1,114 @@
+{{ 'section-product-reviews.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'produto-tabs.js' | asset_url }}" type="module"></script>
+
+{%- comment -%}
+  Área produto. Host de app para avaliações, com abas "Avaliações" / "Perguntas". Só existe
+  conteúdo aqui quando o lojista adiciona um bloco de app: sem bloco, a seção não renderiza
+  nada (mesma regra de sections/customer-reactions.liquid).
+
+  Limitação da própria Shopify (shopify.dev/docs/storefronts/themes/architecture/blocks/app-blocks,
+  consultado em 27/09/2026): um bloco "@app" não aceita metadado do tema além de "type" (nem
+  "limit"), então o tema não sabe se um bloco de app é "de avaliação" ou "de pergunta". A
+  divisão é pela ordem dos blocos no editor:
+  - 1 bloco de app: aparece uma vez, sem abas (um app de avaliações que já tem perguntas
+    dentro dele não ganha uma aba "Perguntas" repetindo o mesmo conteúdo);
+  - 2 ou mais: o 1º bloco fica na aba "Avaliações" e os demais na aba "Perguntas".
+  Cada bloco de app é renderizado uma única vez: renderizar o mesmo bloco duas vezes duplica
+  ids e scripts do app.
+{%- endcomment -%}
+{%- if section.blocks.size > 0 -%}
+  <section class="product-reviews section" id="{{ section.settings.anchor | default: 'avaliacoes' | handle }}"{% if section.settings.heading != blank %} aria-labelledby="ProductReviewsTitle-{{ section.id }}"{% endif %}>
+    <div class="page-width">
+      {%- if section.settings.heading != blank -%}
+        <div class="section-heading">
+          <h2 class="section-heading__title" id="ProductReviewsTitle-{{ section.id }}">{{ section.settings.heading | escape }}</h2>
+        </div>
+      {%- endif -%}
+      {%- if section.blocks.size == 1 -%}
+        {%- for block in section.blocks -%}
+          <div class="product-reviews__block" {{ block.shopify_attributes }}>
+            {% render block %}
+          </div>
+        {%- endfor -%}
+      {%- else -%}
+        <produto-tabs class="product-reviews__tabs-wrap">
+          <div class="product-reviews__tabs" role="tablist" aria-label="{{ 'produto.reviews.tabs_label' | t }}">
+            <button
+              type="button"
+              class="product-reviews__tab lg-focus-dual is-active"
+              id="ReviewsTab-{{ section.id }}"
+              role="tab"
+              aria-selected="true"
+              aria-controls="ReviewsPanel-{{ section.id }}"
+            >
+              {{- 'produto.reviews.tab_reviews' | t -}}
+            </button>
+            <button
+              type="button"
+              class="product-reviews__tab lg-focus-dual"
+              id="QuestionsTab-{{ section.id }}"
+              role="tab"
+              aria-selected="false"
+              tabindex="-1"
+              aria-controls="QuestionsPanel-{{ section.id }}"
+            >
+              {{- 'produto.reviews.tab_questions' | t -}}
+            </button>
+          </div>
+          <div class="product-reviews__panel lg-focus-dual" id="ReviewsPanel-{{ section.id }}" role="tabpanel" aria-labelledby="ReviewsTab-{{ section.id }}" tabindex="0">
+            {%- for block in section.blocks limit: 1 -%}
+              <div class="product-reviews__block" {{ block.shopify_attributes }}>
+                {% render block %}
+              </div>
+            {%- endfor -%}
+          </div>
+          <div class="product-reviews__panel lg-focus-dual" id="QuestionsPanel-{{ section.id }}" role="tabpanel" aria-labelledby="QuestionsTab-{{ section.id }}" tabindex="0" hidden>
+            {%- for block in section.blocks offset: 1 -%}
+              <div class="product-reviews__block" {{ block.shopify_attributes }}>
+                {% render block %}
+              </div>
+            {%- endfor -%}
+          </div>
+        </produto-tabs>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Avaliações do produto",
+  "tag": "div",
+  "class": "section-product-reviews",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Seção sem conteúdo próprio: existe só para hospedar o app de avaliações (e, se houver, o de perguntas) em \"Adicionar bloco\". Com um bloco de app, ele aparece sem abas. Com dois ou mais, o primeiro fica na aba \"Avaliações\" e os demais na aba \"Perguntas\"."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título (opcional)"
+    },
+    {
+      "type": "text",
+      "id": "anchor",
+      "label": "Âncora (link direto)",
+      "default": "avaliacoes"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Avaliações do produto"
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,91 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "banner": {
+      "type": "main-collection-banner",
+      "settings": {}
+    },
+    "chips": {
+      "type": "collection-chips",
+      "settings": {
+        "menu": "chips-categorias"
+      }
+    },
+    "product-grid": {
+      "type": "main-collection-product-grid",
+      "settings": {}
+    },
+    "seo": {
+      "type": "collection-seo",
+      "blocks": {
+        "p1": {
+          "type": "paragraph",
+          "settings": {}
+        },
+        "p2": {
+          "type": "paragraph",
+          "settings": {}
+        },
+        "p3": {
+          "type": "paragraph",
+          "settings": {}
+        },
+        "p4": {
+          "type": "paragraph",
+          "settings": {
+            "extra": true
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3",
+        "p4"
+      ],
+      "settings": {
+        "image": "shopify://shop_images/produto-comum-como-tomar-1254x1254.png"
+      }
+    },
+    "faq": {
+      "type": "faq-list",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {}
+        },
+        "q2": {
+          "type": "question",
+          "settings": {}
+        },
+        "q3": {
+          "type": "question",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3"
+      ],
+      "settings": {
+        "color_scheme": "surface"
+      }
+    }
+  },
+  "order": [
+    "banner",
+    "chips",
+    "product-grid",
+    "seo",
+    "faq"
+  ]
+}

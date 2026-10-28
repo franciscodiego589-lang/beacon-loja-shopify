@@ -1,0 +1,46 @@
+{%- comment -%}
+  Área conta: exibe um endereço (do cliente ou do pedido), uma informação por linha.
+  Parâmetros:
+  - address: objeto address (obrigatório)
+  Todas as partes saem com | escape. Linha de cidade: "Cidade, UF".
+{%- endcomment -%}
+{%- if address != blank -%}
+  {%- liquid
+    assign address_city = address.city | strip
+    assign address_region = address.province_code | default: address.province | strip
+    assign address_city_line = address_city
+    if address_region != blank
+      if address_city_line != blank
+        assign address_city_line = address_city_line | append: ', ' | append: address_region
+      else
+        assign address_city_line = address_region
+      endif
+    endif
+  -%}
+  <address class="conta-address">
+    {%- if address.name != blank -%}
+      <span class="conta-address__line conta-address__line--name">{{ address.name | escape }}</span>
+    {%- endif -%}
+    {%- if address.company != blank -%}
+      <span class="conta-address__line">{{ address.company | escape }}</span>
+    {%- endif -%}
+    {%- if address.address1 != blank -%}
+      <span class="conta-address__line">{{ address.address1 | escape }}</span>
+    {%- endif -%}
+    {%- if address.address2 != blank -%}
+      <span class="conta-address__line">{{ address.address2 | escape }}</span>
+    {%- endif -%}
+    {%- if address_city_line != blank -%}
+      <span class="conta-address__line">{{ address_city_line | escape }}</span>
+    {%- endif -%}
+    {%- if address.zip != blank -%}
+      <span class="conta-address__line">{{ address.zip | escape }}</span>
+    {%- endif -%}
+    {%- if address.country != blank -%}
+      <span class="conta-address__line">{{ address.country | escape }}</span>
+    {%- endif -%}
+    {%- if address.phone != blank -%}
+      <span class="conta-address__line">{{ address.phone | escape }}</span>
+    {%- endif -%}
+  </address>
+{%- endif -%}

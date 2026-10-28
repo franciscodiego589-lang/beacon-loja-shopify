@@ -1,0 +1,177 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "galeria": {
+          "type": "galeria",
+          "settings": {}
+        },
+        "titulo": {
+          "type": "titulo",
+          "settings": {}
+        },
+        "depoimento_destaque": {
+          "type": "depoimento_destaque",
+          "settings": {}
+        },
+        "o_que_e": {
+          "type": "o_que_e",
+          "settings": {}
+        },
+        "dossie": {
+          "type": "dossie",
+          "settings": {}
+        },
+        "entrega": {
+          "type": "entrega",
+          "settings": {}
+        },
+        "chips": {
+          "type": "chips",
+          "settings": {}
+        },
+        "kit_selector": {
+          "type": "kit_selector",
+          "settings": {}
+        },
+        "botoes_compra": {
+          "type": "botoes_compra",
+          "settings": {}
+        },
+        "parcelamento_pix": {
+          "type": "parcelamento_pix",
+          "settings": {
+            "show_installments": false
+          }
+        },
+        "selos_confianca": {
+          "type": "selos_confianca",
+          "settings": {
+            "icon_1": "lock",
+            "label_1": "Compra segura",
+            "info_1": "O pagamento é feito no checkout da Shopify, com conexão criptografada.",
+            "icon_2": "badge-check",
+            "label_2": "Desistência em 7 dias",
+            "info_2": "Você pode desistir da compra em até 7 dias corridos depois de receber o produto (Código de Defesa do Consumidor, art. 49). Veja a página de trocas e devoluções."
+          }
+        },
+        "cashback": {
+          "type": "cashback",
+          "settings": {
+            "enabled": false
+          }
+        },
+        "atributos": {
+          "type": "atributos",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "galeria",
+        "titulo",
+        "depoimento_destaque",
+        "o_que_e",
+        "dossie",
+        "entrega",
+        "chips",
+        "kit_selector",
+        "botoes_compra",
+        "parcelamento_pix",
+        "selos_confianca",
+        "cashback",
+        "atributos"
+      ],
+      "settings": {
+        "show_breadcrumbs": true
+      }
+    },
+    "combo_itens": {
+      "type": "combo-itens",
+      "settings": {}
+    },
+    "combo_conteudo": {
+      "type": "combo-conteudo",
+      "settings": {}
+    },
+    "product_comparison": {
+      "type": "product-comparison",
+      "settings": {}
+    },
+    "product_rich_content": {
+      "type": "product-rich-content",
+      "blocks": {
+        "conteudo": {
+          "type": "conteudo",
+          "settings": {}
+        },
+        "como_tomar": {
+          "type": "como_tomar",
+          "settings": {}
+        },
+        "quem_pode_usar": {
+          "type": "quem_pode_usar",
+          "settings": {}
+        },
+        "por_que_escolher": {
+          "type": "por_que_escolher",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "conteudo",
+        "como_tomar",
+        "quem_pode_usar",
+        "por_que_escolher"
+      ],
+      "settings": {}
+    },
+    "product_faq": {
+      "type": "product-faq",
+      "settings": {}
+    },
+    "customer_reactions": {
+      "type": "customer-reactions",
+      "settings": {
+        "heading": "Reações dos clientes"
+      }
+    },
+    "product_reviews": {
+      "type": "product-reviews",
+      "settings": {
+        "heading": "Avaliações e perguntas de clientes"
+      }
+    },
+    "related_products": {
+      "type": "related-products",
+      "settings": {}
+    },
+    "sticky_atc": {
+      "type": "sticky-atc",
+      "settings": {
+        "show_installments": false
+      }
+    }
+  },
+  "order": [
+    "main",
+    "combo_itens",
+    "combo_conteudo",
+    "product_comparison",
+    "product_rich_content",
+    "product_faq",
+    "customer_reactions",
+    "product_reviews",
+    "related_products",
+    "sticky_atc"
+  ]
+}

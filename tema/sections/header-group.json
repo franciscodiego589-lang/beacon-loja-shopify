@@ -1,0 +1,76 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "Grupo do cabeçalho",
+  "sections": {
+    "announcement": {
+      "type": "announcement-bar",
+      "blocks": {
+        "mensagem1": {
+          "type": "message",
+          "settings": {
+            "text": "Frete grátis a partir de R$ 179 para todo o Brasil",
+            "text_mobile": "Frete grátis a partir de R$ 179",
+            "icon": "truck"
+          }
+        },
+        "mensagem3": {
+          "type": "message",
+          "settings": {
+            "text": "Até 15% OFF levando 6 potes do mesmo produto",
+            "text_mobile": "Até 15% OFF levando 6 potes",
+            "icon": "tag"
+          }
+        },
+        "mensagem2": {
+          "type": "message",
+          "settings": {
+            "text": "Cupom BEMVINDO10: 10% OFF no pedido, uma vez por cliente",
+            "text_mobile": "Cupom BEMVINDO10: 10% OFF",
+            "icon": "tag"
+          }
+        }
+      },
+      "block_order": [
+        "mensagem1",
+        "mensagem3",
+        "mensagem2"
+      ],
+      "settings": {
+        "color_text": "#081C2D",
+        "color_progress": "#081C2D",
+        "show_free_shipping": true,
+        "autoplay": true,
+        "interval": 5
+      }
+    },
+    "header": {
+      "type": "header",
+      "settings": {
+        "color_bg": "#FFFFFF",
+        "color_text": "#081C2D",
+        "color_nav_text": "#081C2D",
+        "menu": "menu-liquid-glass",
+        "show_highlight": true,
+        "highlight_label": "Super ofertas",
+        "show_search": true,
+        "show_tracking": false,
+        "show_account": true,
+        "highlight_link": "shopify://collections/ofertas",
+        "tracking_url": "shopify://pages/rastreie-seu-pedido"
+      }
+    }
+  },
+  "order": [
+    "announcement",
+    "header"
+  ]
+}

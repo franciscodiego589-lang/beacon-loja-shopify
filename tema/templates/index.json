@@ -1,0 +1,800 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "vitrine-topo": {
+      "type": "vitrine-topo",
+      "blocks": {
+        "banner-farol": {
+          "type": "banner",
+          "settings": {
+            "alt": "Nova linha Beacon Labs. 16 produtos novos. Cápsulas, gomas, gotas e pós: 16 suplementos alimentares. Ver a linha nova.",
+            "link": "shopify://collections/linha-beacon-labs",
+            "tema": "claro",
+            "selo": "16 produtos novos",
+            "selo_no_celular": true,
+            "titulo": "Nova linha",
+            "titulo_destaque": "Beacon Labs",
+            "apoio": "Cápsulas, gomas, gotas e pós: 16 suplementos alimentares.",
+            "botao_rotulo": "Ver a linha nova",
+            "botao_link": "shopify://collections/linha-beacon-labs",
+            "produto_1": "bellacore",
+            "produto_2": "crea-gummy",
+            "produto_3": "lunadrops",
+            "image": "shopify://shop_images/topo-farol-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/topo-farol-cel-2244x2804-n1.jpg"
+          }
+        },
+        "promo-preco-dia": {
+          "type": "promo",
+          "settings": {
+            "tema": "claro",
+            "selo": "Rende 30 dias",
+            "titulo": "Seu suplemento",
+            "titulo_destaque": "por menos de R$ 1,70 por dia",
+            "titulo_celular": "Menos de",
+            "destaque_celular": "R$ 1,70 por dia",
+            "apoio": "Essential Multi e Crea Gummy: [preco] o pote de 30 dias.",
+            "apoio_celular": "Essential Multi e Crea Gummy: [preco] o pote de 30 dias.",
+            "botao_rotulo": "Ver a linha nova",
+            "botao_link": "shopify://collections/linha-beacon-labs",
+            "produto_1": "essential-multi",
+            "produto_2": "crea-gummy"
+          }
+        },
+        "promo-dossie": {
+          "type": "promo",
+          "settings": {
+            "tema": "branco",
+            "selo": "Transparência",
+            "titulo": "Dossiê técnico",
+            "titulo_destaque": "em potes e gotas",
+            "titulo_celular": "Dossiê técnico",
+            "destaque_celular": "em potes e gotas",
+            "apoio_celular": "Composição, uso e fontes.",
+            "item_1": "Composição por dose",
+            "item_2": "Modo de uso",
+            "item_3": "Fontes consultadas",
+            "botao_rotulo": "Ver um exemplo",
+            "botao_link": "/products/focuslab?view=dossie",
+            "produto_1": "lunadrops",
+            "produto_2": "bellacore",
+            "produto_3": "focuslab",
+            "produto_4": "essential-multi",
+            "produto_5": "moro-balance-gotas",
+            "imagem_produtos": "shopify://shop_images/dossie-potes-e-gotas-2874x1437-n1.jpg"
+          }
+        },
+        "banner-frete": {
+          "type": "banner",
+          "settings": {
+            "alt": "Para todo o Brasil. Frete grátis a partir de R$ 179. Pedidos abaixo de R$ 179: frete de R$ 22,00. Monte seu pedido com a linha Beacon Labs. Cupom BEMVINDO10: 10% OFF. Leve 2 potes ou mais: 5% off. Devolução em 7 dias. Comprar agora.",
+            "link": "shopify://collections/all",
+            "image": "shopify://shop_images/topo-frete-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/topo-frete-cel-2244x2804-n1.jpg"
+          }
+        },
+        "banner-qualidade": {
+          "type": "banner",
+          "settings": {
+            "alt": "Qualidade comprovada. Laudo de análise do insumo em todo produto. Fábrica com alvará sanitário e responsável técnico farmacêutico. Laudo de análise do insumo, alvará sanitário, responsável técnico. Ver documentação.",
+            "link": "shopify://pages/documentacao",
+            "image": "shopify://shop_images/hero-qualidade-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/hero-qualidade-cel-2244x2804-n1.jpg"
+          }
+        },
+        "banner-gotas": {
+          "type": "banner",
+          "settings": {
+            "alt": "Lançamento. Novas gotas Beacon Labs. LunaDrops e Moro Balance Gotas em frasco conta-gotas de 30 mL. 20 gotas ao dia (1 mL), 30 porções por frasco, não contém glúten. Ver gotas.",
+            "link": "shopify://collections/gotas",
+            "image": "shopify://shop_images/hero-gotas-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/hero-gotas-cel-2244x2804-n1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "banner-farol",
+        "banner-qualidade",
+        "banner-gotas",
+        "banner-frete",
+        "promo-preco-dia",
+        "promo-dossie"
+      ],
+      "settings": {}
+    },
+    "hero": {
+      "type": "hero-texto",
+      "disabled": true,
+      "settings": {
+        "eyebrow": "Beacon Labs · Linha Pure",
+        "heading": "Conheça toda a linha",
+        "text": "Suplementos alimentares em cápsulas. 2 cápsulas ao dia, porção de 1 g, 60 cápsulas por pote. Não contém glúten.",
+        "button_label": "Ver produtos",
+        "button_link": "shopify://collections/all",
+        "button2_label": "Super ofertas",
+        "button2_link": "shopify://collections/ofertas",
+        "product": "pure-taurina-1000mg-60-capsulas"
+      }
+    },
+    "trust": {
+      "type": "trust-strip",
+      "blocks": {
+        "item-1": {
+          "type": "item",
+          "settings": {
+            "icon": "truck",
+            "text": "Frete grátis a partir de R$ 179",
+            "detail": "Para todo o Brasil. Abaixo disso, R$ 22,00."
+          }
+        },
+        "item-2": {
+          "type": "item",
+          "settings": {
+            "icon": "shield-check",
+            "text": "Compra 100% segura",
+            "detail": "Pagamento no checkout da Shopify."
+          }
+        },
+        "item-3": {
+          "type": "item",
+          "settings": {
+            "icon": "refresh",
+            "text": "Devolução em até 7 dias",
+            "detail": "Desistiu? O frete de volta é por nossa conta."
+          }
+        },
+        "item-4": {
+          "type": "item",
+          "settings": {
+            "icon": "tag",
+            "text": "Kits com desconto",
+            "detail": "Leve 3 ou 6 potes e pague menos por pote."
+          }
+        }
+      },
+      "block_order": [
+        "item-1",
+        "item-2",
+        "item-3",
+        "item-4"
+      ],
+      "settings": {}
+    },
+    "carousel-mais-vendidos": {
+      "type": "product-carousel",
+      "settings": {
+        "collection": "mais-vendidos",
+        "heading": "Mais vendidos",
+        "view_all_label": "Ver todos",
+        "view_all_link": "shopify://collections/all",
+        "layout": "grade",
+        "limit": 4,
+        "ribbon": "none"
+      }
+    },
+    "destaques": {
+      "type": "destaques",
+      "blocks": {
+        "tile-psyllium": {
+          "type": "tile",
+          "settings": {
+            "product": "pure-psyllium-60-capsulas",
+            "eyebrow": "Fibras",
+            "title": "Pure Psyllium",
+            "subtitle": "",
+            "show_price": true,
+            "button_label": "Comprar",
+            "secondary_label": "Saiba mais"
+          }
+        },
+        "tile-vitamina-d3": {
+          "type": "tile",
+          "settings": {
+            "product": "pure-vitamina-d3-2000ui-60-capsulas",
+            "eyebrow": "Vitaminas",
+            "title": "Pure Vitamina D3",
+            "subtitle": "2.000 UI · 60 cápsulas",
+            "show_price": true,
+            "button_label": "Comprar",
+            "secondary_label": "Saiba mais"
+          }
+        },
+        "tile-kit": {
+          "type": "tile_largo",
+          "settings": {
+            "eyebrow": "Kits",
+            "title": "Monte seu kit.",
+            "subtitle": "Escolha 1, 3 ou 6 potes de cada produto. Quanto mais tempo, maior o desconto.",
+            "button_label": "Montar meu kit",
+            "button_link": "shopify://pages/monte-seu-pack",
+            "product_1": "pure-vitamina-b12-60-capsulas",
+            "product_2": "pure-melatonina-021mg-60-capsulas",
+            "product_3": "pure-vitamina-k2-mk7-14906mcg-60-capsulas"
+          }
+        }
+      },
+      "block_order": [
+        "tile-psyllium",
+        "tile-vitamina-d3",
+        "tile-kit"
+      ],
+      "disabled": true,
+      "settings": {}
+    },
+    "seals": {
+      "type": "seals-strip",
+      "blocks": {
+        "seal-1": {
+          "type": "seal",
+          "settings": {
+            "text": "60 cápsulas por pote"
+          }
+        },
+        "seal-2": {
+          "type": "seal",
+          "settings": {
+            "text": "Dose diária: 2 cápsulas"
+          }
+        },
+        "seal-3": {
+          "type": "seal",
+          "settings": {
+            "text": "Rende 30 dias"
+          }
+        },
+        "seal-4": {
+          "type": "seal",
+          "settings": {
+            "text": "Suplemento alimentar em cápsulas"
+          }
+        },
+        "seal-5": {
+          "type": "seal",
+          "settings": {
+            "text": "Qualidade Beacon Labs"
+          }
+        }
+      },
+      "block_order": [
+        "seal-1",
+        "seal-2",
+        "seal-3",
+        "seal-4",
+        "seal-5"
+      ],
+      "disabled": true,
+      "settings": {
+        "heading": "Linha Pure"
+      }
+    },
+    "benefits": {
+      "type": "benefit-grid",
+      "blocks": {
+        "categoria-1": {
+          "type": "item",
+          "settings": {
+            "title": "Vitaminas",
+            "icon": "capsule",
+            "link": "shopify://collections/vitaminas"
+          }
+        },
+        "categoria-2": {
+          "type": "item",
+          "settings": {
+            "title": "Minerais",
+            "icon": "jar",
+            "link": "shopify://collections/minerais"
+          }
+        },
+        "categoria-3": {
+          "type": "item",
+          "settings": {
+            "title": "Aminoácidos",
+            "icon": "capsule-h",
+            "link": "shopify://collections/aminoacidos"
+          }
+        },
+        "categoria-4": {
+          "type": "item",
+          "settings": {
+            "title": "Fibras",
+            "icon": "capsule",
+            "link": "shopify://collections/fibras"
+          }
+        },
+        "categoria-5": {
+          "type": "item",
+          "settings": {
+            "title": "Colágeno",
+            "icon": "jar",
+            "link": "shopify://collections/colageno"
+          }
+        },
+        "categoria-6": {
+          "type": "item",
+          "settings": {
+            "title": "Coenzima Q10",
+            "icon": "capsule-h",
+            "link": "shopify://collections/coenzima-q10"
+          }
+        },
+        "categoria-7": {
+          "type": "item",
+          "settings": {
+            "title": "Espirulina",
+            "icon": "capsule",
+            "link": "shopify://collections/espirulina"
+          }
+        },
+        "categoria-8": {
+          "type": "item",
+          "settings": {
+            "title": "Melatonina",
+            "icon": "jar",
+            "link": "shopify://collections/melatonina"
+          }
+        },
+        "categoria-9": {
+          "type": "item",
+          "settings": {
+            "title": "Cafeína",
+            "icon": "capsule-h",
+            "link": "shopify://collections/cafeina"
+          }
+        },
+        "categoria-10": {
+          "type": "item",
+          "settings": {
+            "title": "Creatina",
+            "icon": "capsule",
+            "link": "shopify://collections/creatina"
+          }
+        },
+        "categoria-11": {
+          "type": "item",
+          "settings": {
+            "title": "MSM",
+            "icon": "jar",
+            "link": "shopify://collections/msm"
+          }
+        }
+      },
+      "block_order": [
+        "categoria-1",
+        "categoria-2",
+        "categoria-3",
+        "categoria-4",
+        "categoria-5",
+        "categoria-6",
+        "categoria-7",
+        "categoria-8",
+        "categoria-9",
+        "categoria-10",
+        "categoria-11"
+      ],
+      "disabled": true,
+      "settings": {
+        "heading": "Navegue por categoria",
+        "view_all_label": "Ver todas as categorias",
+        "view_all_link": "/collections"
+      }
+    },
+    "carousel-lancamentos": {
+      "type": "product-carousel",
+      "settings": {
+        "collection": "lancamentos",
+        "heading": "Lançamentos",
+        "view_all_label": "Ver todos",
+        "layout": "trilho",
+        "limit": 8,
+        "ribbon": "new",
+        "field": "mare",
+        "surface": "cards"
+      }
+    },
+    "testimonials": {
+      "type": "testimonials",
+      "blocks": {
+        "testimonial-1": {
+          "type": "testimonial",
+          "settings": {}
+        },
+        "testimonial-2": {
+          "type": "testimonial",
+          "settings": {}
+        },
+        "testimonial-3": {
+          "type": "testimonial",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "testimonial-1",
+        "testimonial-2",
+        "testimonial-3"
+      ],
+      "disabled": true,
+      "settings": {}
+    },
+    "feature": {
+      "type": "feature-banner",
+      "disabled": true,
+      "settings": {
+        "image": "shopify://shop_images/linha-completa-potes-1640x923.jpg",
+        "button_link": "shopify://collections/linha-beacon-labs"
+      }
+    },
+    "carousel-combos": {
+      "type": "product-carousel",
+      "disabled": true,
+      "settings": {
+        "collection": "boxes-e-kits",
+        "heading": "Combos",
+        "view_all_label": "Ver todos",
+        "limit": 8,
+        "ribbon": "none"
+      }
+    },
+    "carousel-ofertas": {
+      "type": "product-carousel",
+      "settings": {
+        "collection": "ofertas",
+        "heading": "Super ofertas",
+        "view_all_label": "Ver todas",
+        "view_all_link": "shopify://collections/all",
+        "layout": "grade",
+        "limit": 4,
+        "ribbon": "offer",
+        "field": "farol",
+        "surface": "cards"
+      }
+    },
+    "linha-numeros": {
+      "type": "linha-numeros",
+      "blocks": {
+        "numero-produtos": {
+          "type": "numero",
+          "settings": {
+            "valor_automatico": true,
+            "collection": "capsulas",
+            "label": "produtos na linha Pure"
+          }
+        },
+        "numero-capsulas-pote": {
+          "type": "numero",
+          "settings": {
+            "valor_automatico": false,
+            "value": "60",
+            "label": "cápsulas por pote"
+          }
+        },
+        "numero-capsulas-dia": {
+          "type": "numero",
+          "settings": {
+            "valor_automatico": false,
+            "value": "2",
+            "label": "cápsulas ao dia"
+          }
+        },
+        "numero-dias-pote": {
+          "type": "numero",
+          "settings": {
+            "valor_automatico": false,
+            "value": "30",
+            "label": "dias por pote"
+          }
+        }
+      },
+      "block_order": [
+        "numero-produtos",
+        "numero-capsulas-pote",
+        "numero-capsulas-dia",
+        "numero-dias-pote"
+      ],
+      "settings": {
+        "region_label": "Linha Pure em números"
+      }
+    },
+    "dossie-destaque": {
+      "type": "dossie-destaque",
+      "settings": {
+        "product": "pure-vitamina-c-1000mg-60-capsulas",
+        "eyebrow": "Transparência",
+        "title": "Dossiê técnico em todos os produtos.",
+        "text": "Composição por dose, modo de uso e fontes consultadas, abertos na página de cada produto.",
+        "button_label": "Ver um exemplo",
+        "ficha_link_label": "Ver o dossiê completo"
+      }
+    },
+    "faq": {
+      "type": "faq-list",
+      "blocks": {
+        "q1": {
+          "type": "question",
+          "settings": {
+            "question": "Qual o prazo de entrega?"
+          }
+        },
+        "q2": {
+          "type": "question",
+          "settings": {
+            "question": "Quais as formas de pagamento?"
+          }
+        },
+        "q3": {
+          "type": "question",
+          "settings": {
+            "question": "Como funciona a troca ou devolução?",
+            "answer": "<p>Você pode desistir da compra em até 7 dias corridos após o recebimento: o produto volta na embalagem original lacrada, e o frete de volta é por nossa conta. Produto com defeito: avise em até 30 dias após o recebimento; fazemos a troca em até 30 dias corridos e pagamos o frete de ida e de volta. Todos os detalhes estão em <a href=\"/pages/trocas-e-devolucoes\">Trocas e devoluções</a>.</p>"
+          }
+        },
+        "q4": {
+          "type": "question",
+          "settings": {
+            "question": "Como rastrear meu pedido?",
+            "answer": "<p>Acesse a página <a href=\"/pages/rastreie-seu-pedido\">Rastreie seu pedido</a> ou a área Minha conta, em Pedidos.</p>"
+          }
+        },
+        "q5": {
+          "type": "question",
+          "settings": {
+            "question": "Posso combinar produtos diferentes no mesmo pedido?",
+            "answer": "<p>Sim. Coloque no carrinho quantos produtos da linha Pure quiser e finalize tudo num pedido só.</p>"
+          }
+        },
+        "q6": {
+          "type": "question",
+          "settings": {
+            "question": "Qual o valor mínimo para frete grátis?",
+            "answer": "<p>R$ 179,00, para entregas no Brasil. Em pedidos de até R$ 178,99, o frete custa R$ 22,00. Veja mais na página <a href=\"/pages/politica-de-entrega\">Entregas</a>.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "q1",
+        "q2",
+        "q3",
+        "q4",
+        "q5",
+        "q6"
+      ],
+      "settings": {
+        "heading": "Perguntas frequentes.",
+        "text": "<p>Trocas, entrega, frete e pedidos.</p>",
+        "layout": "lado",
+        "open_first": true,
+        "color_scheme": "default",
+        "padding": "none"
+      }
+    },
+    "faixa-kits": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-kits": {
+          "type": "imagem",
+          "settings": {
+            "arte": "kits",
+            "alt": "Leve 6 potes, pague 15% menos. Kit com 3 potes: 10% OFF. Vale para os 27 suplementos da linha Pure. Vale para os 27, 6 potes = 180 dias, até R$ 81,50 de economia. Montar meu kit.",
+            "link": "shopify://pages/monte-seu-pack"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-kits"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      },
+      "disabled": true
+    },
+    "faixa-frete": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-frete": {
+          "type": "imagem",
+          "settings": {
+            "alt": "Para todo o Brasil. Frete grátis a partir de R$ 179. Abaixo de R$ 179, o frete é R$ 22,00. Cupom BEMVINDO10: 10% OFF. Acima de R$ 250: 10% off. Devolução em 7 dias. Comprar agora.",
+            "link": "shopify://collections/all",
+            "image": "shopify://shop_images/faixa-frete-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/faixa-frete-cel-2244x2804-n1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-frete"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      }
+    },
+    "faixa-vitamina-c": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-vitamina-c": {
+          "type": "imagem",
+          "settings": {
+            "alt": "Vitamina C na linha nova. Duas opções de vitamina C. Citrus Rise: vitamina C 1.600 mg e extrato de laranja moro 100 mg por dose. BellaCore: vitamina C 509 mg por porção. Pó e cápsulas, rende 30 dias, não contém glúten. Comprar agora.",
+            "link": "shopify://products/citrus-rise",
+            "image": "shopify://shop_images/faixa-vitamina-c-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/faixa-vitamina-c-cel-2244x2804-n1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-vitamina-c"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      }
+    },
+    "faixa-preco-dia": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-frete": {
+          "type": "imagem",
+          "settings": {
+            "alt": "Linha nova Beacon Labs. Pote de 30 dias a R$ 49,90. Menos de R$ 1,70 por dia, com Essential Multi e Crea Gummy. 2 cápsulas ou 2 gomas ao dia, rende 30 dias, não contém glúten. Ver a linha nova.",
+            "link": "shopify://collections/linha-beacon-labs",
+            "image": "shopify://shop_images/faixa-preco-dia-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/faixa-preco-dia-cel-2244x2804-n1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-frete"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      }
+    },
+    "faixa-lancamento": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-frete": {
+          "type": "imagem",
+          "settings": {
+            "alt": "Lançamento. 16 novos na linha Beacon Labs. FlexVita, Crea Gummy, Citrus Rise e mais 13 produtos. 9 em cápsulas, 3 em gomas, 2 em gotas e 2 em pó. Ver a linha nova.",
+            "link": "shopify://collections/linha-beacon-labs",
+            "image": "shopify://shop_images/faixa-lancamento-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/faixa-lancamento-cel-2244x2804-n1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-frete"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      }
+    },
+    "faixa-trocas": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-frete": {
+          "type": "imagem",
+          "settings": {
+            "alt": "Devolução em até 7 dias. Compre sem risco. O frete de volta é por nossa conta. Devolução em 7 dias. Cupom BEMVINDO10: 10% OFF. Frete grátis a partir de R$ 179. Ver política de trocas.",
+            "link": "shopify://pages/trocas-e-devolucoes",
+            "image": "shopify://shop_images/faixa-trocas-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/faixa-trocas-cel-2244x2804-n1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-frete"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      }
+    },
+    "faixa-gotas-a": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-gotas": {
+          "type": "imagem",
+          "settings": {
+            "alt": "Gotas Beacon Labs. Frasco conta-gotas de 30 mL: LunaDrops e Moro Balance Gotas. 20 gotas ao dia (1 mL), 30 porções por frasco, não contém glúten. Ver gotas.",
+            "link": "shopify://collections/gotas",
+            "image": "shopify://shop_images/banner-gotas-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/banner-gotas-cel-2244x2804-n1.jpg"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-gotas"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      }
+    },
+    "carousel-gotas": {
+      "type": "product-carousel",
+      "settings": {
+        "collection": "gotas",
+        "heading": "Gotas Beacon Labs",
+        "view_all_label": "Ver todas",
+        "layout": "trilho",
+        "limit": 8,
+        "ribbon": "new",
+        "field": "mare",
+        "surface": "cards"
+      }
+    },
+    "faixa-gomas": {
+      "type": "faixa-promos",
+      "blocks": {
+        "imagem-gomas": {
+          "type": "imagem",
+          "settings": {
+            "image": "shopify://shop_images/banner-gomas-pc-4344x1448-n1.jpg",
+            "image_mobile": "shopify://shop_images/banner-gomas-cel-2244x2804-n1.jpg",
+            "alt": "Novidade. Gomas Beacon Labs. Crea Gummy, VitaBeauty e Luna Gummy. Sabores: frutas vermelhas, tutti-frutti e uva. 60 gomas por pote, 180 g de peso líquido, não contém glúten. Conheça as gomas.",
+            "link": "shopify://collections/gomas"
+          }
+        }
+      },
+      "block_order": [
+        "imagem-gomas"
+      ],
+      "settings": {
+        "colunas": "1",
+        "tamanho": "grande"
+      }
+    },
+    "carousel-gomas": {
+      "type": "product-carousel",
+      "settings": {
+        "collection": "gomas",
+        "heading": "Gomas Beacon Labs",
+        "view_all_label": "Ver todas",
+        "layout": "trilho",
+        "limit": 8,
+        "ribbon": "new",
+        "field": "mare",
+        "surface": "cards"
+      }
+    }
+  },
+  "order": [
+    "vitrine-topo",
+    "trust",
+    "faixa-gomas",
+    "carousel-gomas",
+    "faixa-gotas-a",
+    "carousel-gotas",
+    "carousel-mais-vendidos",
+    "faixa-kits",
+    "faixa-lancamento",
+    "carousel-lancamentos",
+    "faixa-preco-dia",
+    "carousel-ofertas",
+    "faixa-frete",
+    "linha-numeros",
+    "faixa-vitamina-c",
+    "dossie-destaque",
+    "faixa-trocas",
+    "faq",
+    "destaques",
+    "hero",
+    "seals",
+    "benefits",
+    "testimonials",
+    "feature",
+    "carousel-combos"
+  ]
+}

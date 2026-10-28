@@ -1,0 +1,18 @@
+{%- comment -%}
+  Linha de frete do carrinho (gaveta e página), pedido do dono em 03/10/2026: textos que convençam a
+  levar mais, só com fato conferido. O limite é o mesmo da barra de frete (settings.free_shipping_threshold,
+  em centavos; na loja, conferido pela API em 03/10/2026: frete grátis a partir de R$ 179 nos 27
+  estados). Abaixo do limite: "Frete grátis a partir de R$ 179,00."; no limite ou acima: "Seu pedido já
+  tem frete grátis." Sem limite configurado, volta ao texto antigo.
+{%- endcomment -%}
+{%- assign cfl_limite = settings.free_shipping_threshold | plus: 0 -%}
+{%- if cfl_limite > 0 -%}
+  {%- if cart.total_price >= cfl_limite -%}
+    {{- 'busca_carrinho.cart.frete_ganho' | t -}}
+  {%- else -%}
+    {%- assign cfl_valor = cfl_limite | money | replace: ' ', ' ' -%}
+    {{- 'busca_carrinho.cart.frete_a_partir' | t: valor: cfl_valor -}}
+  {%- endif -%}
+{%- else -%}
+  {{- 'fundacao.cart.shipping_note' | t -}}
+{%- endif -%}

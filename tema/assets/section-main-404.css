@@ -1,0 +1,130 @@
+/*
+  Beacon Labs · seção Página não encontrada (sections/main-404.liquid)
+  Liquid Glass: fundo pelo ajuste (névoa, painel ou campo noite, paginas-blog.css). Linha pequena
+  "Erro 404" no padrão .v3-eyebrow (vermelho da marca, como as outras páginas); ícone em círculo no
+  campo claro #ECF3F9 (etapa 8e, leva E, item 12; era a tinta a 10%, um cinza fora do tom); busca em
+  cápsula com preenchimento branco a 0,90 e borda #6F8798 (#4A6072 dentro de vidro), anel de
+  foco duplo no campo inteiro; botão da lupa em preenchimento ink (branco 17,680:1).
+*/
+
+.main-404__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 480px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.main-404__eyebrow {
+  margin-bottom: 12px;
+}
+
+/* O ícone de 32 px fica num círculo de 60 px: box-sizing de conteúdo, porque com o border-box
+   global o padding de 14 px comia o próprio ícone (ele aparecia com 4 px). */
+.main-404__icon {
+  box-sizing: content-box;
+  margin-bottom: 16px;
+  padding: 14px;
+  border-radius: var(--radius-pill);
+  background: var(--lg-field-claro, #ECF3F9);
+  color: var(--color-primary);
+}
+
+.main-404__heading {
+  margin: 0 0 10px;
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 28px;
+  color: var(--color-ink);
+}
+
+.main-404__text {
+  margin: 0 0 24px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.main-404__search {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 24px;
+  padding: 4px 4px 4px 18px;
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-white-90, var(--color-background));
+  transition: border-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease);
+}
+
+:is(.glass, .glass-layer) .main-404__search {
+  border-color: var(--lg-input-border-glass, var(--color-input-border));
+}
+
+@media (hover: hover) {
+  .main-404__search:hover {
+    border-color: var(--color-ink);
+  }
+}
+
+.main-404__search-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  color: var(--color-text);
+}
+
+.main-404__search-input:focus {
+  outline: none;
+}
+
+.main-404__search:focus-within {
+  outline: var(--focus-outline);
+  outline-offset: var(--focus-offset);
+  box-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+}
+
+.main-404__search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  color: var(--color-on-dark);
+}
+
+.main-404__actions {
+  width: 100%;
+}
+
+@media screen and (max-width: 480px) {
+  .main-404__actions {
+    flex-direction: column;
+  }
+
+  .main-404__actions .button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .main-404__search {
+    background: #FFFFFF;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .main-404__search {
+    border-color: var(--color-ink);
+    background: #FFFFFF;
+  }
+}

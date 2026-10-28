@@ -1,0 +1,181 @@
+{{ 'component-colecao-breadcrumb.css' | asset_url | stylesheet_tag }}
+{{ 'paginas-blog.css' | asset_url | stylesheet_tag }}
+{{ 'section-order-tracking.css' | asset_url | stylesheet_tag }}
+
+{%- comment -%}
+  Rastreio do pedido: topo com a trilha e o título e, abaixo, um bloco com a instrução, o botão para a conta
+  do cliente (lista de pedidos e status) e o link para o contato.
+  O rastreio por código fica para um app: adicione o bloco do app nesta seção, e ele aparece
+  dentro do bloco, abaixo da instrução. Nenhum script de terceiro entra no código.
+  O botão da conta só aparece quando as contas de cliente estão ativas na loja.
+
+  Etapa 8e, leva C (03/10/2026): a página é a do resto da loja: topo em campo claro de ponta a ponta (.pb-topo,
+  paginas-blog.css) com a trilha única (snippet colecao-breadcrumb) e o título de 56 px, e o conteúdo num bloco
+  sólido #ECF3F9 (.pb-bloco), sem borda e sem sombra, na coluna da página, a --section-gap (104 px; 68 px no
+  celular) do topo e do rodapé. Saíram a foto com véu branco atrás do cartão, o painel de vidro da v2 que a
+  envolvia (a faixa "Azul claro", que era o padrão) e o cartão branco com sombra dentro dele: eram caixa dentro
+  de caixa sobre uma foto, e os ajustes de fundo, espaçamento e imagem de fundo saíram junto.
+{%- endcomment -%}
+
+{%- liquid
+  assign ot_heading = section.settings.heading
+  if ot_heading == blank and page != blank
+    assign ot_heading = page.title
+  endif
+  if ot_heading == blank
+    assign ot_heading = 'paginas_blog.tracking.heading' | t
+  endif
+
+  assign ot_tag = 'h1'
+  if section.settings.heading_tag == 'h2'
+    assign ot_tag = 'h2'
+  endif
+
+  assign ot_show_account = false
+  if section.settings.show_account_button and shop.customer_accounts_enabled
+    assign ot_show_account = true
+  endif
+
+  assign ot_show_contact = false
+  if section.settings.contact_link != blank
+    assign ot_show_contact = true
+  endif
+
+  # Sem instrução, botão, link nem app, o bloco não tem o que mostrar e não aparece (só o topo).
+  assign ot_has_card = false
+  if ot_show_account or ot_show_contact or section.settings.text != blank or section.blocks.size > 0
+    assign ot_has_card = true
+  endif
+-%}
+
+<div class="order-tracking">
+  <div class="order-tracking__topo pb-topo">
+    <div class="page-width">
+      {%- if section.settings.show_breadcrumbs -%}
+        {% render 'paginas-blog-breadcrumbs', class: 'pb-topo__trilha' %}
+      {%- endif -%}
+      <div class="pb-topo__corpo">
+        <{{ ot_tag }} class="order-tracking__heading pb-topo__titulo">{{ ot_heading | escape }}</{{ ot_tag }}>
+      </div>
+    </div>
+  </div>
+
+  {%- if ot_has_card -%}
+  <div class="page-width order-tracking__corpo">
+    <div class="order-tracking__card pb-bloco">
+      <span class="order-tracking__icon">
+        {%- render 'icon', name: 'truck', size: 28 -%}
+      </span>
+
+      <div class="order-tracking__info">
+        {%- if section.settings.text != blank -%}
+          <div class="order-tracking__text rte">{{ section.settings.text }}</div>
+        {%- endif -%}
+
+        {%- if ot_show_account -%}
+          <p class="order-tracking__note">{{ 'paginas_blog.tracking.account_note' | t }}</p>
+        {%- endif -%}
+
+        {%- if section.blocks.size > 0 -%}
+          <div class="order-tracking__apps">
+            {%- for block in section.blocks -%}
+              {%- case block.type -%}
+                {%- when '@app' -%}
+                  <div class="order-tracking__app" {{ block.shopify_attributes }}>
+                    {% render block %}
+                  </div>
+              {%- endcase -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </div>
+
+      {%- if ot_show_account or ot_show_contact -%}
+        <div class="pb-actions order-tracking__actions">
+          {%- if ot_show_account -%}
+            <a href="{{ routes.account_url }}" class="button button--large button--primary">
+              {%- render 'icon', name: 'user', size: 18 -%}
+              {{- 'paginas_blog.tracking.account_button' | t -}}
+            </a>
+          {%- endif -%}
+          {%- if ot_show_contact -%}
+            <a href="{{ section.settings.contact_link }}" class="button button--large button--secondary">
+              {{- 'paginas_blog.tracking.contact_button' | t -}}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Rastreio do pedido",
+  "tag": "section",
+  "class": "section-order-tracking",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Para rastrear pelo código de envio, instale um app de rastreio e adicione o bloco do app nesta seção."
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Título",
+      "info": "Vazio usa o título da página."
+    },
+    {
+      "type": "select",
+      "id": "heading_tag",
+      "label": "Nível do título",
+      "options": [
+        {
+          "value": "h1",
+          "label": "h1"
+        },
+        {
+          "value": "h2",
+          "label": "h2"
+        }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Instrução"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account_button",
+      "label": "Mostrar botão \"Ver meus pedidos\"",
+      "info": "Leva à conta do cliente. Só aparece com as contas de cliente ativas.",
+      "default": true
+    },
+    {
+      "type": "url",
+      "id": "contact_link",
+      "label": "Link do botão \"Falar com o atendimento\"",
+      "info": "Vazio esconde o botão."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Mostrar trilha de navegação",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "@app"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rastreio do pedido"
+    }
+  ]
+}
+{% endschema %}

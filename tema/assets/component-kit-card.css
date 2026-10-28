@@ -1,0 +1,319 @@
+/*
+  Beacon Labs · linha de kit (component-kit-card.css)
+  Estrutura em snippets/kit-card.liquid: a linha inteira é um <label> com um rádio escondido
+  (continua focável). A seleção e o foco usam :has(:checked) e :has(:focus-visible).
+
+  Redesenho v3, tarefa 6 (alvo .opcao): uma linha por kit, dentro do painel de compra, que já é o
+  vidro de conteúdo. A linha é preenchimento claro, nunca vidro sobre vidro (D36).
+  - Esquerda: marcador do rádio, nome do kit com o selo "% OFF" ao lado e "cápsulas · dias". Direita:
+    preço de comparação riscado, preço e preço por dia, alinhados à direita (o selo saiu do bloco de
+    preço na etapa 8e, item 23: no celular ele descia para uma quarta linha e a linha chegava a 119 px).
+  - Sem seleção: fio de 1 px em #6F8798 (3,6:1 contra o painel claro; emenda 12 da revisão de
+    02/10/2026); marcador com aro na cor "Borda de campos" (#6F8798).
+  - Selecionado: branco e anel ink de 2 px em border (o padding perde 1 px para o conteúdo não se
+    mover); marcador ink com miolo de 10 px. Em cores forçadas fica o contorno Highlight.
+  - Foco: anel duplo em volta da linha (contorno ink + halo branco pelo --lg-focus-shadow).
+  - Pressionado: escala 0,99. Esgotado: partes com opacidade 0,5 e o texto "Esgotado".
+  - Selo "% OFF" em preenchimento de destaque (#E9AD05) com texto ink (8,60:1), como a barra fixa.
+*/
+
+.kit-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 16px;
+  min-width: 0;
+  min-height: 80px;
+  padding: 14px 18px;
+  border: 1px solid #6F8798;
+  border-radius: var(--lg-radius-tile, 20px);
+  background-color: rgba(255, 255, 255, 0.78);
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    background-color var(--lg-dur-hover, 160ms) var(--lg-ease-glass, ease),
+    transform var(--lg-dur-press, 100ms) var(--lg-ease-spring, ease);
+}
+
+@media (hover: hover) {
+  .kit-card:hover {
+    border-color: var(--color-ink);
+  }
+}
+
+.kit-card:active:not(.kit-card--sold-out) {
+  transform: scale(var(--lg-press-scale-card, 0.99));
+}
+
+/* Rádio real: escondido visualmente, mas focável pelo teclado. */
+.kit-card__input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Selecionado: anel ink de 2 px em border; o padding perde 1 px (sem pular o layout). */
+.kit-card:has(.kit-card__input:checked) {
+  padding: 13px 17px;
+  border: 2px solid var(--color-ink);
+  background-color: #FFFFFF;
+}
+
+.kit-card:has(.kit-card__input:focus-visible) {
+  --lg-focus-shadow: var(--lg-focus-ring, 0 0 0 2px #FFFFFF);
+
+  outline: var(--lg-focus-width, 3px) solid var(--lg-focus-outer, var(--color-ink));
+  outline-offset: var(--lg-focus-offset, 2px);
+}
+
+/* Navegadores sem :has usam a classe vinda do Liquid e do kit-selector.js. */
+@supports not selector(:has(*)) {
+  .kit-card--selected {
+    padding: 13px 17px;
+    border: 2px solid var(--color-ink);
+    background-color: #FFFFFF;
+  }
+
+  .kit-card--selected .kit-card__radio {
+    border-color: var(--color-ink);
+  }
+
+  .kit-card--selected .kit-card__radio::after {
+    background: var(--color-ink);
+  }
+}
+
+/* Fita "Mais vendido": preenchimento de destaque em cápsula de 24 px, vazando 12 px acima da linha. */
+.kit-card__ribbon {
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000), var(--lg-shadow-thin, 0 0 #0000);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* O anel de 2 px do selecionado desloca a fita 1 px; compensa para ela não pular. */
+.kit-card:has(.kit-card__input:checked) .kit-card__ribbon {
+  top: -13px;
+  left: 15px;
+}
+
+.kit-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.kit-card__radio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border: 2px solid var(--color-input-border);
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
+.kit-card__radio::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.kit-card:has(.kit-card__input:checked) .kit-card__radio {
+  border-color: var(--color-ink);
+}
+
+.kit-card:has(.kit-card__input:checked) .kit-card__radio::after {
+  background: var(--color-ink);
+}
+
+.kit-card__text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Nome do kit e selo "% OFF" na mesma linha (etapa 8e, item 23; alvo .opcao: "3 potes 10% OFF"). Se a
+   coluna do texto ficar estreita demais (janela abaixo de 360 px), o selo desce para baixo do nome em vez
+   de estourar a linha. */
+.kit-card__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  min-width: 0;
+}
+
+.kit-card__title {
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 17px;
+  line-height: 24px;
+  white-space: nowrap;
+}
+
+.kit-card__meta {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--color-text-muted);
+}
+
+/* Lado do preço: alinhado à direita, números tabulares (o preço não pula ao trocar o kit). */
+.kit-card__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  min-width: 0;
+}
+
+.kit-card .price {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 2px 8px;
+}
+
+.kit-card .price__compare {
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.kit-card .price__main {
+  justify-content: flex-end;
+  gap: 4px 8px;
+}
+
+.kit-card .price__current {
+  font-size: 17px;
+  line-height: 24px;
+}
+
+.kit-card .price__installments {
+  flex-basis: 100%;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+/* Selo "% OFF": preenchimento de destaque amarelo com texto ink. Fica na cor do selo da barra
+   fixa. */
+.kit-card .price__badge {
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.kit-card__per-day {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+  color: var(--color-text-muted);
+}
+
+.kit-card__sold-out {
+  grid-column: 1 / -1;
+  justify-self: start;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--lg-fill-ink-04, var(--color-surface-2));
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kit-card--sold-out {
+  cursor: not-allowed;
+}
+
+.kit-card--sold-out .kit-card__title,
+.kit-card--sold-out .kit-card__side,
+.kit-card--sold-out .kit-card__meta {
+  opacity: 0.5;
+}
+
+.kit-card--sold-out:hover {
+  border-color: #6F8798;
+}
+
+@media screen and (max-width: 480px) {
+  .kit-card {
+    padding-inline: 14px;
+    column-gap: 10px;
+  }
+
+  .kit-card:has(.kit-card__input:checked) {
+    padding-inline: 13px;
+  }
+
+  .kit-card__header {
+    gap: 10px;
+  }
+
+  /* Lado do preço em coluna: o texto da esquerda ("180 cápsulas · 90 dias") não espreme. Três linhas
+     à direita (comparativo, preço e preço por dia, com o selo agora ao lado do nome): a linha do
+     preço riscado cai de 20 para 18 px, e a linha do kit com desconto fica em 94 px, a do alvo (item 23). */
+  .kit-card .price,
+  .kit-card .price__main {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+
+  .kit-card .price__compare {
+    line-height: 18px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .kit-card {
+    border-color: var(--color-ink);
+  }
+
+  .kit-card__ribbon {
+    box-shadow: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .kit-card:has(.kit-card__input:checked) {
+    outline: 2px solid Highlight;
+  }
+
+  .kit-card:has(.kit-card__input:checked) .kit-card__radio::after {
+    background: Highlight;
+  }
+}

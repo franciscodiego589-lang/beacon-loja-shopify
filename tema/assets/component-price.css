@@ -1,0 +1,143 @@
+/*
+  Beacon Labs · preço (component-price.css)
+  Estrutura em snippets/price.liquid. O elemento raiz é um <span>, por isso o display vem daqui.
+  Valores em 800 usam a fonte de título (o corpo carrega só 400 a 700).
+
+  Liquid Glass (spec 8.4): o selo de % OFF junto ao preço é preenchimento sólido em cápsula
+  (antes raio 6), com linha de luz em cima. Cor: --color-badge-bg; o kit e a barra fixa trocam
+  para --lg-tint-savings (#0B7A73) e o combo para a oferta, até a decisão D19 do dono.
+  Texto secundário (de, a partir de, parcelas) em --color-text-muted, que dentro de vidro
+  funcional passa a #34495A (liquid-glass.css).
+*/
+
+.price {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.price__from {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.price__compare {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.price__compare s {
+  text-decoration: line-through;
+}
+
+.price__main {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+}
+
+.price__current {
+  font-family: var(--font-heading-family);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+}
+
+/* Números tabulares: o valor não "pula" quando a variante muda (spec 5.8, regra 4). O valor
+   também nunca quebra de linha entre "R$" e o número, como o espaço não separável do alvo. */
+.price__current,
+.price__compare {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.price__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--color-badge-bg);
+  color: var(--color-badge-text);
+  box-shadow: var(--lg-rim-fill-line, 0 0 #0000);
+  font-family: var(--font-heading-family);
+  font-weight: var(--font-heading-weight);
+  font-size: 12px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.price__installments {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--color-text-muted);
+}
+
+.price__sold-out {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.price--sold-out .price__current {
+  color: var(--color-text-muted);
+}
+
+/* Tamanhos */
+
+.price--sm .price__current {
+  font-size: 16px;
+}
+
+.price--sm .price__compare,
+.price--sm .price__from,
+.price--sm .price__installments {
+  font-size: 12px;
+}
+
+.price--lg .price__current {
+  font-size: 28px;
+}
+
+.price--lg .price__compare {
+  font-size: 15px;
+}
+
+.price--lg .price__installments {
+  font-size: 14px;
+}
+
+@media screen and (min-width: 750px) {
+  .price--md .price__current {
+    font-size: 22px;
+  }
+
+  .price--md .price__installments {
+    font-size: 13px;
+  }
+}
+
+@media screen and (min-width: 990px) {
+  .price--lg .price__current {
+    font-size: 32px;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .price__badge {
+    box-shadow: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .price__badge {
+    border: 1px solid CanvasText;
+  }
+}

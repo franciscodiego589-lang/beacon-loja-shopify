@@ -1,0 +1,248 @@
+/* ==========================================================================
+   Marketing no fim da coluna da direita da página do produto (pedido do dono, 05/10/2026).
+   Marcação em snippets/produto-vantagens.liquid. Conteúdo sólido; vidro só no cartão
+   "Vantagens desta compra" (.glass .glass--card, material definido em liquid-glass.css).
+   O botão "Aplicar" usa o verde de compra #15803D com texto branco (5,02:1).
+   ========================================================================== */
+
+.main-product__col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+/* Celular: os cartões sangram até o mesmo recuo do painel de compra (--bleed-gutter, até 760 px). */
+@media screen and (max-width: 760px) {
+  .pv-card,
+  .pv-garantias {
+    margin-inline: calc(var(--page-gutter, 16px) * -1 + var(--bleed-gutter, 0px));
+  }
+}
+
+.pv-card {
+  min-width: 0;
+  padding: 20px;
+  border-radius: var(--lg-radius-card, 28px);
+}
+
+@media screen and (min-width: 990px) {
+  .pv-card {
+    padding: 24px 28px;
+    border-radius: 30px;
+  }
+}
+
+.pv-card__titulo {
+  margin: 0 0 14px;
+  font-family: var(--font-heading-family);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+
+/* ---------- Vantagens desta compra ---------- */
+
+.pv-vantagens__lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pv-vantagem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 12px 0;
+  border-top: 1px solid rgba(var(--color-ink-rgb), 0.1);
+}
+
+.pv-vantagem:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.pv-vantagem:last-child {
+  padding-bottom: 0;
+}
+
+.pv-vantagem__icone {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1px rgba(var(--color-ink-rgb), 0.08);
+  color: var(--color-ink);
+}
+
+.pv-vantagem__texto {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  color: var(--color-ink);
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.pv-vantagem__texto strong {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.pv-vantagem__texto small {
+  color: var(--color-text-muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.pv-vantagem__botao {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: #15803D;
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.18s ease;
+}
+
+.pv-vantagem__botao:hover {
+  background: #166534;
+  /* a:hover do base.css (especificidade maior) pintava o texto de tinta escura sobre o verde (contraste 2,4:1). */
+  color: #FFFFFF;
+}
+
+.pv-vantagem__botao:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+@media screen and (max-width: 389px) {
+  .pv-vantagem--cupom {
+    flex-wrap: wrap;
+  }
+
+  .pv-vantagem--cupom .pv-vantagem__botao {
+    margin-left: 54px;
+  }
+
+  /* 05/10/2026 (auditoria de celular, 360 px): sem base própria, o texto ocupava a linha inteira e o ícone
+     ficava sozinho acima dele. Com a base = linha menos ícone (40 px) e vão (14 px), ícone e texto
+     ficam lado a lado e só o botão desce. */
+  .pv-vantagem--cupom .pv-vantagem__texto {
+    flex-basis: calc(100% - 54px);
+  }
+}
+
+/* ---------- Por que escolher ---------- */
+
+.pv-benef {
+  background: #FFFFFF;
+  box-shadow: 0 0 0 1px rgba(var(--color-ink-rgb), 0.08);
+}
+
+.pv-benef__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pv-benef__lista--grupos {
+  gap: 16px;
+}
+
+.pv-benef__lista .pv-benef__lista {
+  gap: 8px;
+}
+
+.pv-benef__nome {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pv-benef__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--color-ink);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.pv-benef__item svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: #15803D;
+}
+
+/* ---------- Garantias ---------- */
+
+.pv-garantias {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  padding: 14px 8px;
+  list-style: none;
+  border-radius: 22px;
+}
+
+.pv-garantia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 8px;
+  border-left: 1px solid rgba(var(--color-ink-rgb), 0.12);
+  color: var(--color-ink);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.pv-garantia:first-child {
+  border-left: 0;
+}
+
+@media screen and (max-width: 760px) {
+  .pv-garantias {
+    padding-inline: 4px;
+  }
+
+  .pv-garantia {
+    padding-inline: 4px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pv-vantagem__botao {
+    transition: none;
+  }
+}

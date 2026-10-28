@@ -1,0 +1,110 @@
+/*
+  Beacon Labs · seção Posts do blog (sections/blog-posts.liquid)
+  Celular: rolagem por toque. Computador (≥ 990 px): grade fixa de 4 colunas,
+  sem setas, como na maquete.
+
+  Liquid Glass (spec 8.5): sem moldura. Capa com raio 20 (16 no celular) sobre o
+  preenchimento de foto (ink a 4%, .lg-fill--photo); zoom de 1,03 na capa no hover do post
+  (sem zoom com movimento reduzido). Categoria #0058B8 12 px 800 em caixa alta (6,088:1 na
+  névoa); título ink 17 px 700 (16 no celular), sublinhado no hover; "Ler artigo" #0058B8.
+  O trilho do celular ganha 8 px em cima e embaixo para o anel de foco (spec 5.10).
+*/
+
+.blog-posts__track {
+  gap: 16px;
+  grid-auto-columns: 220px;
+  padding-block: 8px;
+  margin-block: -8px;
+}
+
+.blog-posts__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+}
+
+.blog-posts__media {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  border-radius: var(--lg-radius-tile, var(--radius-card-sm));
+  color: var(--color-text-muted);
+  overflow: hidden;
+}
+
+.blog-posts__image,
+.blog-posts__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--lg-dur-state, 240ms) var(--lg-ease-glass, ease);
+}
+
+@media (hover: hover) {
+  .blog-posts__card:hover .blog-posts__image,
+  .blog-posts__card:hover .blog-posts__placeholder {
+    transform: scale(1.03);
+  }
+}
+
+.blog-posts__category {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-chip-text);
+}
+
+.blog-posts__title {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.blog-posts__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.blog-posts__link:hover {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.blog-posts__read-more {
+  margin-top: auto;
+}
+
+@media screen and (min-width: 990px) {
+  .blog-posts__track {
+    grid-auto-flow: unset;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    overflow: visible;
+  }
+
+  .blog-posts__item {
+    scroll-snap-align: unset;
+  }
+
+  .blog-posts__media {
+    height: 180px;
+  }
+
+  .blog-posts__title {
+    font-size: 17px;
+  }
+}
+
+/* Movimento reduzido (spec 9.5): sem zoom na capa. */
+@media (prefers-reduced-motion: reduce) {
+  .blog-posts__card:hover .blog-posts__image,
+  .blog-posts__card:hover .blog-posts__placeholder {
+    transform: none;
+  }
+}

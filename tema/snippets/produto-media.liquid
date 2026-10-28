@@ -1,0 +1,94 @@
+{%- comment -%}
+  Área produto. Conteúdo de um item da galeria (<media-gallery>), por tipo de mídia.
+  Parâmetros:
+  - media: mídia do produto (obrigatório)
+  - product: produto (para o texto alternativo reserva)
+  - eager: true na mídia que aparece primeiro (carrega logo, com prioridade alta)
+  - sizes: atributo sizes das imagens
+  - photo_class: classe da foto (v3-classe-foto na primeira mídia; v3-foto-quadro nas demais), já escapada
+
+  Tipos:
+  - image: <img> responsivo.
+  - video e external_video: capa com botão de reproduzir; o player fica num <template>
+    e só entra na página quando o cliente clica (media-gallery.js).
+  - model: capa com botão "Ver em 3D"; o <model-viewer> também fica num <template>.
+  Liquid Glass: o selo de reproduzir/3D sobre a capa é vidro funcional escuro sem desfoque
+  (.glass .glass--dark, spec 4.2).
+{%- endcomment -%}
+{%- liquid
+  assign media_alt = media.alt | default: product.title
+  assign media_sizes = sizes | default: '(min-width: 990px) 640px, 100vw'
+  assign media_loading = 'lazy'
+  assign image_class = 'media-gallery__image'
+  if photo_class != blank
+    assign image_class = image_class | append: ' ' | append: photo_class
+  endif
+  if eager
+    assign media_loading = 'eager'
+  endif
+-%}
+{%- case media.media_type -%}
+  {%- when 'image' -%}
+    {%- if eager -%}
+      {{ media | image_url: width: 1280 | image_tag: widths: '360, 480, 640, 720, 800, 960, 1280', sizes: media_sizes, loading: media_loading, fetchpriority: 'high', alt: media_alt, class: image_class }}
+    {%- else -%}
+      {{ media | image_url: width: 1280 | image_tag: widths: '360, 480, 640, 720, 800, 960, 1280', sizes: media_sizes, loading: media_loading, alt: media_alt, class: image_class }}
+    {%- endif -%}
+
+  {%- when 'video', 'external_video' -%}
+    <div class="media-gallery__deferred" data-deferred-media>
+      <button
+        type="button"
+        class="media-gallery__poster"
+        aria-label="{{ 'produto.gallery.play_video' | t: title: media_alt }}"
+        data-deferred-media-trigger
+      >
+        {%- if media.preview_image -%}
+          {{ media.preview_image | image_url: width: 1280 | image_tag: widths: '360, 480, 640, 720, 800, 960, 1280', sizes: media_sizes, loading: media_loading, alt: '', class: 'media-gallery__image' }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+        <span class="media-gallery__poster-icon glass glass--dark" aria-hidden="true">
+          {%- render 'icon', name: 'play', size: 28 -%}
+        </span>
+      </button>
+      <template data-deferred-media-template>
+        {%- if media.media_type == 'video' -%}
+          {{ media | video_tag: controls: true, autoplay: true, preload: 'metadata' }}
+        {%- elsif media.host == 'youtube' -%}
+          {{ media | external_video_url: autoplay: 1, enablejsapi: 1, rel: 0 | external_video_tag }}
+        {%- else -%}
+          {{ media | external_video_url: autoplay: 1 | external_video_tag }}
+        {%- endif -%}
+      </template>
+    </div>
+
+  {%- when 'model' -%}
+    <div class="media-gallery__deferred media-gallery__deferred--model" data-deferred-media data-deferred-model>
+      <button
+        type="button"
+        class="media-gallery__poster"
+        aria-label="{{ 'produto.gallery.view_model' | t: title: media_alt }}"
+        data-deferred-media-trigger
+      >
+        {%- if media.preview_image -%}
+          {{ media.preview_image | image_url: width: 1280 | image_tag: widths: '360, 480, 640, 720, 800, 960, 1280', sizes: media_sizes, loading: media_loading, alt: '', class: 'media-gallery__image' }}
+        {%- else -%}
+          {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {%- endif -%}
+        <span class="media-gallery__poster-icon media-gallery__poster-icon--text glass glass--dark" aria-hidden="true">
+          {{- 'produto.gallery.model_badge' | t -}}
+        </span>
+      </button>
+      <template data-deferred-media-template>
+        {{ media | model_viewer_tag }}
+      </template>
+    </div>
+
+  {%- else -%}
+    {%- if media.preview_image -%}
+      {{ media.preview_image | image_url: width: 1280 | image_tag: widths: '360, 480, 640, 720, 800, 960, 1280', sizes: media_sizes, loading: media_loading, alt: media_alt, class: 'media-gallery__image' }}
+    {%- else -%}
+      {{ 'product-1' | placeholder_svg_tag: 'placeholder-svg' }}
+    {%- endif -%}
+{%- endcase -%}

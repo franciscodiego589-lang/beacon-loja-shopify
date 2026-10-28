@@ -1,0 +1,40 @@
+{%- comment -%}
+  Área produto. Chips do bloco "chips" (sections/main-product.liquid), extraídos para cá para
+  simplificar a lógica condicional da seção principal (o Theme Check aponta complexidade
+  demais quando este laço fica embutido).
+  Parâmetros:
+  - chips: product.metafields.beacon.chips.value (obrigatório; sem chips, nada renderiza)
+  - block_settings: block.settings do bloco (link_collections, icon_1, icon_2, icon_3)
+  - shopify_attributes: block.shopify_attributes
+  - design_mode: request.design_mode (mostra a nota de editor quando o metafield está vazio)
+{%- endcomment -%}
+{%- if chips != blank -%}
+  <ul class="main-product__block main-product__chips" role="list" aria-label="{{ 'produto.chips.label' | t }}" {{ shopify_attributes }}>
+    {%- for chip in chips -%}
+      {%- liquid
+        assign chip_icon_key = 'icon_' | append: forloop.index
+        assign chip_icon = block_settings[chip_icon_key] | default: 'tag'
+        assign chip_collection = nil
+        if block_settings.link_collections
+          assign chip_handle = chip | handle
+          assign chip_collection = collections[chip_handle]
+        endif
+      -%}
+      <li class="main-product__chip-item">
+        {%- if chip_collection != blank and chip_collection.url != blank -%}
+          <a href="{{ chip_collection.url }}" class="chip chip--outline main-product__chip">
+            {%- render 'icon', name: chip_icon, size: 18 -%}
+            <span>{{ chip | escape }}</span>
+          </a>
+        {%- else -%}
+          <span class="chip chip--outline main-product__chip">
+            {%- render 'icon', name: chip_icon, size: 18 -%}
+            <span>{{ chip | escape }}</span>
+          </span>
+        {%- endif -%}
+      </li>
+    {%- endfor -%}
+  </ul>
+{%- elsif design_mode -%}
+  <p class="main-product__block main-product__editor-note" {{ shopify_attributes }}>{{ 'produto.editor.empty' | t: field: 'beacon.chips' }}</p>
+{%- endif -%}

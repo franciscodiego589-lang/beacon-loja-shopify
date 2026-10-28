@@ -1,0 +1,74 @@
+{%- comment -%}
+  Área produto. Bloco "kit_selector" da seção main-product: <kit-selector> com um cartão por
+  variante (snippets/produto-kit-variant.liquid) e o resumo "por pote". Não renderiza nada em
+  produto sem variantes. Extraído de sections/main-product.liquid (auditoria de arquitetura,
+  28/09/2026).
+  Parâmetros (todos vindos da seção principal):
+  - product: o produto
+  - block: o bloco "kit_selector" (legenda e destaque)
+  - section_id: section.id da seção principal (nome do grupo de rádios e ProductData)
+  - kit_index: posição (0-based) da opção "Kit", ou -1
+  - caps_pote / caps_dia: metafields beacon.capsulas_por_pote e beacon.capsulas_por_dia
+  - current_variant: variante que a página mostra ao abrir
+  - show_installments: mostra o parcelamento sem juros nos cartões (ajuste do bloco
+    "parcelamento_pix"; falso ou ausente esconde)
+
+  Resumo "por pote" (kits de 2 ou mais potes): um parágrafo por variante
+  ([data-variant-slot="ID"]), no padrão da barra fixa. O Liquid faz a conta (preço ÷ potes,
+  arredondado para cima em centavos) e kit-selector.js só mostra o da variante ativa.
+{%- endcomment -%}
+{%- unless product.has_only_default_variant -%}
+  {%- liquid
+    assign radio_name = 'Kit-' | append: section_id
+    assign highlight_units = block.settings.highlight_units | plus: 0
+    assign kit_legend = block.settings.legend | strip
+    if kit_legend == blank
+      assign kit_legend = 'produto.kit.titulo_quantidade' | t
+    endif
+  -%}
+  <kit-selector
+    class="main-product__block kit-selector"
+    data-section-id="{{ section_id }}"
+    {{ block.shopify_attributes }}
+  >
+    <fieldset class="kit-selector__fieldset">
+      <legend class="kit-selector__legend{% unless block.settings.show_legend %} visually-hidden{% endunless %}">{{ kit_legend | escape }}</legend>
+      <div class="kit-selector__grid">
+        {%- for variant in product.variants -%}
+          {% render 'produto-kit-variant',
+            variant: variant,
+            kit_index: kit_index,
+            capsulas_por_pote: caps_pote,
+            capsulas_por_dia: caps_dia,
+            radio_name: radio_name,
+            current_variant_id: current_variant.id,
+            highlight_enabled: block.settings.highlight_enabled,
+            highlight_units: highlight_units,
+            highlight_label: block.settings.highlight_label,
+            show_installments: show_installments
+          %}
+        {%- endfor -%}
+      </div>
+    </fieldset>
+    {%- for variant in product.variants -%}
+      {%- liquid
+        assign summary_units = 0
+        if kit_index >= 0
+          capture summary_units
+            render 'produto-kit-units', kit: variant.options[kit_index]
+          endcapture
+          assign summary_units = summary_units | strip | plus: 0
+        endif
+      -%}
+      {%- if summary_units > 1 -%}
+        {%- liquid
+          assign per_unit_value = variant.price | plus: summary_units | minus: 1 | divided_by: summary_units
+          assign per_unit_money = per_unit_value | money
+        -%}
+        <p class="kit-selector__summary" data-kit-summary data-variant-slot="{{ variant.id }}"{% unless variant.id == current_variant.id %} hidden{% endunless %}>
+          {{- 'produto.kit.per_unit' | t: amount: per_unit_money -}}
+        </p>
+      {%- endif -%}
+    {%- endfor -%}
+  </kit-selector>
+{%- endunless -%}
