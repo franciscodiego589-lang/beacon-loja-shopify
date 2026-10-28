@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/essential-multi
 - Tipo: Vitaminas
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:capsulas, marca:beacon-labs, objetivo:beleza, objetivo:energia, objetivo:imunidade, objetivo:longevidade, objetivo:ossea
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:capsulas, marca:beacon-labs, objetivo:beleza, objetivo:energia, objetivo:imunidade, objetivo:longevidade, objetivo:ossea
 
 ## Variantes
 

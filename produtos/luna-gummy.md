@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/luna-gummy
 - Tipo: Sono
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:gomas, marca:beacon-labs
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:gomas, marca:beacon-labs
 
 ## Variantes
 

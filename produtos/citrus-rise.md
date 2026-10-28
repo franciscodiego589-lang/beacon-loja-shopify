@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/citrus-rise
 - Tipo: Vitaminas
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:po, marca:beacon-labs, objetivo:beleza, objetivo:energia, objetivo:imunidade, objetivo:longevidade, objetivo:ossea
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:po, marca:beacon-labs, objetivo:beleza, objetivo:energia, objetivo:imunidade, objetivo:longevidade, objetivo:ossea
 
 ## Variantes
 

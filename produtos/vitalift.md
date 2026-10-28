@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/vitalift
 - Tipo: Suplemento alimentar
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:capsulas, marca:beacon-labs, objetivo:energia, objetivo:imunidade
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:capsulas, marca:beacon-labs, objetivo:energia, objetivo:imunidade
 
 ## Variantes
 

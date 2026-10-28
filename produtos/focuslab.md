@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/focuslab
 - Tipo: Suplemento alimentar
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:capsulas, marca:beacon-labs, objetivo:energia, objetivo:imunidade, objetivo:ossea
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:capsulas, marca:beacon-labs, objetivo:energia, objetivo:imunidade, objetivo:ossea
 
 ## Variantes
 

@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/moro-balance-gotas
 - Tipo: Substâncias bioativas
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:gotas, marca:beacon-labs, objetivo:energia, objetivo:foco, objetivo:imunidade, objetivo:ossea
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:gotas, marca:beacon-labs, objetivo:energia, objetivo:foco, objetivo:imunidade, objetivo:ossea
 
 ## Variantes
 

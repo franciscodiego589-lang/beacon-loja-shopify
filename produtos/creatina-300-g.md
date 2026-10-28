@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/creatina-300-g
 - Tipo: Creatina
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:po, marca:beacon-labs, objetivo:performance
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:po, marca:beacon-labs, objetivo:performance
 
 ## Variantes
 

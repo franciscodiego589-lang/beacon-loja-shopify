@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/crea-gummy
 - Tipo: Creatina
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:gomas, marca:beacon-labs, objetivo:performance
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:gomas, marca:beacon-labs, objetivo:performance
 
 ## Variantes
 

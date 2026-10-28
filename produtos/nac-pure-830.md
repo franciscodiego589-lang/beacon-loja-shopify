@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/nac-pure-830
 - Tipo: Aminoácidos
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:capsulas, marca:beacon-labs
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:capsulas, marca:beacon-labs
 
 ## Variantes
 

@@ -5,7 +5,7 @@
 - Página na loja: https://beaconlabs.com.br/products/moro-balance-capsulas
 - Tipo: Substâncias bioativas
 - Marca: Beacon Labs
-- Tags: destaque:lancamento, formato:capsulas, marca:beacon-labs, objetivo:energia, objetivo:imunidade, objetivo:ossea
+- Tags: destaque:lancamento, destaque:mais-vendidos, destaque:oferta, formato:capsulas, marca:beacon-labs, objetivo:energia, objetivo:imunidade, objetivo:ossea
 
 ## Variantes
 
